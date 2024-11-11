@@ -220,6 +220,7 @@ export default {
       isComponentExists: true,
       isMounted: false,
       dotAxialSizePx: 1,
+      srValue: "",
     }
   },
   computed: {
@@ -233,6 +234,9 @@ export default {
       }
       if (this.val[0] === this.val[1]) return this.val[0];
       return this.val[0] + "-" + this.val[1];
+    },
+    srLabel() {
+      return `${this.minimum} / ${this.maximum }`;
     },
     dotWidthVal() {
       return this.dotWidth || this.dotSize;
@@ -841,6 +845,13 @@ export default {
       if (newVal > this.max || newVal < this.min) return;
       this.setValue(newVal);
     },
+    srInput(event) {
+    const value = parseInt(event.target.value);
+      if (value > this.max || value < this.min) return;
+      if(value) {
+        this.setValue(value);
+      }
+    },
     setValue(val, noCb, speed) {
       if (this.isDiff(this.val, val)) {
         const resetVal = this.limitValue(val)
@@ -1164,5 +1175,7 @@ export default {
       </div>
     </div>
     <PlusMinusButton v-if="plusMinusButtons" type="plus" @click="increment(1)"/>
+  <input v-if="this.$viewModel.srMode" type="number" :aria-label="srLabel" :value="val" @input="srInput">
+  </input>
   </div>
 </template>

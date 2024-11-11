@@ -61,6 +61,7 @@ export default {
     <template #bottom>
       <div class="l-challenge-box__bottom--infinity">
         <span>Goal: {{ format(config.goal) }} antimatter</span>
+        <br v-if="$viewModel.srMode">
         <DescriptionDisplay
           :config="config.reward"
           title="Reward:"

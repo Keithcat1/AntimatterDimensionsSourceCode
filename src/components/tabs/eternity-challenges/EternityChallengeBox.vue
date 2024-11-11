@@ -115,6 +115,7 @@ export default {
       <span v-if="showGoalSpan">
         Goal Span: {{ firstGoal }} IP - {{ lastGoal }} IP
       </span>
+      <br v-if="$viewModel.srMode">
       <span>
         Reward:
         <DescriptionDisplay

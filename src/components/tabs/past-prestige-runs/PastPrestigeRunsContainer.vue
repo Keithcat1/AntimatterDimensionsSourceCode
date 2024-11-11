@@ -275,6 +275,7 @@ export default {
             :style="cellStyle(col, false)"
           >
             {{ entry }}
+            <br v-if="$viewModel.srMode">
           </span>
         </span>
       </div>

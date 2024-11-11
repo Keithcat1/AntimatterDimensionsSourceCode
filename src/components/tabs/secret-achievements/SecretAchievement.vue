@@ -83,13 +83,16 @@ export default {
     @mouseleave="onMouseLeave"
   >
     <HintText
+      v-if="!$viewModel.srMode"
       type="achievements"
       class="l-hint-text--achievement"
     >
       S{{ id }}
     </HintText>
     <div class="o-achievement__tooltip">
-      <template v-if="isMouseOver">
+      <template
+        v-if="isMouseOver || $viewModel.srMode"
+      >
         <div class="o-achievement__tooltip__name">
           {{ config.name }} (S{{ id }})
         </div>

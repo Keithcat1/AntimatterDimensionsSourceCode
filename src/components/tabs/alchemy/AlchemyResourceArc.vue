@@ -60,10 +60,16 @@ export default {
       :style="maskTransform"
     />
     <div
+      v-if="!$viewModel.srMode"
       class="o-alchemy-node-mask"
       :class="classObject"
     >
       {{ resource.symbol }}
+    </div>
+    <div
+      v-else
+    >
+      {{ resource.name }}
     </div>
   </div>
 </template>

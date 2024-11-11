@@ -216,10 +216,12 @@ export default {
         View Reality Glyph creation
       </PrimaryButton>
     </div>
-    <AlchemyResourceInfo
-      :key="infoResourceId"
-      :resource="infoResource"
-    />
+    <div aria-live="polite">
+     <AlchemyResourceInfo
+        :key="infoResourceId"
+        :resource="infoResource"
+      />
+    </div>
     <br>
     Glyphs can now be refined using your Glyph filter in the Glyphs tab.
     <br>
@@ -229,6 +231,7 @@ export default {
       Reactions trigger once every time you Reality, unaffected by amplification from stored real time.
     </span>
     <div
+      v-if="!$viewModel.srMode"
       class="l-alchemy-circle"
       :style="circleStyle"
     >
@@ -272,6 +275,24 @@ export default {
           :class="reactionArrowClass(reactionArrow)"
         />
       </svg>
+    </div>
+    <div
+      v-else
+    >
+      <span
+        v-if="isDoomed"
+        class="c-pelle-symbol-overlay"
+        v-html="pelleSymbol"
+      />
+      <AlchemyCircleNode
+        v-for="(node, i) in layout.nodes"
+        :key="i"
+        :node="node"
+        :is-focused="isFocusedNode(node)"
+        :class="nodeClass(node)"
+        @click="handleMouseEnter(node)"
+      />
+
     </div>
   </div>
 </template>

@@ -95,8 +95,11 @@ export default {
     v-if="isUnlocked"
     :class="classObject"
   >
-    <span class="c-alchemy-resource-info__title">
+    <span v-if="!$viewModel.srMode" class="c-alchemy-resource-info__title">
       {{ resource.symbol }} {{ resource.name }} {{ resource.symbol }}
+    </span>
+    <span v-else>
+      {{ resource.name }}
     </span>
     <span v-if="isDoomed">
       Destroyed by Pelle

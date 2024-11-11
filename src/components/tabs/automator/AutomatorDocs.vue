@@ -243,18 +243,21 @@ export default {
       <div class="l-automator-button-row">
         <AutomatorButton
           v-tooltip="'Automator Introduction'"
+          label="Automator Introduction"
           class="fa-circle-info"
           :class="activePanelClass(panelEnum.INTRO_PAGE)"
           @click="infoPaneID = panelEnum.INTRO_PAGE"
         />
         <AutomatorButton
           v-tooltip="'Scripting Information'"
+          label="Scripting Information"
           class="fa-list"
           :class="activePanelClass(panelEnum.COMMANDS)"
           @click="infoPaneID = panelEnum.COMMANDS"
         />
         <AutomatorButton
           v-tooltip="errorTooltip"
+          :label="errorTooltip"
           :style="errorStyle"
           class="fa-exclamation-triangle"
           :class="activePanelClass(panelEnum.ERRORS)"
@@ -262,24 +265,28 @@ export default {
         />
         <AutomatorButton
           v-tooltip="'Extended Data Transfer'"
+          label="Extended data transfer"
           class="fa-window-restore"
           :class="activePanelClass(panelEnum.DATA_TRANSFER)"
           @click="infoPaneID = panelEnum.DATA_TRANSFER"
         />
         <AutomatorButton
           v-tooltip="'View recently executed commands'"
+          label="View recently executed commands"
           class="fa-eye"
           :class="activePanelClass(panelEnum.EVENTS)"
           @click="infoPaneID = panelEnum.EVENTS"
         />
         <AutomatorButton
           v-tooltip="'Modify defined constants'"
+          label="Modify defined constants"
           class="fa-book"
           :class="activePanelClass(panelEnum.CONSTANTS)"
           @click="infoPaneID = panelEnum.CONSTANTS"
         />
         <AutomatorButton
           v-tooltip="'Template Creator List'"
+          label="Template creator list"
           class="fa-file-code"
           :class="activePanelClass(panelEnum.TEMPLATES)"
           @click="infoPaneID = panelEnum.TEMPLATES"
@@ -287,6 +294,7 @@ export default {
         <AutomatorButton
           v-if="isBlock"
           v-tooltip="'Command menu for Block editor mode'"
+          label="Command menu for Block editor mode"
           class="fa-cubes"
           :class="activePanelClass(panelEnum.BLOCKS)"
           @click="infoPaneID = panelEnum.BLOCKS"
@@ -300,6 +308,7 @@ export default {
         </span>
         <AutomatorButton
           v-tooltip="fullScreenTooltip"
+          :label="fullScreenTooltip"
           :class="fullScreenIconClass"
           class="l-automator__expand-corner"
           @click="fullScreen = !fullScreen"
@@ -308,11 +317,13 @@ export default {
       <div class="l-automator-button-row">
         <AutomatorButton
           v-tooltip="'Export single automator script'"
+          label="Export single Automator script"
           class="fa-file-export"
           @click="exportScript"
         />
         <AutomatorButton
           v-tooltip="importTooltip"
+          :label="importTooltip"
           class="fa-file-import"
           :class="{ 'c-automator__status-text--error' : !canMakeNewScript }"
           @click="importScript"
@@ -334,6 +345,7 @@ export default {
             </ExpandingControlBox>
             <AutomatorButton
               v-tooltip="'Rename script'"
+              label="Rename script"
               class="far fa-edit"
               @click="rename"
             />
@@ -342,6 +354,7 @@ export default {
             v-else
             ref="renameInput"
             v-tooltip="nameTooltip"
+            :label="nameTooltip"
             class="l-automator__rename-input c-automator__rename-input"
             :class="{ 'c-long-name-box' : isNameTooLong }"
             @blur="nameEdited"
@@ -350,6 +363,7 @@ export default {
         </div>
         <AutomatorButton
           v-tooltip="'Delete this script'"
+          label="Delete this script"
           class="fas fa-trash"
           @click="deleteScript"
         />

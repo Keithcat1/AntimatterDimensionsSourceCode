@@ -96,6 +96,7 @@ export default {
       content: automatorModeTooltip,
       hideOnTargetClick: false
     }"
+    :aria-label="automatorModeTooltip"
     :class="{
       'c-slider-toggle-button': true,
       'c-slider-toggle-button--right': isTextAutomator,

@@ -76,7 +76,10 @@ export default {
     <br>
     Diamond-shaped perks also give Automator Points.
     <br>
-    <div class="perk-settings">
+    <div
+      v-if="!$viewModel.srMode"
+      class="perk-settings"
+    >
       <PrimaryButton
         class="o-primary-btn c-button-perk-layout"
         @click="cycleLayout"

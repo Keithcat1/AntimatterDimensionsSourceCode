@@ -3,16 +3,19 @@ import { DataSet, Network } from "vis-network";
 
 import { PERK_FAMILY } from "@/core/secret-formula";
 import PerkPointLabel from "./PerkPointLabel";
+import PerkButton from "./PerkButton";
 
 export default {
   name: "PerksTab",
   components: {
-    PerkPointLabel
+    PerkPointLabel,
+    PerkButton,
   },
   computed: {
     showHintText() {
       return ui.view.shiftDown || player.options.showHintText.perks;
-    }
+    },
+    perks: () => Perks.all,
   },
   watch: {
     showHintText(newValue) {
@@ -24,6 +27,7 @@ export default {
     EventHub.ui.on(GAME_EVENT.PERK_BOUGHT, () => PerkNetwork.updatePerkColor());
   },
   mounted() {
+    if (this.$viewModel.srMode) return;
     PerkNetwork.initialStabilization = false;
     PerkNetwork.currentLayout = PerkLayouts[player.options.perkLayout];
     PerkNetwork.initializeIfNeeded();
@@ -404,6 +408,13 @@ export const PerkNetwork = {
     class="c-perk-tab"
   >
     <PerkPointLabel />
+    <template v-if="$viewModel.srMode">
+      <PerkButton
+        v-for="(perk, i) in perks"
+        :key="i"
+        :perk="perk"
+      />
+    </template>
   </div>
 </template>
 

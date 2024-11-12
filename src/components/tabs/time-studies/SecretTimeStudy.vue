@@ -66,6 +66,7 @@ export default {
     ref="study"
     :class="classObject"
     :style="styleObject"
+    :aria-hidden="!isVisible"
     @click="handleClick"
   >
     <span>

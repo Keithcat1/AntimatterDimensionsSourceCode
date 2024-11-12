@@ -144,18 +144,33 @@ export default {
         v-if="isActive && !isMaxed"
         class="o-pelle-rift-bar-active-fill"
       />
-      <div
+      <template v-if="!$viewModel.srMode">
+        <div
         v-for="(milestone, idx) in rift.milestones"
-        :key="'milestone-line-' + idx"
-        class="o-pelle-rift-bar-milestone-line"
-        :class="{
-          'o-pelle-rift-bar-milestone-line--unlocked': hasMilestone(milestone),
-          'o-pelle-rift-bar-milestone-line--disabled': reducedTo < milestone.requirement
-        }"
-        :style="{
-          left: `calc(${milestone.requirement * 100}% - 0.25rem)`
-        }"
-      />
+          :key="'milestone-line-' + idx"
+          class="o-pelle-rift-bar-milestone-line"
+          :class="{
+            'o-pelle-rift-bar-milestone-line--unlocked': hasMilestone(milestone),
+            'o-pelle-rift-bar-milestone-line--disabled': reducedTo < milestone.requirement
+          }"
+          :style="{
+            left: `calc(${milestone.requirement * 100}% - 0.25rem)`
+          }"
+        />
+      </template>
+      <ol v-else>
+        <li
+        v-for="(milestone, idx) in rift.milestones"
+          :key="'milestone-sr-' + idx"
+        >
+          {{ milestoneResourceText(milestone) }}
+          <br>
+          <div v-if="hasMilestone(milestone)">Active</div>
+          <br>
+          {{ milestoneDescriptionText(milestone) }}
+       </li>
+
+      </ol>
     </div>
     <div class="o-pelle-rift-bar-percentage">
       {{ formatPercents(percentage, 3) }}

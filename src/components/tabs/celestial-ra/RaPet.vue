@@ -136,7 +136,7 @@ export default {
       class="c-ra-pet-header"
       :style="petStyle"
     >
-      <div class="c-ra-pet-title">
+      <div class="c-ra-pet-title" aria-role="h1">
         <!-- The full name doesn't fit here, so we shorten it as a special case -->
         {{ pet.id === "enslaved" ? "Nameless" : name }} Level {{ formatInt(level) }}/{{ formatInt(levelCap) }}
       </div>

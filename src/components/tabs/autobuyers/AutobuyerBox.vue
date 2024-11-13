@@ -167,6 +167,7 @@ export default {
       <slot name="optionSlot" />
     </div>
     <div
+      v-if="!$viewModel.srMode"
       class="l-autobuyer-box__footer"
       @click="toggle"
     >
@@ -178,6 +179,16 @@ export default {
         :disabled="!globalToggle"
         :name="name"
         type="checkbox"
+      >
+    </div>
+    <!-- For some reason the checkbox above doesn't show. I'm probably supposed to know what it is, but in the meantime I made one that will -->
+    <div v-else>
+      <input
+        :checked="isActive && globalToggle"
+        :disabled="!globalToggle"
+        :aria-label="name"
+        type="checkbox"
+        @change="toggle"
       >
     </div>
   </div>

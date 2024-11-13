@@ -37,6 +37,7 @@ export default {
 
 <template>
   <div
+    v-if="!$viewModel.srMode"
     class="l-autobuyer-box__footer"
     @click="emitClick"
   >
@@ -50,6 +51,15 @@ export default {
       type="checkbox"
     >
   </div>
+  <input
+    v-else
+    type="checkbox"
+    :checked="isActive && !isDisabled"
+    :disabled="isDisabled"
+    :name="name"
+    :title="name"
+    @click="emitClick()"
+  >
 </template>
 
 <style scoped>

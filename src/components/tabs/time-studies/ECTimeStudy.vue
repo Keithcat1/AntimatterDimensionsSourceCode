@@ -1,12 +1,13 @@
 <script>
 import HintText from "@/components/HintText";
 import TimeStudyButton from "./TimeStudyButton";
-
+import SrTimeStudyInfo from "./SrTimeStudyInfo";
 export default {
   name: "ECTimeStudy",
   components: {
     TimeStudyButton,
-    HintText
+    HintText,
+  SrTimeStudyInfo
   },
   props: {
     setup: {
@@ -21,6 +22,7 @@ export default {
         current: new Decimal(),
         total: new Decimal()
       },
+      isBought: false,
       completions: 0,
       showTotalCompletions: false,
       isRunning: false,
@@ -61,6 +63,7 @@ export default {
       this.showTotalCompletions = !Enslaved.isRunning || id !== 1;
       this.isRunning = EternityChallenge.current?.id === id;
       this.isUnlocked = ec.isUnlocked;
+      this.isBought = this.study.isBought;
       if (!this.hasRequirement || id > 10) return;
       const requirement = this.requirement;
       if (this.hasNumberRequirement) {
@@ -85,6 +88,7 @@ export default {
     </HintText>
     Eternity Challenge {{ id }}
     ({{ formatInt(completions) }}<span v-if="showTotalCompletions">/{{ formatInt(5) }}</span>)
+<SrTimeStudyInfo v-if="$viewModel.srMode" :study="study"/>
     <template v-if="hasRequirement">
       <br>
       Requirement:

@@ -3,14 +3,15 @@ import DescriptionDisplay from "@/components/DescriptionDisplay";
 import EffectDisplay from "@/components/EffectDisplay";
 import HintText from "@/components/HintText";
 import TimeStudyButton from "./TimeStudyButton";
-
+import SrTimeStudyInfo from "./SrTimeStudyInfo";
 export default {
   name: "NormalTimeStudy",
   components: {
     DescriptionDisplay,
     EffectDisplay,
     HintText,
-    TimeStudyButton
+    TimeStudyButton,
+  SrTimeStudyInfo
   },
   props: {
     setup: {
@@ -62,6 +63,7 @@ export default {
     >
       {{ hintText }}
     </HintText>
+    <SrTimeStudyInfo v-if="$viewModel.srMode" :study="study" :is-useless="isUseless"/>
     <span :class="{ 'o-pelle-disabled': isUseless }">
       <DescriptionDisplay
         :config="study.config"

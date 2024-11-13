@@ -158,7 +158,10 @@ export default {
 
 <template>
   <div class="l-equipped-glyphs">
-    <div class="l-equipped-glyphs__slots">
+    <div
+      v-if="!$viewModel.srMode"
+      class="l-equipped-glyphs__slots"
+    >
       <div
         v-for="(glyph, idx) in glyphs"
         :key="idx"
@@ -187,8 +190,41 @@ export default {
         />
       </div>
     </div>
+    <ol
+      v-else
+    >
+      <li
+        v-for="(glyph, idx) in glyphs"
+        :key="idx"
+        tabindex="0"
+        @keydown.j="$emit('srActiveSlotSelect', idx)"
+        @keydown.enter="showEquippedModal"
+      >
+        <GlyphComponent
+          v-if="glyph"
+          :key="idx"
+          :glyph="glyph"
+          :circular="true"
+          :is-active-glyph="true"
+          class="c-equipped-glyph"
+          @clicked="clickGlyph(glyph, idx)"
+          @shiftClicked="clickGlyph(glyph, idx, true)"
+          @ctrlShiftClicked="clickGlyph(glyph, idx, true)"
+        >
+          <template #srSlot="{srDescription}">
+            <div> {{ srDescription }} </div>
+          </template>
+        </GlyphComponent>
+        <div
+          v-else
+        >
+          Empty
+        </div>
+      </li>
+    </ol>
     <div class="l-equipped-glyphs__buttons">
       <button
+        v-if="!$viewModel.srMode"
         class="c-reality-upgrade-btn"
         :class="unequipClass"
         :style="glyphRespecStyle"
@@ -197,6 +233,17 @@ export default {
       >
         {{ unequipText }}
       </button>
+      <input
+        v-else
+        type="checkbox"
+        class="c-reality-upgrade-btn"
+        :class="unequipClass"
+        :style="glyphRespecStyle"
+        :ach-tooltip="respecTooltip"
+        :checked="respec"
+        :title="unequipText"
+        @change="toggleRespec"
+      >
       <button
         v-if="undoVisible"
         class="l-glyph-equip-button c-reality-upgrade-btn"
@@ -207,6 +254,7 @@ export default {
         <span>Rewind to <b>undo</b> the last equipped Glyph</span>
       </button>
       <button
+        v-if="!$viewModel.srMode"
         class="l-glyph-equip-button c-reality-upgrade-btn"
         @click="toggleRespecIntoProtected"
       >
@@ -215,6 +263,14 @@ export default {
         <span v-if="respecIntoProtected">Protected slots</span>
         <span v-else>Main inventory</span>
       </button>
+      <input
+        v-else
+        class="l-glyph-equip-button c-reality-upgrade-btn"
+        type="checkbox"
+        :checked="respecIntoProtected"
+        title="Unequip glyphs to protected slots"
+        @change="toggleRespecIntoProtected()"
+      >
       <button
         class="l-glyph-equip-button-short c-reality-upgrade-btn"
         :class="{'tutorial--glow': cosmeticGlow}"

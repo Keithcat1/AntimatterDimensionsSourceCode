@@ -157,16 +157,44 @@ export default {
       v-if="!firstReality"
       class="l-glyph-selection__row"
     >
-      <GlyphComponent
-        v-for="(glyph, index) in glyphs"
-        :key="index"
-        :class="glyphClass(index)"
-        :glyph="glyph"
-        :is-in-modal="true"
-        :ignore-modified-level="true"
-        :show-sacrifice="canSacrifice"
-        @click.native="select(index)"
-      />
+      <template
+        v-if="!$viewModel.srMode"
+      >
+        <GlyphComponent
+          v-for="(glyph, index) in glyphs"
+          :key="index"
+          :class="glyphClass(index)"
+          :glyph="glyph"
+          :is-in-modal="true"
+          :ignore-modified-level="true"
+          :show-sacrifice="canSacrifice"
+          @click.native="select(index)"
+        />
+      </template>
+      <template
+        v-else
+      >
+        <GlyphComponent
+          v-for="(glyph, index) in glyphs"
+          :key="index"
+          :class="glyphClass(index)"
+          :glyph="glyph"
+          :is-in-modal="true"
+          :ignore-modified-level="true"
+          :show-sacrifice="canSacrifice"
+        >
+          <template #srSlot="{srDescription}">
+            <label>
+              {{ srDescription }}
+              <input
+                type="radio"
+                name="realityModalGlyphSelector"
+                @input="select(index)"
+              >
+            </label>
+          </template>
+        </GlyphComponent>
+      </template>
     </div>
     <div v-if="!firstReality">
       {{ levelStats }}

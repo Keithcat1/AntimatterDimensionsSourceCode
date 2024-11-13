@@ -41,6 +41,7 @@ export default {
       sacrificeUnlocked: false,
       sacrificeDisplayed: false,
       resetRealityDisplayed: false,
+      srSelectedInventoryID: null,
     };
   },
   computed: {
@@ -103,7 +104,44 @@ export default {
       return {
         "l-half-width": this.canAmplify
       };
-    }
+    },
+    srInventorySlotSelect(idx) {
+      console.log(`Haha ${idx}`);
+      const glyph = Glyphs.inventory[idx];
+      if (this.srSelectedInventoryID === null) {
+        if (glyph) {
+          this.srSelectedInventoryID = glyph.id;
+          GameUI.notify.success("Selected.");
+        }
+      } else {
+        Glyphs.moveToSlot(Glyphs.findById(this.srSelectedInventoryID), idx);
+        GameUI.notify.success("Moved");
+        this.srSelectedInventoryID = null;
+      }
+    },
+    srActiveSlotSelect(targetSlot) {
+      if (this.srSelectedInventoryID === null) return;
+      Glyphs.equip(Glyphs.findById(this.srSelectedInventoryID), targetSlot);
+      this.srSelectedInventoryID = null;
+    },
+    srInventorySlotDelete(idx, force) {
+      const glyph = Glyphs.inventory[idx];
+      if (glyph) {
+        GlyphSacrificeHandler.removeGlyph(glyph, force);
+      }
+    },
+    srInventorySlotEquip(idx) {
+      const glyph = Glyphs.inventory[idx];
+      if (glyph) {
+        const idx = Glyphs.active.indexOf(null);
+        if (idx !== -1) {
+          Glyphs.equip(glyph, idx);
+          GameUI.notify.success(`Equipped to slot ${idx+1}`);
+        } else {
+          GameUI.notify.success("No empty slot.");
+        }
+      }
+    },
   }
 };
 </script>
@@ -177,7 +215,9 @@ export default {
           v-html="enslavedHint"
         />
         <div class="l-equipped-glyphs-and-effects-container">
-          <EquippedGlyphs />
+          <EquippedGlyphs
+            @srActiveSlotSelect="srActiveSlotSelect"
+          />
           <div class="l-glyph-info-wrapper">
             <span
               class="l-glyph-color-box"
@@ -215,7 +255,12 @@ export default {
             />
           </div>
         </div>
-        <GlyphInventory />
+        <GlyphInventory
+          @srInventorySlotSelect="srInventorySlotSelect"
+          @srInventorySlotDelete="srInventorySlotDelete"
+          @srInventorySlotEquip="srInventorySlotEquip"
+          @keydown.escape.native="srSelectedInventoryID = null"
+        />
       </div>
     </div>
   </div>

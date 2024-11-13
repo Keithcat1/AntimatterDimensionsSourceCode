@@ -100,6 +100,9 @@ export default {
       >
         {{ config.name }}
       </HintText>
+      <div v-if="$viewModel.srMode && hasRequirementLock">
+        Requirement enforsed
+      </div>
       <span :class="{ 'o-pelle-disabled': isUseless }">
         <DescriptionDisplay :config="config" />
         <template v-if="($viewModel.shiftDown === isAvailableForPurchase) && !isRebuyable">

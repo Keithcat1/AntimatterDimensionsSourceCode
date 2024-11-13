@@ -67,7 +67,6 @@ export default {
           title="Reward:"
         />
         <EffectDisplay
-          v-if="isCompleted"
           :config="config.reward"
         />
       </div>

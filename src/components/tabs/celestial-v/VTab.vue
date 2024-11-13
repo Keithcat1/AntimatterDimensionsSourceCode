@@ -262,6 +262,7 @@ export default {
                   class="o-primary-btn l-v-reduction"
                   :class="{ 'o-primary-btn--disabled': !hex.canBeReduced || pp < hex.reductionCost }"
                   :ach-tooltip="reductionTooltip(hex)"
+                  :aria-label="reductionTooltip(hex)"
                   @click="reduceGoals(hex)"
                 >
                   <i class="fas fa-angle-double-down" />

@@ -61,6 +61,9 @@ export default {
       v-if="hasMoreOptions"
       class="l-glyph-sidebar-tab-container"
     >
+      <div v-if="$viewModel.srMode">
+        <hr>
+      </div>
       <button
         :class="sidebarClass(sidebarEnum.INVENTORY_MANAGEMENT)"
         @click="setSidebarState(sidebarEnum.INVENTORY_MANAGEMENT)"

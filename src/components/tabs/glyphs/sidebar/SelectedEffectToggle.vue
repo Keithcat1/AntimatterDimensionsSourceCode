@@ -85,6 +85,7 @@ export default {
 
 <template>
   <div
+    v-if="!$viewModel.srMode"
     v-tooltip="exclusionTooltip"
     :class="classObject"
     @click="toggleSelection()"
@@ -106,6 +107,15 @@ export default {
       :style="{ 'background-color': color }"
     />
   </div>
+  <input
+    v-else
+    v-tooltip="exclusionTooltip"
+    type="checkbox"
+    :class="classObject"
+    :checked="isActive"
+    :aria-label="description"
+    @change="toggleSelection()"
+  >
 </template>
 
 <style scoped>

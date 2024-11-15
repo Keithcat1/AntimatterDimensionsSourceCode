@@ -819,6 +819,18 @@ the middle of an Eternity.
       tags: ["eternity", "ts", "theorems", "tree", "study", "midgame"],
       tab: "eternity/studies"
     }, {
+      name: "Time Studies Accessibility",
+      info: () => `
+If you buy a time study, it will say 'owned' after the ID and name. It will also tell you the IDs or numbers of adjacent studies you need to buy in order to get access to this one, if aplickable.
+<br>
+However, some studies have extra requirements - such as completing nearby ECs at least once. The study will tell you how many such unmet requirements you have if any, but due to an internal limitation can't tell you exactly what such requirements are.
+It should usually be easy enough to figure out as long as you play for a while.
+`,
+      isUnlocked: () => PlayerProgress.eternityUnlocked() && ui.view.srMode,
+      tags: ["eternity", "ts", "theorems", "tree", "study", "midgame", "accessibility"],
+      tab: "eternity/studies"
+    }, {
+
       name: "Eternity Challenges",
       info: () => `
 Eternity Challenges are another set of challenges which are unlocked by the Time Study Tree. They require a certain
@@ -934,6 +946,14 @@ You get exactly ${formatInt(1)} Perk Point per Reality.
       tags: ["rm", "machines", "glyph", "perk", "reset", "prestige", "endgame", "lategame"],
       tab: "reality/upgrades"
     }, {
+      name: "Reality upgrades accessibility",
+      info: () => `
+Pressing shift + enter on a reality upgrade will toggle enforsing its requirement on and off, and if on, it will say "requirement enforsed" after the upgrade name.
+`,
+      isUnlocked: () => (PlayerProgress.realityUnlocked() || TimeStudy.reality.isBought),
+      tags: ["rm", "machines", "glyph", "perk", "reset", "prestige", "endgame", "lategame", "accessibility"],
+      tab: "reality/upgrades"
+      }, {
       name: "Glyphs",
       info: () => `
 A Glyph is an equippable object that has four attributes:
@@ -995,6 +1015,20 @@ in the Statistics page, your equipped Glyphs, and the Upcoming Glyph Selection t
       tags: ["reality", "sacrifice", "level", "endgame", "lategame"],
       tab: "reality/glyphs"
     }, {
+      name: "Glyph Accessibility",
+      info: () => `
+Your glyph inventory is a table, where each cell is a glyph and contains a description for that glyph. Glyphs are normally added starting at the top and going left to right, although the game will not put glyphs on protected rows.
+The equipped glyphs are shown as a list, where any slots that do not have a glyph in them are marked "empty". The number of slots in the list is the number of glyphs you can have equipped at the moment.
+You are advised to use screen reader shortcut keys to quickly jump between the table and inventory.
+Rather than clutter the glyph inventory with potentially hundreds of buttons, you can focus on a glyph and press shortcut keys to interact with it. Delete tries to delete a glyph (or sacrifice if you've unlocked), and may pop up a confirmation modal, and shift + delete will force it.
+Shift + enter will equip the glyph to the first empty slot.
+Pressing 'j' on an inventory glyph will select it and it should say "selected". Focus on an equipped glyph slot and press 'j' again, and the game will try to equip the selected inventory glyph, or swap it with what ever is already in the equipped glyph slot, moving the previously equipped glyph to the inventory slot you just selected (may pop up a modal if you haven't turned it off in options).
+These shortcuts should work in browse mode, but for NVDA, you will probably have to go into Settings > browse mode and uncheck "trap all non-command jestures from reaching the document."
+`,
+      isUnlocked: () => (PlayerProgress.realityUnlocked() || TimeStudy.reality.isBought) && ui.view.srMode,
+      tags: ["reality", "sacrifice", "level", "endgame", "lategame", "accessibility"],
+      tab: "reality/glyphs"
+    }, {
       name: "Perks",
       info: () => `
 Perks are a type of upgrade unlocked upon Reality. Each Perk effect varies, but most are QoL (quality of life)
@@ -1013,6 +1047,16 @@ different colors, roughly indicating which part of the game they affect the most
 `,
       isUnlocked: () => PlayerProgress.realityUnlocked() || TimeStudy.reality.isBought,
       tags: ["pp", "reality", "tree", "endgame", "lategame"],
+      tab: "reality/perks"
+    }, {
+      name: "Perks Accessibility",
+      info: () => `
+Normally, perks are displayed in a tree-like format, where buying some perks lets you reach others.
+In the screen reader mode, perks are simply buttons you click on to buy them and only perks you can actually buy right now is shown for simplicity. This means buying perks will often reveal others somewhere.
+If you really want to see the full perks tree and plan out an optimal path, the Antimatter Dimensions wiki has an accessible perks tree, Google it.
+`,
+      isUnlocked: () => (PlayerProgress.realityUnlocked() || TimeStudy.reality.isBought) && ui.view.srMode,
+      tags: ["pp", "reality", "tree", "endgame", "lategame", "accessibility"],
       tab: "reality/perks"
     }, {
       name: "Automator Overview",

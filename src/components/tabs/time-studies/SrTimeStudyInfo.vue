@@ -28,21 +28,38 @@ export default {
   computed: {
       // Which studies any given study requires may not be obvious, so generate a description here for screen readers
     srConnections() {
-      const reqs = this.study.config.requirement.filter(v => typeof v === "number");
+      const reqs = this.study.config.requirement;
       const reqType = this.study.config.reqType;
       const needsAll = reqType !== TS_REQUIREMENT_TYPE.AT_LEAST_ONE;
       if (reqs.length == 0) return "";
-      let text = `Need `;
-      if (reqs.length == 1) {
-        text += ` ${reqs[0]}`;
-      } else {
-        for (let i = 0; i < reqs.length; i++) {
-          if (i == reqs.length - 1) text += needsAll ? " and " : " or ";
-          else if (i > 0) text += ", ";
-          text += reqs[i];
+      let studyIds = [];
+      let unmetRequirements = 0;
+      for (const i of reqs) {
+
+        if(i instanceof Function) {
+          if(!i()) {
+            unmetRequirements += 1;
+          }
+        } else {
+          studyIds.push(i);
         }
       }
-      return text;
+      let text;
+      if(studyIds.length > 0) {
+        let joinedIds = studyIds.join(", ");
+        if(studyIds.length == 1) {
+          text = `Needs ${joinedIds}`;
+        } else {
+          text = `${needsAll ? "Needs all of" : "Needs one of"} ${joinedIds}`;
+        }
+
+        if(unmetRequirements > 0) {
+          text += `, +${unmetRequirements} unmet requirements`;
+        }
+        return text;
+      } else if(unmetRequirements > 0) {
+        return needsAll ? `${unmetRequirements} unmet requirements` : `Need at least 1 of ${unmetRequirements} unmet requirements`;
+      }
     }
   },
 }

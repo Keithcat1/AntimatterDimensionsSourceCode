@@ -35,7 +35,7 @@ export default {
 </script>
 
 <template>
-  <div>
+  <div v-if="!$viewModel.srMode">
     <div
       :class="h2pClassObject"
       :style="topMargin"
@@ -60,6 +60,18 @@ export default {
     >
       i
     </div>
+  </div>
+  <div v-else>
+    <button
+      @click="showH2P"
+    >
+      How to play
+    </button>
+  <button
+      @click="showInfo"
+    >
+      About
+    </button>
   </div>
 </template>
 

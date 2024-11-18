@@ -52,9 +52,16 @@ export default {
       class="c-modal__close-btn c-modal__close-btn--disabled"
     />
     <div
+      v-if="!$viewModel.srMode"
       class="c-modal-message__text"
       v-html="message"
     />
+    <div v-else
+      role="alert"
+      class="c-modal-message__text"
+      v-html="message"
+    />
+    </div>
     <PrimaryButton
       class="o-primary-btn--width-medium c-modal-message__okay-btn c-modal__confirm-btn"
       @click="handleClick"

@@ -18,12 +18,21 @@ export default {
   <div class="c-modal__inner">
     <div class="c-modal__header">
       <ModalCloseButton @click="closeModal" />
-      <span
-        v-if="$slots.header"
-        class="c-modal__title"
-      >
-        <slot name="header" />
-      </span>
+      <template v-if="!$viewModel.srMode">
+        <span
+          v-if="$slots.header"
+          class="c-modal__title"
+        >
+          <slot name="header" />
+        </span>
+      </template>
+      <div v-else role="alert">
+        <span
+          v-if="$slots.header"
+          class="c-modal__title"
+        >
+          <slot name="header" />
+        </span>
     </div>
     <slot />
   </div>

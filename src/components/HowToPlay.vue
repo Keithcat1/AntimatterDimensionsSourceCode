@@ -62,16 +62,16 @@ export default {
     </div>
   </div>
   <div v-else>
-    <button
+    <div
       @click="showH2P"
     >
       How to play
-    </button>
-  <button
+    </div>
+  <div
       @click="showInfo"
     >
       About
-    </button>
+    </div>
   </div>
 </template>
 

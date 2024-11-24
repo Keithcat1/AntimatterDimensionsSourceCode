@@ -224,8 +224,11 @@ export const shortcuts = [
     keys: ["tab"],
     type: "bind",
     function: () => {
-      keyboardVisibleTabsToggle();
-      return false;
+      if(!ui.view.srMode) {
+        keyboardVisibleTabsToggle();
+        return false;
+      }
+      return true;
     },
     visible: true
   }, {

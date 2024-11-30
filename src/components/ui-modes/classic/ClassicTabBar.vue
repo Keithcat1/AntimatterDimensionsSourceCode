@@ -20,6 +20,7 @@ export default {
       :tab-position="i"
       :tab="tab"
     />
+  <span v-if="$viewModel.srMode" aria-live="assertive" aria-atomic="true" id="srTabArrowAnnounce"/>
   </div>
 </template>
 

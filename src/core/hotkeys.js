@@ -519,6 +519,12 @@ function keyboardVisibleTabsToggle() {
   Modal.hiddenTabs.show();
 }
 
+function srAnnounceTab(name) {
+	if(!ui.view.srMode) return;
+	var region = document.getElementById("srTabArrowAnnounce");
+	region.innerText = name;
+	
+}
 EventHub.logic.on(GAME_EVENT.ARROW_KEY_PRESSED, direction => {
   if (Quote.isOpen || Quote.isHistoryOpen) return;
   // Current tabs. Defined here as both tab and subtab movements require knowing your current tab.
@@ -534,6 +540,7 @@ EventHub.logic.on(GAME_EVENT.ARROW_KEY_PRESSED, direction => {
     // Loop around if needed
     top = (top + tabs.length) % tabs.length;
     // And now we go there.
+    srAnnounceTab(Tab[tabs[top]]._currentSubtab.name);
     Tab[tabs[top]].show(true);
   } else if (direction[0] === "left" || direction[0] === "right") {
     // Current subtabs
@@ -548,6 +555,7 @@ EventHub.logic.on(GAME_EVENT.ARROW_KEY_PRESSED, direction => {
     // Loop around if needed
     sub = (sub + subtabs.length) % subtabs.length;
     // And now we go there.
+    srAnnounceTab(Tab[currentTab][subtabs[sub]].name);
     Tab[currentTab][subtabs[sub]].show(true);
   }
 });

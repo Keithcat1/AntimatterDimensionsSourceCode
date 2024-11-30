@@ -75,6 +75,7 @@ window.copyToClipboard = (function() {
   document.body.appendChild(el);
   el.style.position = "absolute";
   el.style.left = "-9999999px";
+  el.setAttribute("aria-hidden", true);
   el.setAttribute("readonly", "");
   return function(str) {
     try {

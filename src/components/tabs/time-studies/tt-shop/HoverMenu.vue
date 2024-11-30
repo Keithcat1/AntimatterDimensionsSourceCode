@@ -91,7 +91,7 @@ export default {
       name="object"
     />
     <slot
-      v-if="contextMenuIsVisible"
+      v-if="$viewModel.srMode || contextMenuIsVisible"
       name="menu"
     />
   </div>

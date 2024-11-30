@@ -42,6 +42,7 @@ export default {
     <a
       v-if="link"
       class="c-socials--icon"
+      :aria-label="name"
       @click="openLink"
     >
       <i :class="icon" />
@@ -49,6 +50,7 @@ export default {
     <a
       v-else
       class="c-socials--icon"
+      :aria-label="name"
       @click="openAssociatedModal"
     >
       <i :class="icon" />

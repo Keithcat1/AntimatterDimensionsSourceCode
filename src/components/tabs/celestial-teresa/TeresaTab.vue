@@ -97,7 +97,7 @@ export default {
         const diff = (now - this.time) / 1000;
         Teresa.pourRM(diff);
         // Turn off the checkbox when out of RM
-        if (this.$viewModel.srMode && this.rm.isZero) pour = false;
+        if (this.$viewModel.srMode && this.rm.isZero) this.pour = false;
       } else {
         Teresa.timePoured = 0;
       }

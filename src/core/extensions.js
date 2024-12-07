@@ -70,26 +70,10 @@ Decimal.prototype.copyFrom = function(decimal) {
   this.exponent = decimal.exponent;
 };
 
-window.copyToClipboard = (function() {
-  const el = document.createElement("textarea");
-  document.body.appendChild(el);
-  el.style.position = "absolute";
-  el.style.left = "-9999999px";
-  el.setAttribute("aria-hidden", true);
-  el.setAttribute("readonly", "");
-  return function(str) {
-    try {
-      const previouslyFocused = document.activeElement;
-      el.value = str;
-      el.select();
-      const result = document.execCommand("copy");
-      if (previouslyFocused) previouslyFocused.focus();
-    } catch (ex) {
-      console.log(ex);
-      return false;
-    }
-  };
-}());
+window.copyToClipboard = (function(str) {
+  navigator.clipboard.writeText(str)
+  .catch(err => GameUI.notify.error(`Couldn't copy to clipboard: ${error.message}`));
+});
 
 window.safeCall = function safeCall(fn) {
   if (fn) fn();

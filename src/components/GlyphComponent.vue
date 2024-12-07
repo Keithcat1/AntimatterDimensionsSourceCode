@@ -315,7 +315,7 @@ export default {
           description = `${getRarity(strength).name} Glyph of ${glyphName} - level: ${level} - rarity: ${formatRarity(rarity)}`;
           break;
       }
-      const effects = getGlyphEffectValuesFromBitmask(this.glyph.effects, effectiveLevel, rarity, this.glyph.type)
+      const effects = getGlyphEffectValuesFromBitmask(this.glyph.effects, effectiveLevel, strength, this.glyph.type)
         .filter(effect =>
           GlyphEffects[effect.id].isGenerated === generatedTypes.includes(this.glyph.type) && !GlyphEffects[effect.id].isDisabledByDoomed)
         .map(effect => {

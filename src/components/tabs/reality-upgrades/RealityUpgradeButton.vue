@@ -89,6 +89,7 @@ export default {
 <template>
   <div class="l-spoon-btn-group">
     <button
+      v-if="!$viewModel.srMode"
       :class="classObject"
       class="l-reality-upgrade-btn c-reality-upgrade-btn"
       @click.shift.exact="toggleLock(upgrade)"
@@ -100,9 +101,6 @@ export default {
       >
         {{ config.name }}
       </HintText>
-      <div v-if="$viewModel.srMode && hasRequirementLock">
-        Requirement enforsed
-      </div>
       <span :class="{ 'o-pelle-disabled': isUseless }">
         <DescriptionDisplay :config="config" />
         <template v-if="($viewModel.shiftDown === isAvailableForPurchase) && !isRebuyable">
@@ -130,6 +128,53 @@ export default {
         </b>
       </span>
     </button>
+    <button
+      v-else
+      :class="classObject"
+      class="l-reality-upgrade-btn c-reality-upgrade-btn"
+      @click="upgrade.purchase()"
+    >
+      <HintText
+        type="realityUpgrades"
+        class="l-hint-text--reality-upgrade c-hint-text--reality-upgrade"
+      >
+        {{ config.name }}
+      </HintText>
+      <span :class="{ 'o-pelle-disabled': isUseless }">
+        <div v-if="isUseless">Doomed by Pelle</div>
+        <DescriptionDisplay :config="config" />
+        <template v-if="!isAvailableForPurchase && !isRebuyable">
+          <br>
+          <DescriptionDisplay
+            :config="requirementConfig"
+            title="Requirement:"
+            class="c-reality-upgrade-btn__requirement"
+          />
+        </template>
+        <template>
+          <EffectDisplay
+            :config="config"
+            br
+          />
+          <CostDisplay
+            v-if="!isBought"
+            :config="config"
+            br
+            name="Reality Machine"
+          />
+        </template>
+        <b v-if="automatorPoints && !isBought">
+          (+{{ formatInt(automatorPoints) }} AP)
+        </b>
+      </span>
+    </button>
+    <input
+      v-if="$viewModel.srMode && canLock"
+      type="checkbox"
+      :checked = "hasRequirementLock"
+      @input = "toggleLock(upgrade)"
+      :title="`${config.name} requirement enforsed`"
+    />
     <div
       v-if="canBeLocked"
       class="o-requirement-lock"

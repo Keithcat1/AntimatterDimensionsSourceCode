@@ -19,10 +19,12 @@ export default {
   },
   data: () => ({
     isBought: false,
+    hasUnmetRequirements: false,
   }),
   methods: {
     update() {
       this.isBought = this.study.isBought;
+      this.hasUnmetRequirements = this.study.canBeBought;
     },
   },
   computed: {
@@ -61,6 +63,12 @@ export default {
         return needsAll ? `${unmetRequirements} unmet requirements` : `Need at least 1 of ${unmetRequirements} unmet requirements`;
       }
     }
+  },
+  watch: {
+    hasUnmetRequirements(newValue) {
+      // if you complete EC5 for example, TS62 won't know that the unmet requirements are actually met unless we force it to update
+      this.$recompute("srConnections");
+    },
   },
 }
 

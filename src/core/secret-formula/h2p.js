@@ -948,7 +948,7 @@ You get exactly ${formatInt(1)} Perk Point per Reality.
     }, {
       name: "Reality upgrades accessibility",
       info: () => `
-Pressing shift + enter on a reality upgrade will toggle enforsing its requirement on and off, and if on, it will say "requirement enforsed" after the upgrade name.
+Each upgrade has a checkbox under it that lets you toggle weather the game forces you to follow its requirement. Doesn't work if you have already failed the requirement this reality.
 `,
       isUnlocked: () => (PlayerProgress.realityUnlocked() || TimeStudy.reality.isBought),
       tags: ["rm", "machines", "glyph", "perk", "reset", "prestige", "endgame", "lategame", "accessibility"],

@@ -1,5 +1,4 @@
 <script>
-
 export default {
   name: "SrTimeStudyInfo",
 
@@ -8,70 +7,71 @@ export default {
       type: Boolean,
       default: true,
     },
+    isNormal: {
+      type: Boolean,
+      default: false,
+    },
     study: {
       type: Object,
       required: true,
     },
-   isUseless: {
+    isUseless: {
       type: Boolean,
       default: false,
     },
   },
   data: () => ({
     isBought: false,
-    hasUnmetRequirements: false,
+    unmetRequirements: 0,
   }),
-  methods: {
-    update() {
-      this.isBought = this.study.isBought;
-      this.hasUnmetRequirements = this.study.canBeBought;
-    },
-  },
   computed: {
-      // Which studies any given study requires may not be obvious, so generate a description here for screen readers
+    // Which studies any given study requires may not be obvious, so generate a description here for screen readers
     srConnections() {
       const reqs = this.study.config.requirement;
       const reqType = this.study.config.reqType;
       const needsAll = reqType !== TS_REQUIREMENT_TYPE.AT_LEAST_ONE;
-      if (reqs.length == 0) return "";
-      let studyIds = [];
-      let unmetRequirements = 0;
+      if (reqs.length === 0) return null;
+      const studyIds = [];
       for (const i of reqs) {
-
-        if(i instanceof Function) {
-          if(!i()) {
-            unmetRequirements += 1;
-          }
-        } else {
+        if (i instanceof Function === false) {
           studyIds.push(i);
         }
       }
       let text;
-      if(studyIds.length > 0) {
-        let joinedIds = studyIds.join(", ");
-        if(studyIds.length == 1) {
+      if (studyIds.length > 0) {
+        const joinedIds = studyIds.join(", ");
+        if (studyIds.length === 1) {
           text = `Needs ${joinedIds}`;
         } else {
           text = `${needsAll ? "Needs all of" : "Needs one of"} ${joinedIds}`;
         }
-
-        if(unmetRequirements > 0) {
-          text += `, +${unmetRequirements} unmet requirements`;
+        if (this.unmetRequirements > 0) {
+          text += `, +${this.unmetRequirements} unmet requirements`;
         }
         return text;
-      } else if(unmetRequirements > 0) {
-        return needsAll ? `${unmetRequirements} unmet requirements` : `Need at least 1 of ${unmetRequirements} unmet requirements`;
       }
+      if (unmetRequirements > 0) {
+        return needsAll ? `${this.unmetRequirements} unmet requirements` : `Need at least 1 of ${this.unmetRequirements} unmet requirements`;
+      }
+      return null;
     }
   },
-  watch: {
-    hasUnmetRequirements(newValue) {
-      // if you complete EC5 for example, TS62 won't know that the unmet requirements are actually met unless we force it to update
-      this.$recompute("srConnections");
+  methods: {
+    update() {
+      this.isBought = this.study.isBought;
+      // Only normal studies have requirements
+      if (this.isNormal) {
+        let unmetRequirements = 0;
+        for (const requirement of this.study.config.requirement) {
+          if (requirement instanceof Function && requirement() === false) {
+            unmetRequirements += 1;
+          }
+        }
+        this.unmetRequirements = unmetRequirements;
+      }
     },
   },
-}
-
+};
 </script>
 
 <template>
@@ -81,12 +81,11 @@ export default {
     </div>
     <div v-else-if="isBought">
       owned
-   </div>
+    </div>
     <div v-if="hasConnections">
       {{ srConnections }}
     </div>
   </div>
-
 </template>
 
 <style scoped>

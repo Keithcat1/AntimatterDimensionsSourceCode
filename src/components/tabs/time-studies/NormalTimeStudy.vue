@@ -63,7 +63,7 @@ export default {
     >
       {{ hintText }}
     </HintText>
-    <SrTimeStudyInfo v-if="$viewModel.srMode" :study="study" :is-useless="isUseless"/>
+    <SrTimeStudyInfo v-if="$viewModel.srMode" :study="study" :is-useless="isUseless" :is-normal="true"/>
     <span :class="{ 'o-pelle-disabled': isUseless }">
       <DescriptionDisplay
         :config="study.config"

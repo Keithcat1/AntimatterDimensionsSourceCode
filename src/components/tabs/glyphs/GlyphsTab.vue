@@ -106,7 +106,6 @@ export default {
       };
     },
     srInventorySlotSelect(idx) {
-      console.log(`Haha ${idx}`);
       const glyph = Glyphs.inventory[idx];
       if (this.srSelectedInventoryID === null) {
         if (glyph) {

@@ -33,6 +33,7 @@ export default {
         >
           <slot name="header" />
         </span>
+      </div>
     </div>
     <slot />
   </div>

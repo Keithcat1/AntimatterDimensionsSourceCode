@@ -61,7 +61,6 @@ export default {
       class="c-modal-message__text"
       v-html="message"
     />
-    </div>
     <PrimaryButton
       class="o-primary-btn--width-medium c-modal-message__okay-btn c-modal__confirm-btn"
       @click="handleClick"

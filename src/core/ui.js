@@ -6,6 +6,7 @@ import { DEV } from "@/env";
 import { useLongPress, useRepeatingClick } from "./longpress";
 import { notify } from "./notify";
 import { state } from "./ui.init";
+import { srAnnounce } from "./extensions.js";
 
 import GameUIComponent from "@/components/GameUIComponent";
 
@@ -50,6 +51,9 @@ Vue.mixin({
     },
     on$(event, fn) {
       EventHub.ui.on(event, fn, this);
+    },
+    srAnnounce(text) {
+      return srAnnounce(text);
     },
     format(value, places, placesUnder1000) {
       return format(value, places, placesUnder1000);

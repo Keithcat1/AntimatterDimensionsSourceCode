@@ -274,3 +274,8 @@ Array.fromBitmask = function(mask) {
 String.isWhiteSpace = function(value) {
   return value && !value.trim();
 };
+export function srAnnounce(name) {
+	if(!ui.view.srMode) return;
+	var region = document.getElementById("srTabArrowAnnounce");
+	region.innerText = name;
+}

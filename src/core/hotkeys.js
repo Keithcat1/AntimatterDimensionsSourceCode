@@ -4,6 +4,7 @@ import { ElectronRuntime } from "@/steam";
 
 import { GameKeyboard } from "./keyboard";
 
+import { srAnnounce } from "./extensions";
 // Add your hotkeys and combinations here
 // GameKeyboard.bind for single press combinations
 // GameKeyboard.bindRepeatable for repeatable combinations
@@ -539,7 +540,7 @@ EventHub.logic.on(GAME_EVENT.ARROW_KEY_PRESSED, direction => {
     // Loop around if needed
     top = (top + tabs.length) % tabs.length;
     // And now we go there.
-    srAnnounceTab(Tab[tabs[top]]._currentSubtab.name);
+    srAnnounce(Tab[tabs[top]]._currentSubtab.name);
     Tab[tabs[top]].show(true);
   } else if (direction[0] === "left" || direction[0] === "right") {
     // Current subtabs
@@ -554,7 +555,7 @@ EventHub.logic.on(GAME_EVENT.ARROW_KEY_PRESSED, direction => {
     // Loop around if needed
     sub = (sub + subtabs.length) % subtabs.length;
     // And now we go there.
-    srAnnounceTab(Tab[currentTab][subtabs[sub]].name);
+    srAnnounce(Tab[currentTab][subtabs[sub]].name);
     Tab[currentTab][subtabs[sub]].show(true);
   }
 });

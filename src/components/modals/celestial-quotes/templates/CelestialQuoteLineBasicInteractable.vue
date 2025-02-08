@@ -100,7 +100,7 @@ export default {
   />
 </template>
 <template v-else>
-  <div role="alert">
+  <div role="alert" aria-atomic="false">
     <CelestialQuoteLine
       :quote="quote"
       :current-line="currentLine"

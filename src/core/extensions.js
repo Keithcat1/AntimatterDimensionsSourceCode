@@ -276,6 +276,5 @@ String.isWhiteSpace = function(value) {
 };
 export function srAnnounce(name) {
 	if(!ui.view.srMode) return;
-	var region = document.getElementById("srTabArrowAnnounce");
-	region.innerText = name;
+  GameUI.notify.info(name);
 }

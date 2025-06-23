@@ -1,5 +1,7 @@
 <script>
-var displayedPerks = new Set();
+
+
+
 export default {
   name: "PerkTreeNode",
   components: {
@@ -8,6 +10,11 @@ export default {
     perk: {
       type: Object,
       required: true
+    },
+    connectedPerks: {
+      type: Array,
+      required: true,
+
     },
     level: {
       type: Number,
@@ -26,15 +33,7 @@ export default {
       isFocused: false,
     };
   },
-  mounted() {
-    console.log(`Added ${this.perk.id}`)
-    displayedPerks.add(this.perk.id);
 
-  },
-  beforeDestroy() {
-    console.log(`Removing ${this.perk.id}`);
-    displayedPerks.delete(this.perk.id);
-  },
   computed: {
     config() {
       return this.perk.config;
@@ -42,15 +41,14 @@ export default {
     description() {
       const shortDesc = this.perk.label;
       const desc = this.perk.config.description;
-      if (!this.isAvailableForPurchase) return `${shortDesc} - ${desc}, requirement not met`;
-      else if (!this.canBeBought) return `${shortDesc} - ${desc}, unaffordable`;
-      else if (!this.isBought) return `${shortDesc} - ${desc}, buyable`;
-      else if (!this.canBeApplied) return `${shortDesc} - ${desc}, useless`;
-      else return `${shortDesc} - ${desc}, purchased`;
-
+      if (!this.isAvailableForPurchase) return `${shortDesc} - ${desc} Requirement not met`;
+      else if (!this.isBought && this.canBeBought) return `${shortDesc} - ${desc} Buyable`;
+      else if (!this.canBeApplied) return `${shortDesc} - ${desc} Useless`;
+      else if (this.isBought) return `${shortDesc} - ${desc} Purchased`;
+      else if (this.isBought) return `${shortDesc} - ${desc} Unaffoardable`;
     },
     hasChildren() {
-      return this.perk.connectedPerks.length > 0;
+      return this.connectedPerks.length > 0;
     },
   },
   methods: {
@@ -64,11 +62,16 @@ export default {
     },
     scroll(down) {
       var node = this.$refs.node;
-      var target = down ? node.nextElementSibling : node.previousElementSibling;
-      if (target !== null) {
-        //target.focus();
-      } else if (this.level > 1) {
-        //node.parentElement.focus();
+      if (this.expanded && down) {
+        node.firstChild.firstChild.focus();
+      } else {
+        var target = down ? node.nextElementSibling : node.previousElementSibling;
+        if (target !== null) {
+          target.focus();
+        } else if (this.level > 1) {
+          var parent = node.parentElement.parentElement;
+          (down ? parent.nextElementSibling : parent)?.focus();
+        }
       }
     },
     goRight() {
@@ -91,19 +94,19 @@ export default {
 </script>
 
 <template>
-  <li role="treeitem" tabindex="-1" ref="node" :aria-level="level" :aria-expanded="expanded ? 'true' : 'false'"
-    :aria-selected="isFocused" @keydown.right.stop="goRight" @keydown.left.stop="goLeft" @focus="isFocused = true"
-    @blur="isFocused = false" @keydown.up.stop="scroll(false)" @keydown.down.stop="scroll(true)"
-    @click="perk.purchase()">
-    {{ description }}
+  <button role="treeitem" tabindex="-1" ref="node" :aria-level="level"
+    :aria-expanded="hasChildren ? expanded ? 'true' : 'false' : null" :aria-selected="isFocused"
+    :aria-label="description"" @keydown.right.stop.prevent="goRight" @keydown.left.stop.prevent="goLeft"
+    @focus="isFocused = true" @blur="isFocused = false" @keydown.up.stop.prevent="scroll(false)"
+    @keydown.down.stop.prevent="scroll(true)" @click="perk.purchase()">
     <ul role="group" ref="group">
       <template v-if="expanded">
-        <PerkTreeNode v-for="childPerk in perk.connectedPerks.filter((value) => !displayedPerks.has(value.id))" :key="childPerk.id" :level="level + 1"
-          :perk="childPerk"/>
+        <PerkTreeNode v-for="childPerk in connectedPerks" :key="childPerk.id" :level="level + 1" :perk="childPerk"
+          :connectedPerks="childPerk.connectedPerks" />
       </template>
     </ul>
 
-  </li>
+  </button>
 </template>
 
 <style scoped></style>

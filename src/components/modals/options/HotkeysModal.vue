@@ -144,7 +144,7 @@ export default {
         <span class="c-modal-hotkeys__shift-description">
           Using the Arrow Keys will cycle you through the game's pages.
           The Up and Down arrows cycle you through tabs,
-          and the Left and Right arrows cycle you through that tab's subtabs.
+          and the Left and Right arrows cycle you through that tab's subtabs. CTRL + a number from 1 to 0 can also be used to jump to that tab.
         </span>
         <br>
         <div class="l-modal-hotkeys-row">

@@ -388,6 +388,16 @@ GameKeyboard.bindHotkey("alt+y", () => toggleAutobuyer(Autobuyer.reality));
   for (let i = 1; i < 9; i++) bindDimensionHotkeys(i);
 }());
 
+
+(function() {
+  function bindTabHotkeys(tabIndex, key) {
+    GameKeyboard.bindHotkey(`mod+${key}`, () => jumpToTab(tabIndex));
+  }
+  const keys = "1234567890";
+  for ( let i = 0; i < keys.length; i++) bindTabHotkeys(i, keys[i]);
+}());
+
+
 // A few special GameKeyboards
 GameKeyboard.bind(
   ["mod+shift+c", "mod+shift+i", "mod+shift+j", "f12"],
@@ -418,6 +428,13 @@ function toggleBuySingles(buyer) {
   return false;
 }
 
+function jumpToTab(tabIndex) {
+  const tab = Tabs.all[tabIndex];
+  if(!tab.isHidden && tab.isUnlocked && !tab.isOpen) {
+    tab.show(true);
+    srAnnounce(tab.name);
+  }
+}
 function keyboardToggleAutobuyers() {
   if (Tab.automation.isUnlocked) {
     Autobuyers.toggle();

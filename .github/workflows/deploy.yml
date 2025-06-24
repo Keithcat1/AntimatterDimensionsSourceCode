@@ -31,5 +31,5 @@ jobs:
         personal_token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
         external_repository: keithcat1/AntimatterDimensionsAccessible
         publish_dir: ./dist
-        publish_branch: gh-pages
+        publish_branch: master
         commit_message: 'Deploy from ${{ github.repository }}@${{ github.sha }}'

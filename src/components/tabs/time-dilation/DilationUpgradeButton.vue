@@ -131,6 +131,7 @@ export default {
           :config="upgrade.config"
         />
       </span>
+      <div v-if="$viewModel.srMode && timeEstimate && !hideEstimate">Time: {{  timeEstimate }} </div>
       <CostDisplay
         v-if="!isBought && !isCapped"
         br

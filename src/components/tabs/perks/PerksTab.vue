@@ -15,7 +15,7 @@ export default {
   },
   computed: {
     startingPerk() {
-      return this.perks[0];
+      return this.srFilteredPerks[0];
     },
     showHintText() {
       return ui.view.shiftDown || player.options.showHintText.perks;
@@ -29,9 +29,7 @@ export default {
     // Normally the perk tree has looping connections that let you open the same few perks over and over, filter them out
     srFilterPerk(perk, set) {
       var connectedPerks = perk.connectedPerks.filter((p) => !set.has(p.id));
-      for (const p of connectedPerks) {
-        set.add(p.id);
-      }
+      set.add(perk.id);
       return {
         perk: perk,
         connectedPerks: connectedPerks.map((p) => this.srFilterPerk(p, set)),
@@ -429,7 +427,7 @@ export const PerkNetwork = {
     <PerkPointLabel />
     <template v-if="$viewModel.srMode">
       <ul role="tree" tabindex="0" title="Perks">
-        <PerkTreeNode :level="1" :perk="startingPerk" :connectedPerks="startingPerk.connectedPerks"/>
+        <PerkTreeNode :level="1" :perk="startingPerk.perk" :connectedPerks="startingPerk.connectedPerks"/>
       </ul>
 
       <PerkButton v-for="(perk, i) in perks" :key="i" :perk="perk" />

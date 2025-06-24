@@ -43,9 +43,9 @@ export default {
       const desc = this.perk.config.description;
       if (!this.isAvailableForPurchase) return `${shortDesc} - ${desc} Requirement not met`;
       else if (!this.isBought && this.canBeBought) return `${shortDesc} - ${desc} Buyable`;
-      else if (!this.canBeApplied) return `${shortDesc} - ${desc} Useless`;
       else if (this.isBought) return `${shortDesc} - ${desc} Purchased`;
-      else if (this.isBought) return `${shortDesc} - ${desc} Unaffoardable`;
+      else if (!this.canBeBought) return `${shortDesc} - ${desc} Unaffoardable`;
+      else if (!this.canBeApplied) return `${shortDesc} - ${desc} Useless`;
     },
     hasChildren() {
       return this.connectedPerks.length > 0;
@@ -69,8 +69,26 @@ export default {
         if (target !== null) {
           target.focus();
         } else if (this.level > 1) {
-          var parent = node.parentElement.parentElement;
-          (down ? parent.nextElementSibling : parent)?.focus();
+          if(!down) {
+            node.parentElement.parentElement.focus();
+          } else {
+            // For when the next item is five levels down
+            var level = this.level;
+            var parent = node;
+            while(level > 1) {
+              var newParent = parent.parentElement.parentElement;
+              var sib = newParent.nextElementSibling;
+              if(sib !== null) {
+                sib.focus();
+                returnh;
+              }
+              level -= 1;
+              parent = newParent;
+
+
+            }
+
+          }
         }
       }
     },
@@ -101,7 +119,7 @@ export default {
     @keydown.down.stop.prevent="scroll(true)" @click="perk.purchase()">
     <ul role="group" ref="group">
       <template v-if="expanded">
-        <PerkTreeNode v-for="childPerk in connectedPerks" :key="childPerk.id" :level="level + 1" :perk="childPerk"
+        <PerkTreeNode v-for="childPerk in connectedPerks" :key="childPerk.perk.id" :level="level + 1" :perk="childPerk.perk"
           :connectedPerks="childPerk.connectedPerks" />
       </template>
     </ul>

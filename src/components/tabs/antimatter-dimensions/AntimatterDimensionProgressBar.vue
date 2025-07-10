@@ -119,9 +119,13 @@ export default {
       <span
         v-tooltip="tooltip"
         class="c-progress-bar__percents"
+        role="progressbar"
+        :aria-valuenow="this.fill * 100"
+        :aria-label="tooltip"
       >
         {{ displayPercents }}
       </span>
     </div>
   </div>
+
 </template>

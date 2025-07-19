@@ -17,7 +17,7 @@ export default {
       };
     },
     srPercent() {
-      return (this.fill * 100).toFixed();
+      return Math.trunc(this.fill * 100);
     }
   },
   methods: {

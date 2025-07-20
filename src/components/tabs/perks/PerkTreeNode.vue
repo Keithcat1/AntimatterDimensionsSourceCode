@@ -80,7 +80,7 @@ export default {
               var sib = newParent.nextElementSibling;
               if(sib !== null) {
                 sib.focus();
-                returnh;
+                return;
               }
               level -= 1;
               parent = newParent;

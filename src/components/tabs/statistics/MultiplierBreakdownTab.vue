@@ -70,30 +70,21 @@ export default {
 <template>
   <div class="c-stats-tab">
     <div class="l-multiplier-subtab-btn-container">
-      <button
-        v-for="(option, index) in availableOptions"
-        :key="option.key + option.isActive"
-        :class="subtabClassObject(option)"
-        @click="clickSubtab(index)"
-      >
+      <button v-for="(option, index) in availableOptions" :key="option.key + option.isActive"
+        :class="subtabClassObject(option)" @click="clickSubtab(index)">
         {{ option.text }}
       </button>
     </div>
     <div class="c-list-container">
-      <span
-        v-for="symbol in resourceSymbols"
-        :key="symbol"
-      >
-        <span
-          class="c-symbol-overlay"
-          v-html="symbol"
-        />
+      <span v-for="symbol in resourceSymbols" :key="symbol">
+        <span class="c-symbol-overlay" v-html="symbol" />
       </span>
-      <MultiplierBreakdownEntry
-        :key="resource.key"
-        :resource="resource"
-        :is-root="true"
-      />
+      <template v-if="!$viewModel.srMode">
+        <MultiplierBreakdownEntry :key="resource.key" :resource="resource" :is-root="true" />
+      </template>
+      <ul role="tree" tabindex="0" v-else>
+        <MultiplierBreakdownEntry :key="resource.key" :resource="resource" :is-root="true" />
+      </ul>
       <div class="c-multiplier-tab-text-line">
         Note: Entries are only expandable if they contain multiple sources which can be different values.
         For example, any effects which affect all Dimensions of any type equally will not expand into a

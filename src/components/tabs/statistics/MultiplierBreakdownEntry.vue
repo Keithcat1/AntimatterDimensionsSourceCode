@@ -396,7 +396,7 @@ export default {
                     nextSibling.focus();
                     return;
                 }
-                const parent = item.closest('[role="group"]');
+                const parentGroup = item.closest('[role="group"]');
                 if (parentGroup) {
                     const newItem = parentGroup.closest('[role="treeitem"]');
                    if(newItem) item = newItem;

@@ -6,6 +6,12 @@ export default {
   components: {
     GlyphComponent
   },
+  props: {
+    srScroll: {
+      type: Function,
+      required: true
+    }
+  },
   data() {
     return {
       glyphs: [],
@@ -192,6 +198,8 @@ export default {
     </div>
     <ol
       v-else
+      @keydown.up="srScroll($event, 'up')" @keydown.down="srScroll($event, 'down')" @keydown.left="srScroll($event, 'left')" @keydown.right="srScroll($event, 'right')"
+      id="equipped-glyphs"
     >
       <li
         v-for="(glyph, idx) in glyphs"

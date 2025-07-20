@@ -6,6 +6,12 @@ export default {
   components: {
     GlyphComponent
   },
+  props: {
+    srScroll: {
+      type: Function,
+      required: true,
+    }
+  },
   data() {
     return {
       inventory: [],
@@ -83,33 +89,6 @@ export default {
     isUnequipped(index) {
       return player.options.showUnequippedGlyphIcon && this.unequippedGlyphs.includes(this.inventory[index].id);
     },
-    scrollDown(event, down) {
-
-      var cell = event.target;
-      var index = cell.cellIndex;
-      var currentRow = cell.parentElement;
-      var newRow = down ? currentRow.nextElementSibling : currentRow.previousElementSibling;
-      console.log(`Cell: ${cell}, index: ${index}, current row: ${currentRow}, new row: ${newRow}`)
-      if (newRow === null) {
-        return;
-      }
-      var newCell = newRow.children[index];
-      newCell.focus();
-
-
-
-    },
-    scrollRight(event, right) {
-      var cell = event.target;
-
-      var newCell = right ? cell.nextElementSibling : cell.previousElementSibling;
-      if (newCell === null) {
-        return;
-      }
-      newCell.focus();
-
-
-    }
   }
 };
 </script>
@@ -128,15 +107,15 @@ export default {
     </div>
   </div>
   <!-- Yes, you need role="table", works even better than <table>. -->
-  <div v-else class="l-glyph-inventory" role="table">
+  <div v-else class="l-glyph-inventory" id="glyph-inventory" role="table"
+  @keydown.up="srScroll($event, 'up')" @keydown.down="srScroll($event, 'down')" @keydown.left="srScroll($event, 'left')" @keydown.right="srScroll($event, 'right')">
+
     <tr v-for="row in rowCount" :key="protectedRows + row" class="l-glyph-inventory__row">
       <td v-for="col in colCount" :key="col" class="l-glyph-inventory__slot" :class="slotClass(toIndex(row, col))"
         tabindex="0" @keydown.j="$emit('srInventorySlotSelect', toIndex(row, col))"
         @keydown.delete.exact="$emit('srInventorySlotDelete', toIndex(row, col), false)"
         @keydown.shift.delete="$emit('srInventorySlotDelete', toIndex(row, col), true)"
-        @keydown.enter="$emit('srInventorySlotEquip', toIndex(row, col))"
-        @keydown.down.prevent.stop="scrollDown($event, true)" @keydown.up.prevent.stop="scrollDown($event, false)"
-        @keydown.right.prevent.stop="scrollRight($event, true)" @keydown.left.prevent.stop="scrollRight($event, false)">
+        @keydown.enter="$emit('srInventorySlotEquip', toIndex(row, col))">
         <GlyphComponent v-if="inventory[toIndex(row, col)]" :glyph="inventory[toIndex(row, col)]"
           :is-new="isNew(toIndex(row, col))" :is-unequipped="isUnequipped(toIndex(row, col))" :is-inventory-glyph="true"
           :show-sacrifice="glyphSacrificeUnlocked" :draggable="true">

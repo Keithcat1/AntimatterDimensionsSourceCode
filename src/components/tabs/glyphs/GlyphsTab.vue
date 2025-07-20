@@ -122,6 +122,7 @@ export default {
       if (this.srSelectedInventoryID === null) return;
       Glyphs.equip(Glyphs.findById(this.srSelectedInventoryID), targetSlot);
       this.srSelectedInventoryID = null;
+      GameUI.notify.success("Swapped");
     },
     srInventorySlotDelete(idx, force) {
       const glyph = Glyphs.inventory[idx];
@@ -135,12 +136,49 @@ export default {
         const idx = Glyphs.active.indexOf(null);
         if (idx !== -1) {
           Glyphs.equip(glyph, idx);
-          GameUI.notify.success(`Equipped to slot ${idx+1}`);
+          GameUI.notify.success(`Equipped to slot ${idx + 1}`);
         } else {
           GameUI.notify.success("No empty slot.");
         }
       }
     },
+    srScroll(event, direction) {
+      const node = event.target;
+      switch (direction) {
+        case "down":
+        case "up":
+          const parent = node.closest('tr,ol');
+          var index = node.cellIndex;
+          if (!index) { // list item 
+            for (var i = 0; i < parent.childElementCount; i+=1) {
+              if (parent.children.item(i) === node) {
+                index = i;
+                break;
+              }
+            }
+          }
+          if (direction == "down") {
+            const nextRow = parent.matches("ol") ? document.getElementById("glyph-inventory").children[0] : parent.nextElementSibling;
+            const nextCell = nextRow?.children[index];
+            nextCell?.focus();
+          } else {
+            const prevRow = parent.previousElementSibling ?? document.getElementById("equipped-glyphs");
+            const newCell = prevRow?.children[Math.min(index, prevRow.childElementCount-1)];
+            newCell?.focus();
+          }
+          break;
+        case "left":
+          node.previousElementSibling?.focus();
+          break;
+
+        case "right":
+          node.nextElementSibling?.focus();
+          break;
+
+      }
+      event.preventDefault();
+      event.stopPropagation();
+    }
   }
 };
 </script>
@@ -151,33 +189,15 @@ export default {
       <div class="l-reality-button-column">
         <GlyphPeek />
 
-        <div
-          v-if="resetRealityDisplayed"
-          class="l-reality-button-group"
-        >
-          <RealityAmplifyButton
-            v-if="!isInCelestialReality"
-            :class="buttonGroupClass()"
-          />
+        <div v-if="resetRealityDisplayed" class="l-reality-button-group">
+          <RealityAmplifyButton v-if="!isInCelestialReality" :class="buttonGroupClass()" />
           <ResetRealityButton :class="buttonGroupClass()" />
         </div>
 
-        <div
-          v-if="isInCelestialReality"
-          class="l-celestial-auto-restart-checkbox"
-        >
-          <input
-            id="autoRestart"
-            v-model="autoRestartCelestialRuns"
-            type="checkbox"
-            :value="autoRestartCelestialRuns"
-            class="o-clickable"
-            @input="toggleAutoRestartCelestial()"
-          >
-          <label
-            for="autoRestart"
-            class="o-clickable"
-          >
+        <div v-if="isInCelestialReality" class="l-celestial-auto-restart-checkbox">
+          <input id="autoRestart" v-model="autoRestartCelestialRuns" type="checkbox" :value="autoRestartCelestialRuns"
+            class="o-clickable" @input="toggleAutoRestartCelestial()">
+          <label for="autoRestart" class="o-clickable">
             Repeat this Celestial's Reality
           </label>
         </div>
@@ -195,12 +215,8 @@ export default {
           This effect is even stronger above level {{ formatInt(hyperInstabilityThreshold) }}.
         </div>
         <SingleGlyphCustomzationPanel />
-        <ExpandingControlBox
-          width-source="content"
-          label="Glyph Level Factors"
-          container-class="c-glyph-level-factors-dropdown-header"
-          class="l-glyph-level-factors"
-        >
+        <ExpandingControlBox width-source="content" label="Glyph Level Factors"
+          container-class="c-glyph-level-factors-dropdown-header" class="l-glyph-level-factors">
           <template #dropdown>
             <GlyphLevelsAndWeights />
           </template>
@@ -208,58 +224,32 @@ export default {
         <GlyphTabSidebar />
       </div>
       <div class="l-player-glyphs-column">
-        <div
-          v-if="showEnslavedHint"
-          class="o-teresa-quotes"
-          v-html="enslavedHint"
-        />
+        <div v-if="showEnslavedHint" class="o-teresa-quotes" v-html="enslavedHint" />
         <div class="l-equipped-glyphs-and-effects-container">
-          <EquippedGlyphs
-            @srActiveSlotSelect="srActiveSlotSelect"
-          />
+          <EquippedGlyphs @srActiveSlotSelect="srActiveSlotSelect" :sr-scroll="srScroll" />
           <div class="l-glyph-info-wrapper">
-            <span
-              class="l-glyph-color-box"
-              @click="toggleGlyphTextColors"
-            >
+            <span class="l-glyph-color-box" @click="toggleGlyphTextColors">
               <div :class="glyphColorPosition()">
-                <label
-                  :class="glyphColorState"
-                >
+                <label :class="glyphColorState">
                   <span class="fas fa-palette" />
                 </label>
               </div>
             </span>
-            <div
-              v-if="sacrificeUnlocked"
-              class="c-glyph-info-options"
-            >
-              <button
-                :class="glyphInfoClass(!sacrificeDisplayed)"
-                @click="setInfoState(false)"
-              >
+            <div v-if="sacrificeUnlocked" class="c-glyph-info-options">
+              <button :class="glyphInfoClass(!sacrificeDisplayed)" @click="setInfoState(false)">
                 Current Glyph effects
               </button>
-              <button
-                :class="glyphInfoClass(sacrificeDisplayed)"
-                @click="setInfoState(true)"
-              >
+              <button :class="glyphInfoClass(sacrificeDisplayed)" @click="setInfoState(true)">
                 Glyph Sacrifice totals
               </button>
             </div>
             <SacrificedGlyphs v-if="sacrificeUnlocked && sacrificeDisplayed" />
-            <CurrentGlyphEffects
-              v-else
-              :class="glyphInfoBorderClass()"
-            />
+            <CurrentGlyphEffects v-else :class="glyphInfoBorderClass()" />
           </div>
         </div>
-        <GlyphInventory
-          @srInventorySlotSelect="srInventorySlotSelect"
-          @srInventorySlotDelete="srInventorySlotDelete"
-          @srInventorySlotEquip="srInventorySlotEquip"
-          @keydown.escape.native="srSelectedInventoryID = null"
-        />
+        <GlyphInventory @srInventorySlotSelect="srInventorySlotSelect" @srInventorySlotDelete="srInventorySlotDelete"
+          @srInventorySlotEquip="srInventorySlotEquip" @keydown.escape.native="srSelectedInventoryID = null"
+          :sr-scroll="srScroll" />
       </div>
     </div>
   </div>

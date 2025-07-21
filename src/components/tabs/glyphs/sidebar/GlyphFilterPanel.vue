@@ -346,7 +346,7 @@ export default {
           :value="rarityThresholds[advancedType]"
           :width="'100%'"
           @input="setRarityThreshold(advancedType, $event)"
-          :aria-label="Rarity"
+          aria-label="Rarity"
         />
       </div>
       <template v-for="type in glyphTypes">

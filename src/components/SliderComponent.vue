@@ -243,7 +243,7 @@ export default {
       if(!this.ariaLabel) {
         return `${this.minimum} / ${this.maximum }`;
       } else {
-        return `$this.ariaLabel - ${this.minimum} / ${this.maximum }`;
+        return `${this.ariaLabel} - ${this.minimum} / ${this.maximum }`;
       }
     },
     dotWidthVal() {

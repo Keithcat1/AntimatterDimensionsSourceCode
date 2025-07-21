@@ -519,8 +519,8 @@ function roundPreservingSum(data) {
         class="l-glyph-levels-and-weights__slider"
         :style="rowStyle('ep')"
       >
-        <label v-if="$viewModel.srMode">Eternity Points</label>
         <SliderComponent
+          aria-label="Eternity points"
           v-bind="sliderProps"
           :value="weights.ep"
           :width="'100%'"
@@ -531,8 +531,8 @@ function roundPreservingSum(data) {
         class="l-glyph-levels-and-weights__slider"
         :style="rowStyle('replicanti')"
       >
-        <label v-if="$viewModel.srMode">Replicanti</label>
         <SliderComponent
+          aria-label="Eternity points"
           v-bind="sliderProps"
           :value="weights.repl"
           :width="'100%'"
@@ -543,8 +543,8 @@ function roundPreservingSum(data) {
         class="l-glyph-levels-and-weights__slider"
         :style="rowStyle('dt')"
       >
-        <label v-if="$viewModel.srMode">Dilated Time</label>
         <SliderComponent
+          aria-label="Eternity points"
           v-bind="sliderProps"
           :value="weights.dt"
           :width="'100%'"
@@ -557,6 +557,7 @@ function roundPreservingSum(data) {
       >
         <label v-if="$viewModel.srMode">Eternities</label>
         <SliderComponent
+          aria-label="Eternity points"
           v-bind="sliderProps"
           :value="weights.eternities"
           :width="'100%'"

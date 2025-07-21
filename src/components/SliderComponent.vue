@@ -185,6 +185,10 @@ export default {
       type: Boolean,
       default: false,
     },
+  ariaLabel: {
+    type: String,
+    default: "",
+  },
     sliderStyle: [Array, Object, Function],
     focusStyle: [Array, Object, Function],
     tooltipDir: [Array, String],
@@ -236,7 +240,11 @@ export default {
       return this.val[0] + "-" + this.val[1];
     },
     srLabel() {
-      return `${this.minimum} / ${this.maximum }`;
+      if(!this.ariaLabel) {
+        return `${this.minimum} / ${this.maximum }`;
+      } else {
+        return `$this.ariaLabel - ${this.minimum} / ${this.maximum }`;
+      }
     },
     dotWidthVal() {
       return this.dotWidth || this.dotSize;

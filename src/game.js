@@ -474,7 +474,7 @@ export function gameLoop(passDiff, options = {}) {
   Autobuyers.tick();
   Tutorial.tutorialLoop();
 
-  if ((Achievement(165).isUnlocked || ui.view.srMode) && player.celestials.effarig.autoAdjustGlyphWeights) {
+  if (Achievement(165).isUnlocked && player.celestials.effarig.autoAdjustGlyphWeights) {
     autoAdjustGlyphWeights();
   }
 

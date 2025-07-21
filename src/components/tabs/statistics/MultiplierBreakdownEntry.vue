@@ -356,56 +356,78 @@ export default {
     isRecent(date) {
       return (this.now - date) < 200;
     },
+    srFocus(oldNode, newNode) {
+      if(oldNode && newNode) {
+        oldNode.tabIndex = -1;
+        newNode.tabIndex = 0;
+        newNode.focus();
+      }
+    },
+    srFocusParent(node) {
+      const parent = node.closest('[role="treeitem"]:not(:scope)');
+      this.srFocus(node, parent);
+    },
     srGoRight(event, index) {
       const node = event.target.closest('[role="treeitem"]');
       if (!this.hasChildEntries(index)) return;
       if (this.showGroup[index]) {
-      const firstChild = node.querySelector('[role="group"] [role="treeitem"]');
-      firstChild?.focus();
+        const firstChild = node.querySelector('[role="group"] [role="treeitem"]');
+        this.srFocus(node, firstChild);
       } else {
         this.showGroup[index] = true;
       }
     },
     srGoLeft(event, index) {
       const node = event.target.closest('[role="treeitem"]');
+
       if (!this.showGroup[index]) {
-        const parent = node.closest('[role="treeitem"]:not(:scope)');
-        parent?.focus();
+        this.srFocusParent(node);
       } else {
         this.showGroup[index] = false;
       }
     },
     srScroll(event, index, down) {
       const node = event.target.closest('[role="treeitem"]');
-      if (this.showGroup[index] && down) {
-        const firstChild = node.querySelector('[role="group"] [role="treeitem"]');
-        if(firstChild) firstChild.focus();
-      } else {
-        const target = down ? node.nextElementSibling : node.previousElementSibling;
-        if (target !== null) {
-          target.focus();
-        } else if (!this.isRoot) {
-          if (!down) {
-            const parent = node.closest('[role="treeitem"]:not(:scope)');
-            parent?.focus();
-          } else {
-          var item = node;
-            while (item && item.role !== "tree") {
-                const nextSibling = item.nextElementSibling;
-                if (nextSibling) {
-                    nextSibling.focus();
-                    return;
-                }
-                const parentGroup = item.closest('[role="group"]');
-                if (parentGroup) {
-                    const newItem = parentGroup.closest('[role="treeitem"]');
-                   if(newItem) item = newItem;
-                } else {
-                    break;
-                }
-            }
-
+      if(!down) {
+        let prevSibling = node.previousElementSibling;
+        if (prevSibling) {
+          let item = prevSibling;
+          while (item.getAttribute('aria-expanded') === 'true') {
+            const group = item.querySelector('[role="group"]');
+            if (!group) break;
+            const newItem = group.querySelector('[role="treeitem"]:last-child');
+            if(!newItem) break;
+            item = newItem;
           }
+          this.srFocus(node, item);
+          return;
+        } else {
+          this.srFocusParent(node);
+          return;
+        }
+      } else { // down pressed
+        if (this.showGroup[index]) {
+          const firstChild = node.querySelector('[role="group"] [role="treeitem"]');
+          this.srFocus(node, firstChild);
+          return;
+        } else { // item collapsed
+          var item = node;
+          while (item && item.role !== "tree") {
+            const nextSibling = item.nextElementSibling;
+            if (nextSibling) {
+              this.srFocus(node, nextSibling);
+              return;
+            }
+            const parentGroup = item.closest('[role="group"]');
+            if (parentGroup) {
+              const newItem = parentGroup.closest('[role="treeitem"]');
+              if (newItem) item = newItem;
+            } else {
+              break;
+            }
+          }
+
+
         }
       }
     },
@@ -476,13 +498,14 @@ export default {
   </div>
   <div v-else>
     <div v-for="(entry, index) in entries" v-if="shouldShowEntry(entry)" role="treeitem" tabindex="-1"
-      @focus="srSelectedIndex = index"
       :aria-expanded="hasChildEntries(index) ? showGroup[index] ? 'true' : 'false' : null"
-     @keydown.right.stop.prevent="srGoRight($event, index)"
-      @keydown.left.stop.prevent="srGoLeft($event, index)" @keydown.up.stop.prevent="srScroll($event, index, false)" @keydown.down.stop.prevent="srScroll($event, index, true)">
+      @keydown.right.stop.prevent="srGoRight($event, index)" @keydown.left.stop.prevent="srGoLeft($event, index)"
+      @keydown.up.stop.prevent="srScroll($event, index, false)"
+      @keydown.down.stop.prevent="srScroll($event, index, true)"
+      >
       {{ entryString(index) }}
       <ul v-if="showGroup[index] && hasChildEntries(index)" role="group">
-        <MultiplierBreakdownEntry :resource="entry" :aria-level="ariaLevel + 1"/>
+        <MultiplierBreakdownEntry :resource="entry" :aria-level="ariaLevel + 1" />
       </ul>
     </div>
   </div>

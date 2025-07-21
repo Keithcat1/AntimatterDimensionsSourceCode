@@ -62,7 +62,7 @@ export default {
     clickSubtab(index) {
       this.currentID = this.availableOptions[index].id;
       player.options.multiplierTab.currTab = MULT_TAB_OPTIONS.find(opt => opt.key === this.currentKey).id;
-    }
+    },
   }
 };
 </script>
@@ -82,7 +82,7 @@ export default {
       <template v-if="!$viewModel.srMode">
         <MultiplierBreakdownEntry :key="resource.key" :resource="resource" :is-root="true" />
       </template>
-      <ul role="tree" tabindex="0" v-else>
+      <ul role="tree" tabindex="0" v-else @focus="srFocusTree($event)">
         <MultiplierBreakdownEntry :key="resource.key" :resource="resource" :is-root="true" />
       </ul>
       <div class="c-multiplier-tab-text-line">

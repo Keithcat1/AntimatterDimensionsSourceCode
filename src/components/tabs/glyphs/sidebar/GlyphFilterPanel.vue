@@ -170,9 +170,6 @@ export default {
       Modal.h2p.show();
     },
     getSymbol(type) {
-      if(this.$viewModel.srMode) {
-        return type.capitalize();
-      }
       return CosmeticGlyphTypes[type].currentSymbol.symbol;
     },
     toggleAutoReality() {
@@ -191,6 +188,12 @@ export default {
     },
     importFilterSettings() {
       Modal.importFilter.show();
+    },
+    srGetSymbol(type) {
+      if(this.$viewModel.srMode) {
+        return type.capitalize();
+      }
+      return this.getSymbol(type);
     },
   }
 };
@@ -326,7 +329,7 @@ export default {
           :style="advancedTypeSelectStyle(type)"
           @click="advancedType=type.id"
         >
-          {{ getSymbol(type.id) }}
+          {{ srGetSymbol(type.id) }}
         </span>
       </div>
       <br>
@@ -343,7 +346,7 @@ export default {
           :value="rarityThresholds[advancedType]"
           :width="'100%'"
           @input="setRarityThreshold(advancedType, $event)"
-          :aria-label="advancedType.capitalize()"
+          :aria-label="Rarity"
         />
       </div>
       <template v-for="type in glyphTypes">
@@ -368,9 +371,8 @@ export default {
           class="l-glyph-sacrifice-options__advanced-type-select c-glyph-sacrifice-options__advanced-type-select"
           :style="advancedTypeSelectStyle(type)"
           @click="advancedType=type.id"
-          :aria-label="type.id.capitalize()"
         >
-          {{ getSymbol(type.id) }}
+          {{ srGetSymbol(type.id) }}
         </span>
       </div>
       <br>

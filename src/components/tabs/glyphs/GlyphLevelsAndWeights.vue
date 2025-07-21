@@ -20,6 +20,7 @@ export default {
       shardsGained: 0,
       weights: Object.assign({}, player.celestials.effarig.glyphWeights),
       rows: 3,
+      srGlyphLevel: 0,
     };
   },
   computed: {
@@ -115,7 +116,7 @@ export default {
   methods: {
     update() {
       if (this.glyphWeightFields === undefined || this.$parent.state.name === "CLOSED") {
-        return;
+        if(!this.$viewModel.srMode) return; // screen readers don't hide the pannel when it's closed, resulting in it failing to update for no apparent reason until you open it
       }
       const glyphFactors = getGlyphLevelInputs();
       this.perkShopVisible = glyphFactors.perkShop !== 1;
@@ -161,7 +162,7 @@ export default {
         : x.toPrecision(5).slice(0, 6);
     },
     formatLevel(x) {
-      return x > 1000
+      return x > 1000 || this.$viewModel.srMode
         ? formatInt(Math.floor(x))
         : format(x, 2, 4);
     },
@@ -217,6 +218,7 @@ export default {
         });
       }
       player.celestials.effarig.glyphWeights[which] = value;
+      this.srGlyphLevel = getGlyphLevelInputs().actualLevel;
     },
     resetSavedWeights() {
       this.savedWeights = Object.assign({}, player.celestials.effarig.glyphWeights);
@@ -291,6 +293,7 @@ function roundPreservingSum(data) {
     >
       {{ formatFactor(factors.ep.value) }}
     </div>
+    <br v-if="$viewModel.srMode">
     <div
       :style="rowStyle('replicanti')"
       class="l-glyph-levels-and-weights__factor"
@@ -309,6 +312,7 @@ function roundPreservingSum(data) {
     >
       {{ formatFactor(factors.repl.value) }}
     </div>
+    <br v-if="$viewModel.srMode">
     <div
       :style="rowStyle('dt')"
       class="l-glyph-levels-and-weights__factor"
@@ -328,6 +332,7 @@ function roundPreservingSum(data) {
       {{ formatFactor(factors.dt.value) }}
     </div>
     <template v-if="eternityVisible">
+      <br v-if="$viewModel.srMode">
       <div
         :style="rowStyle('eternities')"
         class="l-glyph-levels-and-weights__factor"
@@ -348,6 +353,7 @@ function roundPreservingSum(data) {
       </div>
     </template>
     <template v-if="perkShopVisible">
+      <br v-if="$viewModel.srMode">
       <div
         :style="rowStyle('perk shop')"
         class="l-glyph-levels-and-weights__factor"
@@ -368,6 +374,7 @@ function roundPreservingSum(data) {
       </div>
     </template>
     <template v-if="shardVisible">
+      <br v-if="$viewModel.srMode">
       <div
         :style="rowStyle('shards')"
         class="l-glyph-levels-and-weights__factor"
@@ -388,6 +395,7 @@ function roundPreservingSum(data) {
       </div>
     </template>
     <template v-if="singularityVisible">
+      <br v-if="$viewModel.srMode">
       <div
         :style="rowStyle('singularities')"
         class="l-glyph-levels-and-weights__factor"
@@ -408,6 +416,7 @@ function roundPreservingSum(data) {
       </div>
     </template>
     <template v-if="penaltyVisible">
+      <br v-if="$viewModel.srMode">
       <div
         :style="rowStyle('instability')"
         class="l-glyph-levels-and-weights__factor"
@@ -428,6 +437,7 @@ function roundPreservingSum(data) {
       </div>
     </template>
     <template v-if="rowVisible">
+      <br v-if="$viewModel.srMode">
       <div
         :style="rowStyle('upgrade rows')"
         class="l-glyph-levels-and-weights__factor"
@@ -448,6 +458,7 @@ function roundPreservingSum(data) {
       </div>
     </template>
     <template v-if="achievementVisible">
+      <br v-if="$viewModel.srMode">
       <div
         :style="rowStyle('achievements')"
         class="l-glyph-levels-and-weights__factor"
@@ -562,6 +573,7 @@ function roundPreservingSum(data) {
           :width="'100%'"
           @input="adjustSlider('eternities', $event)"
         />
+        <div aria-live="polite"> {{ formatInt(srGlyphLevel) }} </div>
       </div>
     </template>
   </div>

@@ -1183,7 +1183,7 @@ export default {
       </div>
     </div>
     <PlusMinusButton v-if="plusMinusButtons" type="plus" @click="increment(1)"/>
-  <input v-if="this.$viewModel.srMode" type="number" :aria-label="srLabel" :value="val" @input="srInput">
+  <input v-if="this.$viewModel.srMode" type="number" :min="min" :max="max" :aria-label="srLabel" :value="val" @change="srInput($event)">
   </input>
   </div>
 </template>

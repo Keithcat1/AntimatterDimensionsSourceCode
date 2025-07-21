@@ -194,6 +194,8 @@ export default {
         ref="expandButton"
         :class="buttonClass"
         @click="handleClick"
+        role="button"
+        aria-hidden="true"
       >
         {{ label }}
         <span :class="indicatorArrowClassObject">
@@ -204,6 +206,8 @@ export default {
         v-else
         ref="expandButton"
         @click="handleClick"
+        role="button"
+                aria-hidden="true"
       >
         <slot name="header" />
       </div>

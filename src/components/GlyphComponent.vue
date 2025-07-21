@@ -300,21 +300,7 @@ export default {
       const level = formatInt(effectiveLevel);
       const strength = Pelle.isDoomed ? Pelle.glyphStrength : this.glyph.strength;
       const rarity = strengthToRarity(strength);
-      let description;
-      switch (this.glyph.type) {
-        case "companion":
-          description = "Companion Glyph";
-          break;
-        case "cursed":
-          description = "Cursed Glyph";
-          break;
-        case "reality":
-          description = `Pure Glyph of ${glyphName} - level: ${level}`;
-          break;
-        default:
-          description = `${getRarity(strength).name} Glyph of ${glyphName} - level: ${level} - rarity: ${formatRarity(rarity)}`;
-          break;
-      }
+
       const effects = getGlyphEffectValuesFromBitmask(this.glyph.effects, effectiveLevel, strength, this.glyph.type)
         .filter(effect =>
           GlyphEffects[effect.id].isGenerated === generatedTypes.includes(this.glyph.type) && !GlyphEffects[effect.id].isDisabledByDoomed)
@@ -331,8 +317,24 @@ export default {
 
           return rawDesc.replace("{value}", singleValue).replace("{value2}", alteredValue);
         });
+
+      let description;
+      switch (this.glyph.type) {
+        case "companion":
+          description = "Companion Glyph";
+          break;
+        case "cursed":
+          description = "Cursed Glyph";
+          break;
+        case "reality":
+          description = `Pure Glyph of ${glyphName} - level: ${level}`;
+          break;
+        default:
+          description = `${getRarity(strength).name} Glyph of ${glyphName} - level: ${level} - rarity: ${formatRarity(rarity)}`;
+          break;
+      }
       const chaosText = this.showChaosText ? " "+this.chaosDescription : "";
-      return `${description}. ${effects.join(". ")}.${chaosText}`;
+      return `${effects.length} ${description}. ${effects.join(". ")}.${chaosText}`;
     },
     hasTooltip() {
       return Boolean(this.glyph.effects);

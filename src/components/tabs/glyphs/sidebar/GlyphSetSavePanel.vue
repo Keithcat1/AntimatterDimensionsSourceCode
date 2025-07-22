@@ -61,10 +61,15 @@ export default {
       return `Glyph Preset #${id + 1}${name}`;
     },
     saveGlyphSet(id) {
-      if (!this.hasEquipped || player.reality.glyphs.sets[id].glyphs.length) return;
+      if (!this.hasEquipped) return;
+    if(player.reality.glyphs.sets[id].glyphs.length) {
+      GameUI.notify.error("Slot already contains a preset.")
+      return;
+    }
       player.reality.glyphs.sets[id].glyphs = Glyphs.active.compact();
       this.refreshGlyphSets();
       EventHub.dispatch(GAME_EVENT.GLYPH_SET_SAVE_CHANGE);
+    GameUI.notify.success("Saved.")
     },
     // A proper full solution to this turns out to contain an NP-hard problem as a subproblem, so instead we do
     // something which should work in most cases - we match greedily when it won't obviously lead to an incomplete

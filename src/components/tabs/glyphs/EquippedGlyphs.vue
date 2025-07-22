@@ -257,6 +257,8 @@ export default {
         class="l-glyph-equip-button c-reality-upgrade-btn"
         :class="{'c-reality-upgrade-btn--unavailable': !undoAvailable}"
         :ach-tooltip="undoTooltip"
+        :aria-disabled="(!undoAvailable).toString()"
+        :aria-label="undoAvailable? null : undoTooltip"
         @click="undo"
       >
         <span>Rewind to <b>undo</b> the last equipped Glyph</span>

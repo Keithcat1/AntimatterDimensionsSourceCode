@@ -125,6 +125,7 @@ export default {
     >
       <PrimaryButton
         :class="disChargeClassObject"
+        :aria-pressed="disCharge.toString()"
         @click="disCharge = !disCharge"
       >
         Respec Charged Infinity Upgrades on next Reality

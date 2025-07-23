@@ -136,7 +136,7 @@ export default {
       class="c-ra-pet-header"
       :style="petStyle"
     >
-      <div class="c-ra-pet-title" aria-role="h1">
+      <div class="c-ra-pet-title" role="heading" aria-level="1">
         <!-- The full name doesn't fit here, so we shorten it as a special case -->
         {{ pet.id === "enslaved" ? "Nameless" : name }} Level {{ formatInt(level) }}/{{ formatInt(levelCap) }}
       </div>
@@ -161,6 +161,7 @@ export default {
             <div
               :class="upgradeClassObject('memory')"
               @click="pet.purchaseMemoryUpgrade()"
+              role="button" tabindex="0"
             >
               <span class="fas fa-brain" />
               <div
@@ -205,6 +206,7 @@ export default {
             <div
               :class="upgradeClassObject('chunk')"
               @click="pet.purchaseChunkUpgrade()"
+              role="button" tabindex="0"
             >
               <span class="fas fa-dice-d6" />
               <div

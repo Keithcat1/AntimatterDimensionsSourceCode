@@ -48,7 +48,7 @@ export default {
       const reagents = this.reaction.reagents
         .map(r => this.srSymbol(r.resource))
         .join(" + ");
-      return `${reagents} ${srEquals} ${this.srSymbol(this.resource)}`;
+      return `${reagents} ${this.srEquals} ${this.srSymbol(this.resource)}`;
     },
     effectConfig() {
       const resource = this.resource;

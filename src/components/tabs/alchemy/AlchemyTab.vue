@@ -216,12 +216,10 @@ export default {
         View Reality Glyph creation
       </PrimaryButton>
     </div>
-    <div aria-live="polite">
-     <AlchemyResourceInfo
-        :key="infoResourceId"
-        :resource="infoResource"
-      />
-    </div>
+    <AlchemyResourceInfo
+      :key="infoResourceId"
+      :resource="infoResource"
+    />
     <br>
     Glyphs can now be refined using your Glyph filter in the Glyphs tab.
     <br>
@@ -277,6 +275,7 @@ export default {
       </svg>
     </div>
     <div
+      role="list"
       v-else
     >
       <span

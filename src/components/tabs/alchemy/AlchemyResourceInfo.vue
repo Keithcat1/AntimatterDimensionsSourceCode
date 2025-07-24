@@ -107,9 +107,9 @@ export default {
     <span v-if="!$viewModel.srMode" class="c-alchemy-resource-info__title">
       {{ resource.symbol }} {{ resource.name }} {{ resource.symbol }}
     </span>
-    <span v-else>
+    <h1 v-else>
       {{ resource.name }}
-    </span>
+    </h1>
     <span v-if="isDoomed">
       Destroyed by Pelle
     </span>
@@ -120,8 +120,9 @@ export default {
     <br v-if="$viewModel.srMode">
     <span v-if="isBaseResource">Base Resource</span>
     <span v-else>Reaction: {{ isReactionActive ? "Active" : "Inactive" }} ({{ reactionText }})
-    <input v-if="$viewModel.srMode" type="checkbox" :value="isReactionActive" @change="srToggleReaction" aria-label="reaction"></input>
+    <input v-if="$viewModel.srMode" type="checkbox" :checked="isReactionActive" @change="srToggleReaction" aria-label="reaction"></input>
 </span>
+    <br v-if="$viewModel.srMode">
     <span :class="{ 'o-pelle-disabled': isDoomed }">
       <EffectDisplay
         label="Effect"

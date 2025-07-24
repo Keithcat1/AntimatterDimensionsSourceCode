@@ -74,6 +74,7 @@ export default {
     @mouseenter="$emit('mouseenter')"
     @mouseleave="$emit('mouseleave')"
     @click="emitClick"
+    role="listitem"
   >
     <AlchemyResourceArc
       :resource="resource"

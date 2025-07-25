@@ -162,7 +162,7 @@ export default {
     v-if="isUnlocked"
     class="c-dark-matter-dimension-container"
   >
-    <div class="o-dark-matter-dimension-amount">
+    <div class="o-dark-matter-dimension-amount" role="heading" aria-level="1">
       {{ name }}<span v-if="hasAscended"> {{ ascensionText }}</span>: {{ format(amount, 2) }}
     </div>
     <div>

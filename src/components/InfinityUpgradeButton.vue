@@ -112,7 +112,10 @@ export default {
       <DescriptionDisplay
         :config="config"
       />
-      <div v-if="isCharged">Owned</div>
+      <template v-if="$viewModel.srMode">
+          <div v-if="isCharged">Owned</div>
+          <div v-if="isUseless">Doomed by Pelle</div>
+      </template>
       <span v-if="showWorstChallenge">
         <br>
         {{ worstChallengeString }}

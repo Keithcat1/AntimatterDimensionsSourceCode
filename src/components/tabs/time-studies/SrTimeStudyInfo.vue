@@ -76,12 +76,10 @@ export default {
 
 <template>
   <div>
-    <div v-if="isUseless">
-      doomed
-    </div>
-    <div v-else-if="isBought">
+    <div v-if="isBought">
       owned
     </div>
+    <div v-if="isUseless">Doomed by Pelle</div>
     <div v-if="hasConnections">
       {{ srConnections }}
     </div>

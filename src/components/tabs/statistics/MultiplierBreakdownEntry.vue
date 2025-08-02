@@ -55,7 +55,6 @@ export default {
       totalPositivePower: 1,
       replacePowers: player.options.multiplierTab.replacePowers,
       inNC12: false,
-      srSelectedIndex: 0,
     };
   },
   computed: {

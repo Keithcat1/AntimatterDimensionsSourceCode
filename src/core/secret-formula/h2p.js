@@ -1019,11 +1019,11 @@ in the Statistics page, your equipped Glyphs, and the Upcoming Glyph Selection t
       info: () => `
 Your glyph inventory is a table, where each cell is a glyph and contains a description for that glyph. Glyphs are normally added starting at the top and going left to right, although the game will not put glyphs on protected rows.
 The equipped glyphs are shown as a list, where any slots that do not have a glyph in them are marked "empty". The number of slots in the list is the number of glyphs you can have equipped at the moment.
-You are advised to use screen reader shortcut keys to quickly jump between the table and inventory.
+You are advised to use screen reader shortcut keys to quickly jump between the table and inventory. If in focus mode, arrow keys can also be used to move around in the glyph table. Moving up from the top row will put you in the equipped glyphs list where you can left-right arrow, and down arrow puts you in the glyph inventory again.
 Rather than clutter the glyph inventory with potentially hundreds of buttons, you can focus on a glyph and press shortcut keys to interact with it. Delete tries to delete a glyph (or sacrifice if you've unlocked), and may pop up a confirmation modal, and shift + delete will force it.
 Shift + enter will equip the glyph to the first empty slot.
 Pressing 'j' on an inventory glyph will select it and it should say "selected". Focus on an equipped glyph slot and press 'j' again, and the game will try to equip the selected inventory glyph, or swap it with what ever is already in the equipped glyph slot, moving the previously equipped glyph to the inventory slot you just selected (may pop up a modal if you haven't turned it off in options).
-These shortcuts should work in browse mode, but for NVDA, you will probably have to go into Settings > browse mode and uncheck "trap all non-command jestures from reaching the document."
+These shortcuts should work in browse mode, but for NVDA, you will probably have to go into Settings > browse mode and uncheck "trap all non-command jestures from reaching the document, or you can always use focus mode.
 `,
       isUnlocked: () => (PlayerProgress.realityUnlocked() || TimeStudy.reality.isBought) && ui.view.srMode,
       tags: ["reality", "sacrifice", "level", "endgame", "lategame", "accessibility"],

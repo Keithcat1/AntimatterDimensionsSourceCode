@@ -231,20 +231,22 @@ export default {
     <div
       class="c-past-runs-header"
       @click="toggleShown"
+      :aria-expanded="shown.toString()" role="button" tabindex="0"
     >
       <span class="o-run-drop-down-icon">
         <i :class="dropDownIconClass" />
       </span>
       <span>
-        <h3>Last {{ formatInt(10) }} {{ plural }}:</h3>
+        <h3 >Last {{ formatInt(10) }} {{ plural }}:</h3>
       </span>
     </div>
-    <div v-show="shown">
-      <div class="c-row-container">
+    <div v-show="shown" role="table">
+      <div class="c-row-container" role="row">
         <span
           v-for="(entry, col) in infoCol()"
           :key="col"
           :style="cellStyle(col, true)"
+          role="columnheader"
         >
           {{ entry }}
         </span>
@@ -268,14 +270,15 @@ export default {
         <span
           v-else
           class="c-row-container"
+          role="row"
         >
           <span
             v-for="(entry, col) in infoArray(run, index)"
             :key="10 * index + col"
             :style="cellStyle(col, false)"
+            role="cell"
           >
             {{ entry }}
-            <br v-if="$viewModel.srMode">
           </span>
         </span>
       </div>

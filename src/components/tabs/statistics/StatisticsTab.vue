@@ -174,7 +174,7 @@ export default {
       <PrimaryButton onclick="Modal.catchup.show(0)">
         View Content Summary
       </PrimaryButton>
-      <div class="c-stats-tab-title c-stats-tab-general">
+      <div class="c-stats-tab-title c-stats-tab-general" role="heading" aria-level="2">
         General
       </div>
       <div class="c-stats-tab-general">
@@ -227,7 +227,7 @@ export default {
       v-if="infinity.isUnlocked"
       class="c-stats-tab-subheader c-stats-tab-general"
     >
-      <div class="c-stats-tab-title c-stats-tab-infinity">
+      <div class="c-stats-tab-title c-stats-tab-infinity" role="heading" aria-level="2">
         Infinity
       </div>
       <div>
@@ -260,7 +260,7 @@ export default {
       v-if="eternity.isUnlocked"
       class="c-stats-tab-subheader c-stats-tab-general"
     >
-      <div class="c-stats-tab-title c-stats-tab-eternity">
+      <div class="c-stats-tab-title c-stats-tab-eternity" role="heading" aria-level="2">
         Eternity
       </div>
       <div>
@@ -297,7 +297,7 @@ export default {
       v-if="reality.isUnlocked"
       class="c-stats-tab-subheader c-stats-tab-general"
     >
-      <div :class="realityClassObject()">
+      <div :class="realityClassObject()" role="heading" aria-level="2">
         {{ isDoomed ? "Doomed Reality" : "Reality" }}
       </div>
       <div>You have {{ quantifyInt("Reality", reality.count) }}.</div>

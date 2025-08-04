@@ -144,6 +144,7 @@ export default {
     v-if="isUnlocked || isBought"
     :class="autobuyerBoxRowClass"
   >
+    <h2 v-if="$viewModel.srMode"> {{ autobuyer.name }}</h2>
     <div class="l-autobuyer-box__header">
       {{ name }}
       <AutobuyerIntervalLabel

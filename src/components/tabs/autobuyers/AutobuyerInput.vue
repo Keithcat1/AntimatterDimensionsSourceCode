@@ -13,7 +13,11 @@ export default {
     type: {
       type: String,
       required: true
-    }
+    },
+    label: {
+      type: String,
+      default: "",
+    },
   },
   data() {
     return {
@@ -153,6 +157,7 @@ export const AutobuyerInputFunctions = {
     @change="handleChange"
     @focus="handleFocus"
     @input="handleInput"
+    :aria-label="label"
   >
 </template>
 

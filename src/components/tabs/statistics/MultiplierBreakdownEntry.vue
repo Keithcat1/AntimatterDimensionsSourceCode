@@ -495,7 +495,7 @@ export default {
       </div>
     </div>
   </div>
-  <div v-else>
+  <div v-else-if="!isEmpty">
     <div v-for="(entry, index) in entries" v-if="shouldShowEntry(entry)" role="treeitem" tabindex="-1"
       :aria-expanded="hasChildEntries(index) ? showGroup[index] ? 'true' : 'false' : null"
       @keydown.right.stop.prevent="srGoRight($event, index)" @keydown.left.stop.prevent="srGoLeft($event, index)"
@@ -507,6 +507,12 @@ export default {
         <MultiplierBreakdownEntry :resource="entry" :aria-level="ariaLevel + 1" />
       </ul>
     </div>
+  </div>
+  <div v-else>
+    No Active Effects
+    <br>
+    <br>
+    {{ disabledText }}
   </div>
 </template>
 

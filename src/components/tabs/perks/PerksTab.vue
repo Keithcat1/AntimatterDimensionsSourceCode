@@ -4,14 +4,13 @@ import { DataSet, Network } from "vis-network";
 import { PERK_FAMILY } from "@/core/secret-formula";
 import PerkPointLabel from "./PerkPointLabel";
 import PerkButton from "./PerkButton";
-import PerkTreeNode from "./PerkTreeNode";
+
 
 export default {
   name: "PerksTab",
   components: {
     PerkPointLabel,
     PerkButton,
-    PerkTreeNode,
   },
   computed: {
     startingPerk() {
@@ -425,11 +424,6 @@ export const PerkNetwork = {
 <template>
   <div ref="tab" class="c-perk-tab">
     <PerkPointLabel />
-    <template v-if="$viewModel.srMode">
-      <ul role="tree" tabindex="0" title="Perks">
-        <PerkTreeNode :level="1" :perk="startingPerk.perk" :connectedPerks="startingPerk.connectedPerks"/>
-      </ul>
-
       <PerkButton v-for="(perk, i) in perks" :key="i" :perk="perk" />
     </template>
   </div>

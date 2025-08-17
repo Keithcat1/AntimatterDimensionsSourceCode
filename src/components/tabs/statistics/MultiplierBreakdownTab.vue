@@ -67,6 +67,18 @@ export default {
     hasSeenPowers() {
       return InfinityChallenge(4).isCompleted || PlayerProgress.eternityUnlocked();
     },
+    totalString() {
+      const resource = this.resource;
+      const name = resource.name;
+      const overrideStr = resource.displayOverride;
+      if (overrideStr) return `${name}: ${overrideStr}`;
+
+      const val = resource.mult;
+      return resource.isBase
+        ? `${name}: ${format(val, 2, 2)}`
+        : `${name}: ${formatX(val, 2, 2)}`;
+    },
+
   },
   mounted() {
     // first tree item must be tabbable or tree doesn't work
@@ -99,7 +111,9 @@ export default {
         <MultiplierBreakdownEntry :key="resource.key" :resource="resource" :is-root="true" />
       </template>
       <template v-else>
+      <br>
         <input v-if="hasSeenPowers" type="checkbox" title="Display powers as multipliers" v-model="replacePowers"/>
+        <div> {{ totalString() }} </div>
         <ul role="tree" ref="tree">
           <MultiplierBreakdownEntry :key="resource.key" :resource="resource" :is-root="true" />
         </ul>

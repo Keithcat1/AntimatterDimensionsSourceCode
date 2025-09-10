@@ -770,7 +770,7 @@ window.player = {
       repeatBuffer: 40,
       AIChance: 0,
       speed: 1,
-      includeAnimated: true,
+      includeAnimated: false,
     },
     notation: "Mixed scientific",
     notationDigits: {
@@ -835,12 +835,12 @@ window.player = {
       showGlyphInfoByDefault: false,
     },
     animations: {
-      bigCrunch: true,
-      eternity: true,
-      dilation: true,
-      tachyonParticles: true,
-      reality: true,
-      background: true,
+      bigCrunch: false,
+      eternity: false,
+      dilation: false,
+      tachyonParticles: false,
+      reality: false,
+      background: false,
       blobSnowflakes: 16,
       blobHole: false
     },

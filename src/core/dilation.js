@@ -145,14 +145,23 @@ export function getDilationGainPerSecond() {
 export function tachyonGainMultiplier() {
   if (Pelle.isDisabled("tpMults")) return new Decimal(1);
   const pow = Enslaved.isRunning ? Enslaved.tachyonNerf : 1;
-  return DC.D1.timesEffectsOf(
-    DilationUpgrade.tachyonGain,
-    GlyphSacrifice.dilation,
-    Achievement(132),
-    RealityUpgrade(4),
-    RealityUpgrade(8),
-    RealityUpgrade(15)
-  ).pow(pow);
+  let mult = new Decimal(1)
+    .timesEffectsOf(
+      DilationUpgrade.tachyonGain,
+      GlyphSacrifice.dilation,
+      Achievement(132),
+      RealityUpgrade(4),
+      RealityUpgrade(8),
+      RealityUpgrade(15)
+    );
+
+  mult = mult.pow(pow);
+
+  mult = mult.powEffectsOf(
+    BreakEternityUpgrade.tachyonParticlePow
+  );
+  
+  return mult;
 }
 
 export function rewardTP() {
@@ -169,7 +178,7 @@ export function getBaseTP(antimatter, requireEternity) {
   const am = (isInCelestialReality() || Pelle.isDoomed)
     ? antimatter
     : Ra.unlocks.unlockDilationStartingTP.effectOrDefault(antimatter);
-  let baseTP = Decimal.pow(Decimal.log10(am) / 400, 1.5);
+  let baseTP = Decimal.pow(Decimal.log10(am) / 160, 1.8);
   if (Enslaved.isRunning) baseTP = baseTP.pow(Enslaved.tachyonNerf);
   return baseTP;
 }
@@ -191,8 +200,8 @@ export function getTachyonReq() {
   if (Enslaved.isRunning) effectiveTP = effectiveTP.pow(1 / Enslaved.tachyonNerf);
   return Decimal.pow10(
     effectiveTP
-      .times(Math.pow(400, 1.5))
-      .pow(2 / 3)
+      .times(Math.pow(160, 1.8))
+      .pow(5 / 9)
       .toNumber()
   );
 }

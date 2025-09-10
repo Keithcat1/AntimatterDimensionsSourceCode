@@ -21,6 +21,7 @@ export function antimatterDimensionCommonMultiplier() {
     BreakInfinityUpgrade.slowestChallengeMult,
     InfinityUpgrade.totalTimeMult,
     InfinityUpgrade.thisInfinityTimeMult,
+    Achievement(18),
     Achievement(48),
     Achievement(56),
     Achievement(65),
@@ -47,7 +48,7 @@ export function antimatterDimensionCommonMultiplier() {
   multiplier = multiplier.times(getAdjustedGlyphEffect("powermult"));
   multiplier = multiplier.times(Currency.realityMachines.value.powEffectOf(AlchemyResource.force));
 
-  if (Pelle.isDoomed) multiplier = multiplier.dividedBy(10);
+  if (Pelle.isDoomed) multiplier = multiplier.dividedBy(50 * Currency.antimatter.exponent);
 
   return multiplier;
 }
@@ -85,6 +86,10 @@ export function getDimensionFinalMultiplierUncached(tier) {
     multiplier = multiplier.pow(1.05);
   }
 
+  multiplier = multiplier.powEffectsOf(
+    BreakEternityUpgrade.antimatterDimensionPow
+  );
+
   return multiplier;
 }
 
@@ -113,6 +118,7 @@ function applyNDMultipliers(mult, tier) {
       .timesEffectsOf(
         InfinityUpgrade.unspentIPMult,
         InfinityUpgrade.unspentIPMult.chargedEffect,
+        Achievement(11),
         Achievement(28),
         Achievement(31),
         Achievement(68),
@@ -125,6 +131,12 @@ function applyNDMultipliers(mult, tier) {
   }
 
   multiplier = multiplier.timesEffectsOf(
+    tier === 2 ? Achievement(12) : null,
+    tier >= 3 && tier <= 8 ? Achievement(13) : null,
+    tier === 4 ? Achievement(14) : null,
+    tier >= 5 && tier <= 8 ? Achievement(15) : null,
+    tier === 6 ? Achievement(16) : null,
+    tier === 7 ? Achievement(17) : null,
     tier === 8 ? Achievement(23) : null,
     tier < 8 ? Achievement(34) : null,
     tier <= 4 ? Achievement(64) : null,
@@ -573,7 +585,8 @@ class AntimatterDimensionState extends DimensionState {
     const postBreak = (player.break && !NormalChallenge.isRunning) ||
       InfinityChallenge.isRunning ||
       Enslaved.isRunning;
-    return postBreak ? Decimal.MAX_VALUE : DC.E315;
+    const trueHardcap = player.break2 ? DC.E9E115 : DC.E9E15;
+    return postBreak ? trueHardcap : DC.E315;
   }
 
   get productionPerSecond() {

@@ -6,30 +6,40 @@ export const normalAchievements = [
     name: "You gotta start somewhere",
     description: "Buy a 1st Antimatter Dimension.",
     checkEvent: GAME_EVENT.ACHIEVEMENT_EVENT_OTHER,
+    reward: "Your Achievement multiplier to the 1st Antimatter Dimension is squared.",
+    effect: () => Achievements.power
   },
   {
     id: 12,
     name: "100 antimatter is a lot",
     description: "Buy a 2nd Antimatter Dimension.",
     checkEvent: GAME_EVENT.ACHIEVEMENT_EVENT_OTHER,
+    get reward() { return `Multiply the 2nd Antimatter Dimension by the Antimatter Exponent.`; },
+    effect: () => Currency.antimatter.exponent
   },
   {
     id: 13,
     name: "Half life 3 CONFIRMED",
     description: "Buy a 3rd Antimatter Dimension.",
     checkEvent: GAME_EVENT.ACHIEVEMENT_EVENT_OTHER,
+    get reward() { return `The 3rd and higher Antimatter Dimensions are ${formatPercents(0.3)} stronger.`; },
+    effect: 1.3
   },
   {
     id: 14,
     name: "L4D: Left 4 Dimensions",
     description: "Buy a 4th Antimatter Dimension.",
     checkEvent: GAME_EVENT.ACHIEVEMENT_EVENT_OTHER,
+    get reward() { return `The 4th Antimatter Dimension is multiplied by ${formatInt(4)}.`; },
+    effect: 4
   },
   {
     id: 15,
     name: "5 Dimension Antimatter Punch",
     description: "Buy a 5th Antimatter Dimension.",
     checkEvent: GAME_EVENT.ACHIEVEMENT_EVENT_OTHER,
+    get reward() { return `The 5th and higher Antimatter Dimensions are doubled.`; },
+    effect: 2
   },
   {
     id: 16,
@@ -40,12 +50,16 @@ export const normalAchievements = [
         : "Buy a 6th Antimatter Dimension.";
     },
     checkEvent: GAME_EVENT.ACHIEVEMENT_EVENT_OTHER,
+    get reward() { return `Multiply the 6th Antimatter Dimension by ${formatInt(9)}.`; },
+    effect: 9
   },
   {
     id: 17,
     name: "Not a luck related achievement",
     description: "Buy a 7th Antimatter Dimension.",
     checkEvent: GAME_EVENT.ACHIEVEMENT_EVENT_OTHER,
+    get reward() { return `Multiply the 7th Antimatter Dimension by ${formatInt(7)}.`; },
+    effect: 7
   },
   {
     id: 18,
@@ -56,6 +70,8 @@ export const normalAchievements = [
         : "Buy an 8th Antimatter Dimension.";
     },
     checkEvent: GAME_EVENT.ACHIEVEMENT_EVENT_OTHER,
+    get reward() { return `Multiply all Antimatter Dimensions by Ninety Degrees.`; },
+    effect: 1.57
   },
   {
     id: 21,
@@ -163,10 +179,10 @@ export const normalAchievements = [
     name: "Don't you dare sleep",
     get description() {
       return PlayerProgress.realityUnlocked()
-        ? `Be offline for a period of over ${formatInt(6)} hours (real time).`
-        : `Be offline for a period of over ${formatInt(6)} hours.`;
+        ? `Be offline for a period of over ${formatInt(2)} hours (real time).`
+        : `Be offline for a period of over ${formatInt(2)} hours.`;
     },
-    checkRequirement: () => Date.now() - player.lastUpdate >= 21600000,
+    checkRequirement: () => Date.now() - player.lastUpdate >= 7200000,
     checkEvent: GAME_EVENT.GAME_TICK_BEFORE
   },
   {
@@ -395,7 +411,9 @@ export const normalAchievements = [
     name: "A new beginning",
     description: "Begin generation of Infinity Power.",
     checkRequirement: () => Currency.infinityPower.gt(1),
-    checkEvent: GAME_EVENT.GAME_TICK_AFTER
+    checkEvent: GAME_EVENT.GAME_TICK_AFTER,
+    get reward() { return `All Infinity Dimension multipliers are doubled.`; },
+    effect: 2
   },
   {
     id: 64,
@@ -505,11 +523,11 @@ export const normalAchievements = [
   {
     id: 76,
     name: "One for each dimension",
-    get description() { return `Play for ${formatInt(8)} days.`; },
-    checkRequirement: () => Time.totalTimePlayed.totalDays >= 8,
+    get description() { return `Play for ${formatInt(8)} hours.`; },
+    checkRequirement: () => Time.totalTimePlayed.totalDays >= 0.33333333333333333333333333,
     checkEvent: GAME_EVENT.GAME_TICK_AFTER,
     reward: "Extremely small multiplier to Antimatter Dimensions based on time played.",
-    effect: () => Math.max(Math.pow(Time.totalTimePlayed.totalDays / 2, 0.05), 1),
+    effect: () => Math.max(Math.pow(Time.totalTimePlayed.totalDays * 12, 0.05), 1),
     formatEffect: value => `${formatX(value, 2, 2)}`
   },
   {
@@ -517,7 +535,11 @@ export const normalAchievements = [
     name: "1 Million is a lot",
     get description() { return `Reach ${format(1e6)} Infinity Power.`; },
     checkRequirement: () => Currency.infinityPower.exponent >= 6,
-    checkEvent: GAME_EVENT.GAME_TICK_AFTER
+    checkEvent: GAME_EVENT.GAME_TICK_AFTER,
+    get reward() {
+      return `All Infinity Dimensions are stronger based on Infinity Points.`;
+    },
+    effect: () => Currency.infinityPoints.exponent
   },
   {
     id: 78,
@@ -535,7 +557,11 @@ export const normalAchievements = [
     name: "Game Design Is My Passion",
     get description() { return `Beat Infinity Challenge 5 in ${formatInt(15)} seconds or less.`; },
     checkRequirement: () => InfinityChallenge(5).isRunning && Time.thisInfinityRealTime.totalSeconds <= 15,
-    checkEvent: GAME_EVENT.BIG_CRUNCH_BEFORE
+    checkEvent: GAME_EVENT.BIG_CRUNCH_BEFORE,
+    get reward() {
+      return `You gain Replicanti ${formatInt(3)} times faster.`;
+    },
+    effect: 3
   },
   {
     id: 82,
@@ -703,7 +729,9 @@ export const normalAchievements = [
     name: "This mile took an eternity",
     description: "Get all Eternity milestones.",
     checkRequirement: () => EternityMilestone.all.every(m => m.isReached),
-    checkEvent: GAME_EVENT.GAME_TICK_AFTER
+    checkEvent: GAME_EVENT.GAME_TICK_AFTER,
+    get reward() { return `Gain ${formatX(2)} more Eternities.`; },
+    effect: 2
   },
   {
     id: 103,
@@ -787,8 +815,8 @@ export const normalAchievements = [
     get description() { return `Eternity in under ${formatInt(250)}ms.`; },
     checkRequirement: () => Time.thisEternity.totalMilliseconds <= 250,
     checkEvent: GAME_EVENT.ETERNITY_RESET_BEFORE,
-    get reward() { return `Gain ${formatX(2)} more Eternities.`; },
-    effect: 2,
+    get reward() { return `Gain ${formatX(3)} more Eternities.`; },
+    effect: 3,
   },
   {
     id: 114,
@@ -927,8 +955,8 @@ export const normalAchievements = [
   {
     id: 131,
     name: "No ethical consumption",
-    get description() { return `Get ${format(DC.D2E9)} Banked Infinities.`; },
-    checkRequirement: () => Currency.infinitiesBanked.gt(DC.D2E9),
+    get description() { return `Get ${formatInt(DC.E9)} Banked Infinities.`; },
+    checkRequirement: () => Currency.infinitiesBanked.gte(DC.E9),
     checkEvent: [GAME_EVENT.ETERNITY_RESET_AFTER, GAME_EVENT.SAVE_CONVERTED_FROM_PREVIOUS_VERSION],
     get reward() {
       return `You gain ${formatX(2)} times more Infinities and
@@ -970,8 +998,8 @@ export const normalAchievements = [
   {
     id: 134,
     name: "When will it be enough?",
-    get description() { return `Reach ${formatPostBreak(DC.E18000)} Replicanti.`; },
-    checkRequirement: () => Replicanti.amount.exponent >= 18000,
+    get description() { return `Reach ${formatPostBreak("1e15000")} Replicanti.`; },
+    checkRequirement: () => Replicanti.amount.exponent >= 15000,
     checkEvent: GAME_EVENT.GAME_TICK_AFTER,
     get reward() {
       return `You gain Replicanti ${formatInt(2)} times faster under ${format(replicantiCap(), 1)} Replicanti.`;
@@ -1339,8 +1367,8 @@ export const normalAchievements = [
     checkEvent: GAME_EVENT.INFINITY_CHALLENGE_COMPLETED,
     // Weirdly specific reward? Yes, its V's ST bonus because we forgot to disable it
     // when balancing Pelle and only realised too late.
-    get reward() { return `All Antimatter Dimensions are raised to ${formatPow(1.0812403840463596, 0, 3)}`; },
-    effect: 1.0812403840463596
+    get reward() { return `All Antimatter Dimensions are raised to ${formatPow(1.1012920825630384, 0, 3)}`; },
+    effect: 1.1012920825630384
   },
   {
     id: 184,
@@ -1378,9 +1406,71 @@ export const normalAchievements = [
   },
   {
     id: 188,
-    name: "The End",
-    description: "Beat the game.",
+    name: "The End...",
+    description: "Escape the Doomed Reality.",
     checkRequirement: () => GameEnd.endState > END_STATE_MARKERS.GAME_END && !GameEnd.removeAdditionalEnd,
     checkEvent: GAME_EVENT.GAME_TICK_AFTER
+  },
+  {
+    id: 191,
+    name: "...for now",
+    description: "Purchase a 1st Dimension in Run 2.",
+    checkRequirement: () => PlayerProgress.endgameUnlocked() && AntimatterDimension(1).amount.gte(1),
+    checkEvent: GAME_EVENT.GAME_TICK_AFTER
+  },
+  {
+    id: 192,
+    name: "Destiny",
+    description: "Doom Your Reality in Run 2.",
+    checkRequirement: () => PlayerProgress.endgameUnlocked() && Pelle.isDoomed,
+    checkEvent: GAME_EVENT.REALITY_RESET_AFTER
+  },
+  {
+    id: 193,
+    name: "Unstoppable",
+    description: "Beat Doom in Run 2.",
+    checkRequirement: () => PlayerProgress.endgameUnlocked() && Currency.antimatter.exponent >= 9e15,
+    checkEvent: GAME_EVENT.GAME_TICK_AFTER,
+    get reward() {
+      return `Galaxies are ${formatPercents(0.1)} stronger.`;
+    },
+    effect: 1.1
+  },
+  {
+    id: 194,
+    name: "At Long Last",
+    description: "Regain all Achievements in Pelle. (NYI)",
+    get reward() {
+      return `You can equip up to ${formatInt(2)} Effarig and Reality Glyphs each.`;
+    }
+  },
+  {
+    id: 195,
+    name: "Hard Reset",
+    description: "Disable all Pelle Nerfs. (NYI)",
+    get reward() {
+      return `Unlock Strike Disabling.`;
+    }
+  },
+  {
+    id: 196,
+    name: "Full Control of the Dark",
+    description: "Purchase the 8th Dark Matter Dimension. (NYI)",
+    get reward() {
+      return `Decrease Galaxy Generator Instability by ${formatInt(2)}.`;
+    }
+  },
+  {
+    id: 197,
+    name: "Gone...",
+    description: "Destroy Pelle. (NYI)",
+    get reward() {
+      return `Boost Celestial Point Gain.`;
+    }
+  },
+  {
+    id: 198,
+    name: "...but not forgotten",
+    description: "Reach 1.8e308 Imaginary Machines. (NYI)",
   },
 ];

@@ -2,20 +2,26 @@ export const credits = {
   // Must be placed in the order it is desired they appear in the credits
   roles: {
     1: "Creator",
-    2: "Technical Architect",
-    3: "Lead Developer",
-    4: "Android Developer",
-    5: "Steam Developer",
-    6: "Library Developer",
-    7: "Developer",
-    8: "Lead Design Consultant",
-    9: "Design Consultant",
-    10: "Writer",
-    11: "Achievement Art",
-    12: "Modal Maker, Lady Taker, Pie Baker",
-    13: "Lurker Tester",
-    14: "Web Tester",
-    15: "Android Tester",
+    2: "Creator (Endgame)",
+    3: "Technical Architect",
+    4: "Lead Developer",
+    5: "Android Developer",
+    6: "Steam Developer",
+    7: "Library Developer",
+    8: "Developer",
+    9: "Endgame Developer",
+    10: "Lead Design Consultant",
+    11: "Design Consultant",
+    12: "Writer",
+    13: "Achievement Art",
+    14: "Visual Artist",
+    15: "Modal Maker, Lady Taker, Pie Baker",
+    16: "Lurker Tester",
+    17: "Web Tester",
+    18: "Endgame Web Tester",
+    19: "Android Tester",
+    20: "Endgame Mobile Tester",
+    21: "Other Contributer",
   },
 
   // Each person must have a name and at least one role (the index of the desired role in roles). They can also have a
@@ -26,512 +32,541 @@ export const credits = {
       name2: "Ivar Kerajärvi",
       roles: 1
     }, {
-      name: "Razenpok",
-      name2: "Andrei Andreev",
+      name: "Supersonic Seven",
+      name2: "Benjamin Rockholz",
       roles: 2
     }, {
-      name: "garnet420",
+      name: "Razenpok",
+      name2: "Andrei Andreev",
       roles: 3
     }, {
+      name: "garnet420",
+      roles: 4
+    }, {
       name: "Omsi",
-      roles: [3, 11]
+      roles: [4, 13]
     }, {
       name: "SpectralFlame",
       name2: "Christopher Yip",
-      roles: 3
+      roles: 4
     }, {
       name: "WaitingIdly",
-      roles: [3, 7, 9, 14, 15]
+      roles: [4, 8, 11, 17, 19]
     }, {
       name: "kajfik",
       name2: "Jakub Kajfosz",
-      roles: 4
+      roles: 5
     }, {
       name: "Makopaz",
       name2: "Zack Stein",
-      roles: 5
+      roles: 6
     }, {
       name: "Patashu",
-      roles: [6, 7, 14]
+      roles: [7, 8, 17]
     }, {
       name: "Dan",
-      roles: [7, 14]
+      roles: [8, 17]
     }, {
       name: "earth",
       name2: "Jace Royer",
-      roles: [7, 12, 14, 15]
+      roles: [8, 15, 17, 19]
     }, {
       name: "Hira",
-      roles: [7, 14, 15]
+      roles: [8, 17, 19]
     }, {
       name: "IkerStream",
       name2: "Iker de Aguirre",
-      roles: [7, 14]
+      roles: [8, 17]
     }, {
       name: "L4R5",
       name2: "Lars Wolf",
-      roles: [7, 14, 15]
+      roles: [8, 17, 19]
     }, {
       name: "Pichusuperlover",
-      roles: [7, 9, 14]
+      roles: [8, 11, 17]
     }, {
       name: "realrapidjazz",
-      roles: [7, 8, 10]
+      roles: [8, 10, 12]
     }, {
       name: "Scarlet",
-      roles: [7, 14, 15]
+      roles: [8, 17, 19]
     }, {
       name: "slabdrill",
-      roles: 7
+      roles: 8
+    }, {
+      name: "Didgoty",
+      roles: 9
+    }, {
+      name: "Living_Person",
+      name2: "Life",
+      roles: 9
     }, {
       name: "Acamaeda",
-      roles: [9, 14]
+      roles: [11, 17]
+    }, {
+      name: "Spoofy",
+      roles: 14
     }, {
       name: "Dravitar",
       name2: "Alex Henderson",
-      roles: 13
+      roles: 16
     }, {
       name: "Aesis",
-      roles: 14
+      roles: 17
     }, {
       name: "AFYINEE",
       name2: "Gabriel HADDAG",
-      roles: 14
+      roles: 17
     }, {
       name: "Alexitato",
-      roles: 14
+      roles: 17
     }, {
       name: "Anno",
-      roles: 14
+      roles: 17
     }, {
       name: "Myresa Exina",
-      roles: [14, 15]
+      roles: [17, 19]
     }, {
       name: "ArrowBounce",
       name2: "Timothy Su",
-      roles: 14
+      roles: 17
     }, {
       name: "Birb",
       name2: "Kelsey Black",
-      roles: 14
+      roles: 17
     }, {
       name: "Boo",
       name2: "Jean-Christophe Bourgault",
-      roles: 14
+      roles: 17
     }, {
       name: "CaptainGalaxy",
       name2: "Ovidijus Točelis",
-      roles: 14
+      roles: 17
     }, {
       name: "ChaoticHans",
-      roles: [14, 15]
+      roles: [17, 19]
     }, {
       name: "cubic frog",
-      roles: 14
+      roles: 17
     }, {
       name: "dankesehr",
-      roles: 14
+      roles: 17
     }, {
       name: "Davixx",
       name2: "Davide Fedele",
-      roles: 14
+      roles: 17
     }, {
       name: "Empireus",
-      roles: 14
+      roles: 17
     }, {
       name: "GirixK",
       name2: "Nikola Jelinčić",
-      roles: [14, 15]
+      roles: [17, 19]
     }, {
       name: "GoldenTritium",
-      roles: [14, 15]
+      roles: [17, 19]
     }, {
       name: "Kael",
-      roles: 14
+      roles: 17
     }, {
       name: "Lynn",
-      roles: 14
+      roles: 17
     }, {
       name: "Merp",
-      roles: 14
+      roles: 17
     }, {
       name: "philipebreaker",
       name2: "Philipe",
-      roles: 14
+      roles: 17
     }, {
       name: "Phillip Marshall",
-      roles: 14
+      roles: 17
     }, {
       name: "Phoebe",
-      roles: 14
+      roles: 17
     }, {
       name: "Reda Kotob",
-      roles: 14
+      roles: 17
     }, {
       name: "Saturnus",
-      roles: [14, 10]
+      roles: [17, 12]
     }, {
       name: "SereKabii",
-      roles: 14
+      roles: 17
     }, {
       name: "Sheer",
-      roles: 14
+      roles: 17
     }, {
       name: "sirusi",
       name2: "Vinícius Oliveira Martins",
-      roles: 14
+      roles: 17
     }, {
       name: "Spanosa",
       name2: "Jared K",
-      roles: 14
+      roles: 17
     }, {
       name: "Sparticle999",
-      roles: 14
+      roles: 17
     }, {
       name: "SpicyCrusader13",
-      roles: [14, 15]
+      roles: [17, 19]
     }, {
       name: "Storm",
-      roles: 14
+      roles: 17
     }, {
       name: "SzyszakS",
-      roles: 14
+      roles: 17
     }, {
       name: "Tacitus",
-      roles: 14
+      roles: 17
     }, {
       name: "Typh",
-      roles: 14
+      roles: 17
     }, {
       name: "Vnge",
       name2: "Ben Parrish",
-      roles: [14, 15]
+      roles: [17, 19]
     }, {
       name: "Xemadus",
       name2: "Jonathan Gibson",
-      roles: 14
+      roles: 17
     }, {
       name: "Young Woo Joo",
-      roles: 14
+      roles: 17
     }, {
       name: "Zipi",
-      roles: 14
+      roles: 17
+    }, {
+      name: "Error404",
+      roles: 18
+    }, {
+      name: "txchy0nnn",
+      name2: "Tachyon",
+      roles: 18
     }, {
       name: "about:blank",
-      roles: 15
+      roles: 19
     }, {
       name: "ÆiOuF",
-      roles: 15
+      roles: 19
     }, {
       name: "Akirious",
-      roles: 15
+      roles: 19
     }, {
       name: "Anjinho01",
-      roles: 15
+      roles: 19
     }, {
       name: "Anthios",
-      roles: 15
+      roles: 19
     }, {
       name: "Aubrey Ark",
-      roles: 15
+      roles: 19
     }, {
       name: "Auti",
       name2: "Lucia Tolle",
-      roles: 15
+      roles: 19
     }, {
       name: "Buck",
-      roles: 15
+      roles: 19
     }, {
       name: "Barrin84",
-      roles: 15
+      roles: [19, 20]
     }, {
       name: "Calmcat",
-      roles: 15
+      roles: 19
     }, {
       name: "ChizuX",
-      roles: 15
+      roles: 19
     }, {
       name: "Circle",
-      roles: 15
+      roles: 19
     }, {
       name: "Crinkly Weasel",
       name2: "Aaryan Sarawgi",
-      roles: 15
+      roles: 19
     }, {
       name: "Daniella",
-      roles: 15
+      roles: 19
     }, {
       name: "DarthDie",
       name2: "Briar Bowser",
-      roles: 15
+      roles: 19
     }, {
       name: "ElPopote83",
-      roles: 15
+      roles: 19
     }, {
       name: "Epsilon",
       name2: "Coolguystorm",
-      roles: 15
+      roles: 19
     }, {
       name: "Firecracker",
-      roles: 15
+      roles: 19
     }, {
       name: "Gaunter",
-      roles: 15
+      roles: 19
     }, {
       name: "Gimmick",
-      roles: 15
+      roles: 19
     }, {
       name: "HarrisL2",
-      roles: 15
+      roles: 19
     }, {
       name: "Hellbach",
       name2: "Asher Günther",
-      roles: 15
+      roles: 19
     }, {
       name: "hen-ben",
       name2: "Henry Ellenberg",
-      roles: 15
+      roles: 19
     }, {
       name: "ImpossibleSalsa",
-      roles: 15
+      roles: 19
     }, {
       name: "JayM#1872",
       name2: "Jay McGee",
-      roles: 15
+      roles: 19
     }, {
       name: "Johanniklas",
       name2: "Jan-Niklas Petersen",
-      roles: 15
+      roles: 19
     }, {
       name: "Joseph Micheli",
-      roles: 15
+      roles: 19
     }, {
       name: "kaislash",
       name2: "Lily",
-      roles: 15
+      roles: 19
     }, {
       name: "Kirku",
       name2: "Fabian Makowski",
-      roles: 15
+      roles: 19
     }, {
       name: "Kirin",
       name2: "Arthur",
-      roles: 15
+      roles: 19
     }, {
       name: "Klötzchen",
-      roles: 15
+      roles: 19
     }, {
       name: "L5racer",
-      roles: 15
+      roles: 19
     }, {
       name: "Marshmallow",
-      roles: 15
+      roles: 19
     }, {
       name: "HyperionMike",
       name2: "Miikael Siitan",
-      roles: 15
+      roles: 19
     }, {
       name: "Mirai",
-      roles: 15
+      roles: 19
     }, {
       name: "Monoma",
       name2: "ARoman Ruiz",
-      roles: 15
+      roles: 19
     }, {
       name: "Nani",
-      roles: 15
+      roles: 19
     }, {
       name: "Neo",
       name2: "Joon",
-      roles: 15
+      roles: 19
     }, {
       name: "netweak",
-      roles: 15
+      roles: 19
     }, {
       name: "NiZeKiHo",
-      name2: "DominusDane",
-      roles: 15
+      name2: "Nica",
+      roles: 19
     }, {
       name: "NotBrewst",
       name2: "Luc Leblanc",
-      roles: 15
+      roles: 19
     }, {
       name: "opdollar",
       name2: "Zane Coole",
-      roles: 15
+      roles: 19
     }, {
       name: "Pavlxiiv",
-      roles: 15
+      roles: 19
     }, {
       name: "coffeeflake",
-      roles: 15
+      roles: 19
     }, {
       name: "Razor",
-      roles: 15
+      roles: 19
     }, {
       name: "Razvan Cercel",
-      roles: 15
+      roles: 19
     }, {
       name: "ReacTivity",
-      roles: 15
+      roles: 19
     }, {
       name: "Reaxt",
       name2: "Rea Koehler",
-      roles: 15
+      roles: 19
     }, {
       name: "Ruins",
-      roles: 15
+      roles: 19
     }, {
       name: "Rukimix",
-      roles: 15
+      roles: 19
     }, {
       name: "shadowevil",
-      roles: 15
+      roles: 19
     }, {
       name: "Skunky",
       name2: "Lukas",
-      roles: 15
+      roles: 19
     }, {
       name: "Snaeky",
-      roles: 15
+      roles: 19
     }, {
       name: "Socks",
       name2: "Hannah Pocks",
-      roles: 15
+      roles: 19
     }, {
       name: "Sweets the Alien",
-      roles: 15
+      roles: 19
     }, {
       name: "Tables",
-      roles: 15,
+      roles: 19,
     }, {
       name: "Taylor Reeves",
-      roles: 15
+      roles: 19
     }, {
       name: "TheAhmex",
-      roles: 15
+      roles: 19
     }, {
       name: "The Trust Melon",
-      roles: 15
+      roles: 19
     }, {
       name: "Tim Wong",
-      roles: 15
+      roles: 19
     }, {
       name: "tragedt",
       name2: "Ethan Manninen",
-      roles: 15
+      roles: 19
     }, {
       name: "tui sapo",
-      roles: 15
+      roles: 19
     }, {
       name: "Valentine Clarissa Alanis Star Z",
-      roles: 15
+      roles: 19
     }, {
       name: "vanadium_void",
-      roles: 15
+      roles: 19
     }, {
       name: "X3N0_32",
-      roles: 15
+      roles: 19
     }, {
       name: "ZylaKat",
       name2: "Katherine Goforth-Harbin",
-      roles: 15
+      roles: 19
     }, {
       name: "Jedall",
-      roles: 15
+      roles: 19
     }, {
       name: "Lapis",
-      roles: 15
+      roles: 19
     }, {
       name: "Guimora",
-      roles: 15
+      roles: 19
     }, {
       name: "Neowo",
       name2: "Neo Mitchell",
-      roles: 15
+      roles: 19
     }, {
       name: "AshTheDinosaur",
-      roles: 15
+      roles: 19
     }, {
       name: "Annyeong1",
       name2: "Jeeho Yoon",
-      roles: 15
+      roles: 19
     }, {
       name: "Dedzuka",
-      roles: 15
+      roles: 19
     }, {
       name: "Something",
       name2: "Sushi",
-      roles: 15
+      roles: 19
     }, {
       name: "Viola",
-      roles: 15
+      roles: 19
     }, {
       name: "Luna van Yeethoven",
-      roles: 15
+      roles: 19
     }, {
       name: "Lotocion",
-      roles: 15
+      roles: 19
     }, {
       name: "Merlyn",
-      roles: 15
+      roles: 19
     }, {
       name: "Tilly",
-      roles: 15
+      roles: 19
     }, {
       name: "Sauer",
       name2: "Matt",
-      roles: 15
+      roles: 19
     }, {
       name: "PtigaD",
-      roles: 15
+      roles: 19
     }, {
       name: "Aleame",
-      roles: 15
+      roles: 19
     }, {
       name: "GFADE00",
-      roles: 15
+      roles: 19
     }, {
       name: "Amity Emily",
-      roles: 15
+      roles: 19
     }, {
       name: "BsonHK",
-      roles: 15
+      roles: 19
     }, {
       name: "Angel",
-      roles: 15
+      roles: 19
     }, {
       name: "OhBrod",
-      roles: 15
+      roles: 19
     }, {
       name: "sxy62146214",
-      roles: 15
+      roles: 19
     }, {
       name: "cyxw",
-      roles: 15
+      roles: 19
     }, {
       name: "Cosmic_Fyre",
-      roles: 15
+      roles: 19
     }, {
       name: "The Cube Dude",
-      roles: 15
+      roles: 19
     }, {
       name: "Tias",
       name2: "Tim Stanglow",
-      roles: 15
+      roles: 19
     }, {
       name: "Rad Cooldude",
-      roles: 15
+      roles: 19
     }, {
       name: "DataBitMC",
-      roles: 15
+      roles: 19
     }, {
       name: "Pizzalover04",
       name2: "Zanpaulco",
-      roles: 15
+      roles: 19
     }, {
       name: "Airakogi",
-      roles: 15
+      roles: 19
+    }, {
+      name: "MidnightLight",
+      name2: "Midnight",
+      roles: 21
+    }, {
+      name: "Creepmond",
+      name2: "Creep",
+      roles: 21
     }
   ]
 };

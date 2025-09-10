@@ -45,7 +45,7 @@ function giveEternityRewards(auto) {
 
   Currency.infinitiesBanked.value = Currency.infinitiesBanked.value.plusEffectsOf(
     Achievement(131).effects.bankedInfinitiesGain,
-    TimeStudy(191)
+    TimeStudy(191).effects.bankedInfinitiesGain,
   );
 
   if (Effarig.isRunning && !EffarigUnlock.eternity.isUnlocked) {
@@ -199,6 +199,8 @@ export function initializeResourcesAfterEternity() {
   Currency.timeShards.reset();
   player.records.thisEternity.time = 0;
   player.records.thisEternity.realTime = 0;
+  player.records.totalInfinityAntimatter = DC.E1;
+  player.records.totalEternityAntimatter = DC.E1;
   player.totalTickGained = 0;
   player.eterc8ids = 50;
   player.eterc8repl = 40;
@@ -236,7 +238,7 @@ export function gainedEternities() {
   return Pelle.isDisabled("eternityMults")
     ? new Decimal(1)
     : new Decimal(getAdjustedGlyphEffect("timeetermult"))
-      .timesEffectsOf(RealityUpgrade(3), Achievement(113))
+      .timesEffectsOf(RealityUpgrade(3),Achievement(102),Achievement(113))
       .pow(AlchemyResource.eternity.effectValue);
 }
 
@@ -335,7 +337,12 @@ class EPMultiplierState extends GameMechanicState {
   }
 
   get costIncreaseThresholds() {
-    return [DC.E100, Decimal.NUMBER_MAX_VALUE, DC.E1300, DC.E4000];
+    return [
+      DC.E100.powEffectsOf(BreakEternityUpgrade.epMultiplierDelay),
+      Decimal.NUMBER_MAX_VALUE.powEffectsOf(BreakEternityUpgrade.epMultiplierDelay),
+      DC.E1300.powEffectsOf(BreakEternityUpgrade.epMultiplierDelay),
+      DC.E4000.powEffectsOf(BreakEternityUpgrade.epMultiplierDelay)
+    ];
   }
 
   costAfterCount(count) {

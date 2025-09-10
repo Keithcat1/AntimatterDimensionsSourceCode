@@ -9,6 +9,204 @@ export const changelog = [
    * }
    */
   {
+    date: [2025, 8, 20],
+    name: "v0.2.0: Final Update before Endgame",
+    info: `
+The End(game) is near. Prepare yourselves.
+<br>
+<br>
+<b><i>I expect Endgame to be out by the end of the month. If not, definitely by early September.</i></b>
+<br>
+<br>
+<b>Things added:</b><br>
+<ul>
+<li>A 6th Row of Imaginary Upgrades (albeit NYI until next update)</li>
+<li>NEWS DUMP (40+ new messages plus a story or two)</li>
+<li>The official 19th Achievement Row</li>
+<li>Obscuration to the 19th Row until 1st Endgame (will take effect next update)</li>
+<li>A crapton of new News Ticker settings so you can customize your messages just how you like!</li>
+</ul>
+<br>
+<b>Things changed:</b><br>
+<ul>
+<li>A few headers in the Credits screen (they look smoother now)</li>
+<li>Buffed Achievement r76 to compensate for the prior change</li>
+<li>Changed the game's display name and logo (your page title should now display AD: Endgame!)</li>
+<li>Looped Achievement bits to allow for further expansion</li>
+<li>Achievement r35 now only needs 2 hours of offline progress instead of 6</li>
+</ul>
+<br>
+<b>Bugs fixed:</b><br>
+<ul>
+<li>Fixed several tpyos (mostly with Achivements)</li>
+<li>Fixed the credits screen on multiple browsers (others may be a bit fast)</li>
+<li>Finally fixed the bug with TS191's second effect not working</li>
+</ul>
+<br>
+`
+  },
+  {
+    date: [2025, 4, 22],
+    name: "v0.2 Beta 1: Preparing for break_eternity.js",
+    info: `
+We have reformatted the update tags. Incomplete versions are now displayed as beta (v0.2-beta-1 for example)
+and alpha versions have normal tag displays (like v0.2.0).
+<br>
+<br>
+<b><i>Thanks again for playing!</i></b>
+<br>
+<br>
+<b>Things added:</b><br>
+<ul>
+<li>16 new news ticker messages</li>
+<li>The Endgame confirmation modal</li>
+<li>A reward to Achievement r102 (double Eternity gain)</li>
+<li>A ton of links in the infobox</li>
+<li>The final set of Pelle quotes before Endgame</li>
+</ul>
+<br>
+<b>Things changed:</b><br>
+<ul>
+<li>The requirement for Achievement r76 has been reduced from 8 days to 8 hours</li>
+<li>The second link to the news message "this link is not a rickroll" (the old video no longer existed)</li>
+<li>Buffed the Glyph Rarity boost from Relic Shards significantly</li>
+<li>Cropped the logo screen so you can see the whole thing now</li>
+<li>Scour to Empower only needs 10 Glyphs now instead of 30</li>
+</ul>
+<br>
+<b>Bugs fixed:</b><br>
+<ul>
+<li>Achievement r183 displayed the old value for its reward</li>
+<li>Infinity/Break Upgrades displayed the wrong multiplier when TS31 was purchased (still had ^4 values
+instead of ^100)</li>
+<li>The multiplier tab shows r81 finally</li>
+</ul>
+<br>
+<b>Time Studies buffed:</b><br>
+<ul>
+<li>TS21: Formula improved (exponent 0.032 -> 0.04)</li>
+<li>TS32: Effect multiplied by 10</li>
+<li>TS111: IP formula log(x)/285 -> log(x)/280</li>
+<li>TS151: Effect multiplied by 100</li>
+<li>TS193: Cap changed (1e13000 -> 1e30000) and overall effectiveness multiplied by 1.5</li>
+<li>TS212: Effect multiplied by 1.6</li>
+<li>TS214: Cap changed (e164000 -> e1e6) and formula changed to compensate</li>
+<li>TS226: Effect multiplied by 1.25</li>
+<li>TS232: Formula improved (base doubled, exponent multiplied by 1.25)</li>
+<li>TS233: Effect multiplied by about 1.39</li>
+</ul>
+<br>
+`
+  },
+  {
+    date: [2025, 3, 6],
+    name: "v0.1 Beta 3: Breaking Down the Timewalls",
+    info: `
+I promised everyone detailed changelogs, so here you are.
+<br>
+<br>
+<b><i>Thank you everyone for playing Antimatter Dimensions: Endgame!</i></b>
+<br>
+<br>
+<b>Things added:</b><br>
+<ul>
+<li>Rewards to Achievements r11 thorugh r18</li>
+<li>Rewards to Achievements r63 and r77</li>
+<li>Gave TS191 double Infinities as an additional effect (this is NYI though)</li>
+<li>Fourteen new news ticker messages</li>
+<li>Some information about myself in the Infobox</li>
+<li>THE LOAD SCREEN!!!</li>
+<li>The Imaginary Machine Formula Improvement</li>
+<li>My name in the credits (if you help dev/test the game, yours will be there too in later updates)</li>
+<li>The 19th row of achievements (still NYI and old pictures)</li>
+</ul>
+<br>
+<b>Things removed:</b><br>
+<ul>
+<li>Achievement r81's reward while inside Pelle</li>
+<li>The 18 row achievement hardcap</li>
+</ul>
+<br>
+<b>Things changed:</b><br>
+<ul>
+<li>The requirement of Achievement r131 (2e9 -> 1e9)</li>
+<li>The requirement of Achievement r134 (e18000 -> e15000)</li>
+<li>Buffed the Tachyon Particle Formula severely</li>
+<li>Buffed TS231 slightly (the buff was originally severe but was mostly removed on account of TS301)</li>
+<li>Buffed TS227 (this buff was also reduced later on)</li>
+<li>Reduced the requirements of several Break Infinity Upgrades, as well as buffing a few</li>
+<li>Buffed TS11 and raised its cap from e2500 to e4000</li>
+<li>Buffed several Reality Upgrades</li>
+<li>Reduced V's Realities requirement from 10000 to 1250</li>
+<li>Buffed the 5 V-achievement milestone reward</li>
+<li>The Galaxy Generator animations are 2.5x faster</li>
+<li>Improved the Memory Chunk gain of all Celestials</li>
+<li>Buffed DE gain slightly and reduced the requirement of the final non-repeatable SM (2.5e45 -> 4e44)</li>
+<li>Buffed every Alchemy resource</li>
+<li>The credits music and credits display</li>
+<li>Raised the cap of BIU6 from 30000 to 200000</li>
+</ul>
+<br>
+<b>Bugs fixed:</b><br>
+<ul>
+<li>Achievement r81's reward works now</li>
+<li>EC2's reward works properly again</li>
+<li>After buffing the TP formula fixed the pending TP requirement as it was displaying the wrong value</li>
+<li>Severely nerfed Temporal Transendence as the buff to it caused immediate inflation</li>
+<li>Nerfed the buff given to TS227 as it was causing the value to display "Infinite"</li>
+<li>Gave the Imaginary Machine Formula Improvement severe instability as it broke the game severly</li>
+<li>END tabs displayed the wrong message</li>
+<li>Fixed a tpyo or two</li>
+</ul>
+<br>
+`
+  },
+  {
+    date: [2025, 2, 23],
+    name: "v0.1 Beta 2: Exterminator",
+    info: `
+<b>Bugs Fixed:</b><br>
+<ul>
+<li>Fixed Remnant Formula so it stops displaying negative Remnant gain (most of the time)</li>
+<li>Nerfed Rebuyable Pelle Upgrade 1 (no more immediate inflation)</li>
+<li>Fixed EC6 and EC8 (they should work properly again)</li>
+<li>Decreased the cap of Repeatable Pelle Upgrade 1</li>
+<li>Tried to make Hevipelle quit eating ass but failed</li>
+</ul>
+`
+  },
+  {
+    date: [2025, 2, 22],
+    name: "v0.1 Beta 1: First Public Release",
+    info: `
+<b>Things Changed:</b><br>
+<ul>
+<li>Achievement Multiplier Buff (1.03 -> 1.05 per achievement, 1.25 -> 1.35 per row)</li>
+<li>Cubed the multipliers of Break Upgrades 1 and 2</li>
+<li>Buffed IC1's Reward from 1.3x to 2.3x</li>
+<li>Gave Achievement r81 3x Rep Speed</li>
+<li>Reduced EC goals of EC6, EC8, EC11 and EC12</li>
+<li>Buffed TS213 from 20x to 50x</li>
+<li>Changed the formula of Repeatable Pelle Upgrade 1</li>
+<li>Achievement r113 gives triple eternities instead of double</li>
+<li>Achievement r126 persists in Pelle</li>
+</ul>
+`
+  },
+  {
+    date: [2024, 9, 6],
+    name: "v0.1.0: Rebalance Testing",
+    info: `
+<b>Things Changed:</b><br>
+<ul>
+<li>Raised the cap of Repeatable Pelle Upgrade 1</li>
+<li>Enabled Continuum in Pelle (may be buggy let me know if it is)</li>
+<li>Changed the Remnant Formula</li>
+<li>Changed the Reality Shard Formula to compensate for the above</li>
+</ul>
+`
+  },
+  {
     date: [2024, 8, 12],
     name: "Hi Ra",
     info: `

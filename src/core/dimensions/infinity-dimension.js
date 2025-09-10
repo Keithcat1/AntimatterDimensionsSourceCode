@@ -5,7 +5,9 @@ import { DimensionState } from "./dimension";
 export function infinityDimensionCommonMultiplier() {
   let mult = new Decimal(ShopPurchase.allDimPurchases.currentMult)
     .timesEffectsOf(
+      Achievement(63),
       Achievement(75),
+      Achievement(77),
       TimeStudy(82),
       TimeStudy(92),
       TimeStudy(162),
@@ -176,6 +178,10 @@ class InfinityDimensionState extends DimensionState {
     if (PelleStrikes.powerGalaxies.hasStrike) {
       mult = mult.pow(0.5);
     }
+
+    mult = mult.powEffectsOf(
+      BreakEternityUpgrade.infinityDimensionPow
+    );
 
     return mult;
   }
@@ -410,6 +416,9 @@ export const InfinityDimensions = {
 
   get powerConversionRate() {
     const multiplier = PelleRifts.paradox.milestones[2].effectOrDefault(1);
-    return (7 + getAdjustedGlyphEffect("infinityrate") + PelleUpgrade.infConversion.effectOrDefault(0)) * multiplier;
+    const multiplier2 = Effects.product(
+      BreakEternityUpgrade.infinityPowerConversion
+    );
+    return (7 + getAdjustedGlyphEffect("infinityrate") + PelleUpgrade.infConversion.effectOrDefault(0)) * multiplier * multiplier2;
   }
 };

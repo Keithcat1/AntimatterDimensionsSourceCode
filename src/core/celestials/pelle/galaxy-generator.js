@@ -25,7 +25,7 @@ export const GalaxyGenerator = {
     return this.generatedGalaxies - this.spentGalaxies;
   },
 
-  get gainPerSecond() {
+  get gainPerSecondPreCap() {
     if (!Pelle.hasGalaxyGenerator) return 0;
     return new Decimal(GalaxyGeneratorUpgrades.additive.effectValue).timesEffectsOf(
       GalaxyGeneratorUpgrades.multiplicative,
@@ -33,6 +33,21 @@ export const GalaxyGenerator = {
       GalaxyGeneratorUpgrades.IPMult,
       GalaxyGeneratorUpgrades.EPMult,
     ).toNumber();
+  },
+
+  get galGenInstability() {
+    return 10;
+  },
+
+  get gainPerSecondPostCap() {
+    if (!Pelle.hasGalaxyGenerator) return 0;
+    return new Decimal(Math.max(1, Math.pow(this.galGenInstability, Math.log10(Math.max(Math.pow(player.celestials.pelle.galaxyGenerator.generatedGalaxies / 1e10, 0.9), 1))))
+    ).toNumber();
+  },
+
+  get gainPerSecond() {
+    if (!Pelle.hasGalaxyGenerator) return 0;
+    return new Decimal(this.gainPerSecondPreCap / this.gainPerSecondPostCap).toNumber();
   },
 
   get capObj() {
@@ -65,7 +80,7 @@ export const GalaxyGenerator = {
       Pelle.quotes.galaxyGeneratorRifts.show();
     }
     if (this.sacrificeActive) {
-      this.capRift.reducedTo = Math.max(this.capRift.reducedTo - 0.03 * diff / 1000, 0);
+      this.capRift.reducedTo = Math.max(this.capRift.reducedTo - 0.075 * diff / 1000, 0);
       if (this.capRift.reducedTo === 0) {
         player.celestials.pelle.galaxyGenerator.sacrificeActive = false;
         player.celestials.pelle.galaxyGenerator.phase++;
@@ -99,7 +114,7 @@ export const GalaxyGenerator = {
     );
 
     if (!this.capRift) {
-      PelleRifts.all.forEach(r => r.reducedTo = Math.min(r.reducedTo + 0.03 * diff / 1000, 2));
+      PelleRifts.all.forEach(r => r.reducedTo = Math.min(r.reducedTo + 0.05 * diff / 1000, 2));
       if (PelleRifts.vacuum.milestones[0].canBeApplied && !this.hasReturnedGlyphSlot) {
         Glyphs.refreshActive();
         EventHub.dispatch(GAME_EVENT.GLYPHS_EQUIPPED_CHANGED);

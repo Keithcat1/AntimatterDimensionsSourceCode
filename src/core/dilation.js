@@ -196,6 +196,8 @@ export function getTachyonGain(requireEternity) {
 // Returns the minimum antimatter needed in order to gain more TP; used only for display purposes
 export function getTachyonReq() {
   let effectiveTP = Currency.tachyonParticles.value.dividedBy(tachyonGainMultiplier());
+  const reciprocalpow = DC.D1.timesEffectsOf(BreakEternityUpgrade.tachyonParticlePow).reciprocal();
+  effectiveTP = effectiveTP.pow(reciprocalpow);
   if (Enslaved.isRunning) effectiveTP = effectiveTP.pow(1 / Enslaved.tachyonNerf);
   return Decimal.pow10(
     effectiveTP
@@ -278,4 +280,8 @@ export const DilationUpgrades = {
     DilationUpgrade.tachyonGain,
   ],
   fromId: id => DilationUpgrade.all.find(x => x.id === Number(id))
+};
+
+export const DilationUpgradeScaling = {
+  PRIMARY_SCALING: DC.E5000
 };

@@ -28,8 +28,8 @@ export default {
       return {
         "o-break-eternity-upgrade": true,
         "o-break-eternity-upgrade--bought": this.isBought,
-        "o-break-eternity-upgrade--available": !this.isBought && this.isAffordable,
-        "o-break-eternity-upgrade--unavailable": !this.isBought && !this.isAffordable
+        "o-break-eternity-upgrade--available": !this.isBought && this.isAffordable && this.isAvailable,
+        "o-break-eternity-upgrade--unavailable": !this.isBought && !this.isAffordable || !this.isBought && !this.isAvailable
       };
     }
   },
@@ -46,8 +46,24 @@ export default {
 
 <template>
   <button
+    v-if="isAvailable"
     :class="classObject"
     @click="upgrade.purchase()"
+  >
+    <DescriptionDisplay :config="upgrade.config" />
+    <EffectDisplay
+      br
+      :config="upgrade.config"
+    />
+    <CostDisplay
+      br
+      :config="upgrade.config"
+      name="Antimatter"
+    />
+  </button>
+  <button
+    v-else
+    :class="classObject"
   >
     <DescriptionDisplay :config="upgrade.config" />
     <EffectDisplay

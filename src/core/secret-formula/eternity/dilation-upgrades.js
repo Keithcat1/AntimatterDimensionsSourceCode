@@ -1,14 +1,15 @@
 import { DC } from "../../constants";
 
-function rebuyableCost(initialCost, increment, id) {
-  return Decimal.multiply(initialCost, Decimal.pow(increment, player.dilation.rebuyables[id]));
+function rebuyableCost(initialCost, increment, id, capIncreaseAt) {
+  return Decimal.multiply(initialCost, Decimal.pow(increment, player.dilation.rebuyables[id] + (Math.max(player.dilation.rebuyables[id] - capIncreaseAt, 0) * Math.max(player.dilation.rebuyables[id] - (capIncreaseAt + 1), 0) / 2)));
 }
 function rebuyable(config) {
   return {
     id: config.id,
-    cost: () => rebuyableCost(config.initialCost, config.increment, config.id),
+    cost: () => rebuyableCost(config.initialCost, config.increment, config.id, config.capIncreaseAt),
     initialCost: config.initialCost,
     increment: config.increment,
+    capIncreaseAt: config.capIncreaseAt,
     description: config.description,
     effect: () => config.effect(player.dilation.rebuyables[config.id]),
     formatEffect: config.formatEffect,
@@ -25,11 +26,13 @@ export const dilationUpgrades = {
     id: 1,
     initialCost: 1e4,
     increment: 10,
+    capIncreaseAt: 4997,
     description: () =>
       ((SingularityMilestone.dilatedTimeFromSingularities.canBeApplied || Achievement(187).canBeApplied)
         ? `${formatX(2 * Effects.product(
           SingularityMilestone.dilatedTimeFromSingularities,
-          Achievement(187)
+          Achievement(187),
+          BreakEternityUpgrade.dilatedTimeMultiplier
         ), 2, 2)} Dilated Time gain`
         : "Double Dilated Time gain"),
     effect: bought => {
@@ -42,7 +45,8 @@ export const dilationUpgrades = {
     },
     formatEffect: value => {
       const nonInteger = SingularityMilestone.dilatedTimeFromSingularities.canBeApplied ||
-        Achievement(187).canBeApplied;
+        Achievement(187).canBeApplied ||
+        BreakEternityUpgrade.dilatedTimeMultiplier;
       return formatX(value, 2, nonInteger ? 2 : 0);
     },
     formatCost: value => format(value, 2),
@@ -52,6 +56,7 @@ export const dilationUpgrades = {
     id: 2,
     initialCost: 1e6,
     increment: 100,
+    capIncreaseAt: 2498,
     description: () =>
       (Perk.bypassTGReset.isBought && !Pelle.isDoomed
         ? "Reset Tachyon Galaxies, but lower their threshold"
@@ -71,6 +76,7 @@ export const dilationUpgrades = {
     id: 3,
     initialCost: 1e7,
     increment: 20,
+    capIncreaseAt: 3838,
     description: () => {
       if (Pelle.isDoomed) return `Multiply the amount of Tachyon Particles gained by ${formatInt(1)}`;
       if (Enslaved.isRunning) return `Multiply the amount of Tachyon Particles gained
@@ -150,6 +156,7 @@ export const dilationUpgrades = {
     id: 11,
     initialCost: 1e14,
     increment: 100,
+    capIncreaseAt: 2494,
     pelleOnly: true,
     description: () => `${formatX(5)} Dilated Time gain`,
     effect: bought => Decimal.pow(5, bought),
@@ -161,6 +168,7 @@ export const dilationUpgrades = {
     id: 12,
     initialCost: 1e15,
     increment: 1000,
+    capIncreaseAt: 1663,
     pelleOnly: true,
     description: "Multiply Tachyon Galaxies gained, applies after TG doubling upgrade",
     effect: bought => bought + 1,
@@ -172,6 +180,7 @@ export const dilationUpgrades = {
     id: 13,
     initialCost: 1e16,
     increment: 1e4,
+    capIncreaseAt: 1247,
     pelleOnly: true,
     description: "Gain a power to Tickspeed",
     effect: bought => 1 + bought * 0.03,

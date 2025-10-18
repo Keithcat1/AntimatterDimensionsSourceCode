@@ -3,20 +3,26 @@ import DescriptionDisplay from "@/components/DescriptionDisplay";
 import EffectDisplay from "@/components/EffectDisplay";
 import HintText from "@/components/HintText";
 import TimeStudyButton from "./TimeStudyButton";
-
+import SrTimeStudyInfo from "./SrTimeStudyInfo";
 export default {
   name: "TriadTimeStudy",
   components: {
     DescriptionDisplay,
     EffectDisplay,
     HintText,
-    TimeStudyButton
+    TimeStudyButton,
+  SrTimeStudyInfo
   },
   props: {
     setup: {
       type: Object,
       required: true
     }
+  },
+  data() {
+    return {
+      isBought: false,
+    };
   },
   computed: {
     study() {
@@ -28,7 +34,12 @@ export default {
     config() {
       return this.study.config;
     },
-  }
+  },
+  methods: {
+    update() {
+      this.isBought = this.study.isBought;
+    },
+  },
 };
 </script>
 
@@ -44,6 +55,7 @@ export default {
     >
       {{ id }} Triad
     </HintText>
+<SrTimeStudyInfo v-if="$viewModel.srMode" :study="study"/>
     <DescriptionDisplay :config="study.config" />
     <EffectDisplay
       br

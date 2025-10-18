@@ -3,15 +3,36 @@ import { DataSet, Network } from "vis-network";
 
 import { PERK_FAMILY } from "@/core/secret-formula";
 import PerkPointLabel from "./PerkPointLabel";
+import PerkButton from "./PerkButton";
+
 
 export default {
   name: "PerksTab",
   components: {
-    PerkPointLabel
+    PerkPointLabel,
+    PerkButton,
   },
   computed: {
+    startingPerk() {
+      return this.srFilteredPerks[0];
+    },
     showHintText() {
       return ui.view.shiftDown || player.options.showHintText.perks;
+    },
+    perks: () => Perks.all,
+    srFilteredPerks() {
+      return this.perks.map((p) => this.srFilterPerk(p, new Set()));
+    },
+  },
+  methods: {
+    // Normally the perk tree has looping connections that let you open the same few perks over and over, filter them out
+    srFilterPerk(perk, set) {
+      var connectedPerks = perk.connectedPerks.filter((p) => !set.has(p.id));
+      set.add(perk.id);
+      return {
+        perk: perk,
+        connectedPerks: connectedPerks.map((p) => this.srFilterPerk(p, set)),
+      };
     }
   },
   watch: {
@@ -24,6 +45,7 @@ export default {
     EventHub.ui.on(GAME_EVENT.PERK_BOUGHT, () => PerkNetwork.updatePerkColor());
   },
   mounted() {
+    if (this.$viewModel.srMode) return;
     PerkNetwork.initialStabilization = false;
     PerkNetwork.currentLayout = PerkLayouts[player.options.perkLayout];
     PerkNetwork.initializeIfNeeded();
@@ -396,17 +418,15 @@ export const PerkNetwork = {
     this.nodes.update(data);
   }
 };
+
 </script>
 
 <template>
-  <div
-    ref="tab"
-    class="c-perk-tab"
-  >
+  <div ref="tab" class="c-perk-tab">
     <PerkPointLabel />
+      <PerkButton v-for="(perk, i) in perks" :key="i" :perk="perk" />
+    </template>
   </div>
 </template>
 
-<style scoped>
-
-</style>
+<style scoped></style>

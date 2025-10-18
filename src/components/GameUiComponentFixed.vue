@@ -63,6 +63,7 @@ export default {
     <div
       id="notification-container"
       class="l-notification-container"
+      aria-live="polite"
     />
     <HowToPlay :style="hideIfMatoFullscreen" />
     <TimeTheoremShop

@@ -61,6 +61,7 @@ export default {
       >
         {{ description }}
       </div>
+      <div v-if="$viewModel.srMode && isUseless">Useless</div>
     </div>
   </div>
 </template>

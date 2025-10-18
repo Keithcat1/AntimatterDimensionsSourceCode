@@ -126,6 +126,7 @@ export default {
     <div
       :class="classObject"
       @click="pet.levelUp()"
+      role="button" tabindex="0"
     >
       <span class="fas fa-arrow-up" />
       <div class="c-ra-pet-upgrade__tooltip">

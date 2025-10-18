@@ -1,4 +1,7 @@
 # Antimatter Dimensions
+## Accessibility
+This mod adds a screen-reader mode in options > visual. When off the game looks exactly like normal, but when on the UI (and only the UI) is changes to assume among other things that the player isn't using a mouse, such that the game is currently completable, although minor bugs remain.
+Currently, tooltips show by default, glyphs can be moved using the keyboard, the entirely visual perks tree is replaced with a list of buttons similar to those used by infinity upgrades, statistics multiplier is now a keyboard friendly tree ETC. Additional help can be found in how to play.
 
 ## Run
 

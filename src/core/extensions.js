@@ -1,7 +1,5 @@
 Array.prototype.distinct = function() {
-    return this.filter(function (value, index, self) {
-        return self.indexOf(value) === index;
-    });
+  return this.filter((value, index, self) => self.indexOf(value) === index);
 };
 
 Math.wrap = function(number, min, max) {
@@ -72,27 +70,14 @@ Decimal.prototype.copyFrom = function(decimal) {
   this.exponent = decimal.exponent;
 };
 
-window.copyToClipboard = (function() {
-  let el = document.createElement('textarea');
-  document.body.appendChild(el);
-  el.style.position = "absolute";
-  el.style.left = '-9999999px';
-  el.setAttribute('readonly', '');
-  return function(str) {
-    try {
-      el.value = str;
-      el.select();
-      return document.execCommand('copy');
-    } catch(ex) {
-      console.log(ex);
-      return false;
-    }
-  };
-}());
+window.copyToClipboard = (function(str) {
+  navigator.clipboard.writeText(str)
+  .catch(err => GameUI.notify.error(`Couldn't copy to clipboard: ${error.message}`));
+});
 
 window.safeCall = function safeCall(fn) {
-    if (fn) fn();
-}
+  if (fn) fn();
+};
 
 String.prototype.capitalize = function() {
   return this.toLowerCase().replace(/^\w/u, c => c.toUpperCase());
@@ -158,12 +143,12 @@ Array.prototype.last = function(predicate) {
 Array.prototype.mapToObject = function(keyFun, valueFun) {
   if (typeof keyFun !== "function" || typeof valueFun !== "function")
     throw "keyFun and valueFun must be functions";
-  let out = {}
+  const out = {};
   for (let idx = 0; idx < this.length; ++idx) {
     out[keyFun(this[idx], idx)] = valueFun(this[idx], idx);
   }
   return out;
-}
+};
 
 /**
  * @type {number[]}
@@ -289,3 +274,7 @@ Array.fromBitmask = function(mask) {
 String.isWhiteSpace = function(value) {
   return value && !value.trim();
 };
+export function srAnnounce(name) {
+	if(!ui.view.srMode) return;
+  GameUI.notify.info(name);
+}

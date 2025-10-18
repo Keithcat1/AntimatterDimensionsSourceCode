@@ -41,6 +41,7 @@ export default {
       :key="optionMode"
       class="o-primary-btn c-autobuyer-box__mode-select l-autobuyer-choice"
       :value="optionMode"
+      :name="`${autobuyer.fullName}-mode-select`" role="radio" :aria-checked="mode === optionMode" tabindex="0"
       @click="changeMode(optionMode)"
     >
       {{ modeNameFn(optionMode) }}

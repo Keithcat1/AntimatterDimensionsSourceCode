@@ -181,14 +181,21 @@ export default {
     @mouseleave="onMouseLeave"
   >
     <HintText
+      v-if="!$viewModel.srMode"
       :key="garbleKey"
       type="achievements"
       class="l-hint-text--achievement"
     >
       {{ processedId }}
     </HintText>
+    <h3
+      v-else
+      :key="garbleKey"
+    >
+      {{ processedId }}
+    </h3>
     <div class="o-achievement__tooltip">
-      <template v-if="isMouseOver">
+      <template v-if="isMouseOver || $viewModel.srMode">
         <div class="o-achievement__tooltip__name">
           {{ processedName }} ({{ processedId }})
         </div>
@@ -224,6 +231,9 @@ export default {
       :class="indicatorClassObject"
     >
       <i :class="indicatorIconClass" />
+      <div v-if="$viewModel.srMode && isUnlocked">
+        Completed
+      </div>
     </div>
     <div
       v-if="hasReward"

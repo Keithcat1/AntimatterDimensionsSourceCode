@@ -139,6 +139,7 @@ export default {
       </template>
     </CustomizeableTooltip>
     <DescriptionDisplay :config="config" />
+    <div v-if="$viewModel.srMode && timeEstimate">Time: {{  timeEstimate }} </div>
     <div class="l-pelle-upgrade-gap" />
     <div v-if="effectText">
       {{ effectText.prefix }} {{ effectText.value }}

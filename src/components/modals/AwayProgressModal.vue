@@ -57,6 +57,7 @@ export default {
       {{ headerText }}
     </div>
     <div
+      :role="$viewModel.srMode ? 'alert' : null"
       v-if="!nothingHappened"
       class="c-modal-away-progress__resources c-modal--short"
     >

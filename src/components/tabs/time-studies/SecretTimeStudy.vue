@@ -66,6 +66,7 @@ export default {
     ref="study"
     :class="classObject"
     :style="styleObject"
+    :inert="$viewModel.srMode && !isVisible"
     @click="handleClick"
   >
     <span>

@@ -1,12 +1,20 @@
 <script>
 export default {
-  name: "AutomatorButton"
+  name: "AutomatorButton",
+  props: {
+    label: {
+      type: String,
+      required: true,
+    },
+  },
+
 };
 </script>
 
 <template>
   <button
     class="c-automator__button l-automator__button fas"
+    :aria-label="label"
     @click="emitClick"
   />
 </template>

@@ -96,6 +96,8 @@ export default {
       if (this.pour) {
         const diff = (now - this.time) / 1000;
         Teresa.pourRM(diff);
+        // Turn off the checkbox when out of RM
+        if (this.$viewModel.srMode && this.rm.isZero) this.pour = false;
       } else {
         Teresa.timePoured = 0;
       }
@@ -144,7 +146,7 @@ export default {
 <template>
   <div class="l-teresa-celestial-tab">
     <CelestialQuoteHistory celestial="teresa" />
-    <div>
+    <div aria-live="polite">
       You have {{ quantify("Reality Machine", rm, 2, 2) }}.
     </div>
     <div class="l-mechanics-container">
@@ -201,6 +203,7 @@ export default {
       </div>
       <div class="l-rm-container l-teresa-mechanic-container">
         <button
+          v-if="!$viewModel.srMode"
           :class="pourButtonClassObject"
           @mousedown="pour = true"
           @touchstart="pour = true"
@@ -210,6 +213,12 @@ export default {
         >
           {{ pourText }}
         </button>
+        <input
+          v-else
+          v-model="pour"
+          type="checkbox"
+          :aria-label="pourText"
+        >
         <div class="c-rm-store">
           <div
             class="c-rm-store-inner c-rm-store-inner--light"

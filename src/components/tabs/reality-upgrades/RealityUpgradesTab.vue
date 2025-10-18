@@ -25,7 +25,7 @@ export default {
 
 <template>
   <div class="l-reality-upgrade-grid">
-    <div class="c-reality-upgrade-infotext">
+    <div v-if="!$viewModel.srMode" class="c-reality-upgrade-infotext">
       Mouseover <i class="fas fa-question-circle" /> icons for additional information.
       <br>
       The first row of upgrades can be purchased endlessly for increasing costs

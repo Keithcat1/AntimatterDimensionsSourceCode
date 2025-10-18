@@ -274,9 +274,68 @@ export default {
       tooltipLoaded: false,
       logTotalSacrifice: 0,
       realityColor: "",
+      showChaosText: false,
+      chaosDescription: "",
     };
   },
   computed: {
+    srDeleteText() {
+      if (!this.showSacrifice || this.glyph.type === "companion" || this.glyph.type === "cursed") return "Delete";
+      if (AutoGlyphProcessor.sacMode !== AUTO_GLYPH_REJECT.SACRIFICE && this.glyph.type !== "reality" && AlchemyResource[this.glyph.type].isUnlocked) {
+        let refinementText = `Refine for ${format(this.uncappedRefineReward, 2, 2)} ${GLYPH_SYMBOLS[this.glyph.type]}`;
+        if (this.uncappedRefineReward !== this.refineReward) {
+          refinementText += ` (Actual value due to cap: ${format(this.refineReward, 2, 2)} ${GLYPH_SYMBOLS[this.glyph.type]})`;
+        }
+        return refinementText;
+      }
+      const sacrifice = `Sacrifice for ${format(this.sacrificeReward, 2, 2)}`;
+      return sacrifice;
+
+    },
+    srDescription() {
+      const glyphName = `${this.glyph.type.capitalize()}`;
+      // I think calling this makes sure the level is accurate?
+      this.updateDisplayLevel();
+      const effectiveLevel = this.displayLevel === 0 ? this.glyph.level : this.displayLevel;
+      const level = formatInt(effectiveLevel);
+      const strength = Pelle.isDoomed ? Pelle.glyphStrength : this.glyph.strength;
+      const rarity = strengthToRarity(strength);
+
+      const effects = getGlyphEffectValuesFromBitmask(this.glyph.effects, effectiveLevel, strength, this.glyph.type)
+        .filter(effect =>
+          GlyphEffects[effect.id].isGenerated === generatedTypes.includes(this.glyph.type) && !GlyphEffects[effect.id].isDisabledByDoomed)
+        .map(effect => {
+          const dbEntry = GlyphEffects[effect.id];
+      const value = effect.value;
+      const rawDesc = dbEntry.singleDesc;
+      const singleValue = dbEntry.formatSingleEffect
+        ? dbEntry.formatSingleEffect(value)
+        : dbEntry.formatEffect(value);
+      const alteredValue = dbEntry.conversion
+        ? dbEntry.formatSecondaryEffect(dbEntry.conversion(value))
+        : "";
+
+          return rawDesc.replace("{value}", singleValue).replace("{value2}", alteredValue);
+        });
+
+      let description;
+      switch (this.glyph.type) {
+        case "companion":
+          description = "Companion Glyph";
+          break;
+        case "cursed":
+          description = "Cursed Glyph";
+          break;
+        case "reality":
+          description = `Pure Glyph of ${glyphName} - level: ${level}`;
+          break;
+        default:
+          description = `${getRarity(strength).name} Glyph of ${glyphName} - level: ${level} - rarity: ${formatRarity(rarity)}`;
+          break;
+      }
+      const chaosText = this.showChaosText ? " "+this.chaosDescription : "";
+      return `${effects.length} ${description}. ${effects.join(". ")}.${chaosText}`;
+    },
     hasTooltip() {
       return Boolean(this.glyph.effects);
     },
@@ -522,6 +581,10 @@ export default {
   },
   methods: {
     update() {
+      this.showChaosText = Pelle.specialGlyphEffect.isUnlocked;
+      if (this.showChaosText) {
+        this.chaosDescription = Pelle.getSpecialGlyphEffectDescription(this.glyph.type);
+      }
       this.logTotalSacrifice = GameCache.logTotalGlyphSacrifice.value;
       // This needs to be reactive in order to animate while using our low-lag workaround, but we also need to make
       // sure it only animates when that color is actually active
@@ -536,6 +599,18 @@ export default {
         ? GlyphSacrificeHandler.glyphRefinementGain(this.glyph)
         : 0;
       if (this.tooltipLoaded) this.updateDisplayLevel();
+    },
+    srSwapGlyphs() {
+      Modal.srGlyphReplace.show({ inventoryIndex: this.glyph.idx });
+    },
+    srEquipGlyph() {
+      const idx = Glyphs.active.indexOf(null);
+      if (idx !== -1) {
+        // Glyphs.equip does an identity check, and throws an exception if this.glyph != Glyphs.findById(this.glyph.id)
+        // It doesn't, because we got it from GlyphInventory which makes coppies of them all for some reason
+        Glyphs.equip(Glyphs.findById(this.glyph.id), idx);
+        GameUI.notify.success(`Equipped to slot ${idx + 1}`);
+      }
     },
     updateDisplayLevel() {
       if (this.ignoreModifiedLevel) {
@@ -741,6 +816,7 @@ export default {
     weird seams/artifacts at the edges. This makes for a rather complex workaround
   -->
   <div
+    v-if="!$viewModel.srMode"
     :style="outerStyle"
     :class="['l-glyph-component', {'c-glyph-component--dragging': isDragging}]"
     :draggable="draggable"
@@ -802,6 +878,15 @@ export default {
       @click.ctrl.shift.exact="$emit('ctrlShiftClicked', glyph.id)"
       @click.meta.shift.exact="$emit('ctrlShiftClicked', glyph.id)"
       @click.exact="$emit('clicked', glyph.id)"
+    />
+  </div>
+  <div v-else>
+    <div v-if="isNew">
+      New!
+    </div>
+    <slot
+      :srDescription="srDescription"
+      name="srSlot"
     />
   </div>
 </template>

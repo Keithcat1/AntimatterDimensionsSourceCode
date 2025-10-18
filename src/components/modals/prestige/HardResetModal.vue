@@ -67,7 +67,7 @@ export default {
       class="c-modal-input c-modal-hard-reset__input"
       @keyup.esc="emitClose"
     >
-    <div class="c-modal-hard-reset-info">
+    <div aria-live="polite" class="c-modal-hard-reset-info">
       <div
         v-if="willHardReset"
         class="c-modal-hard-reset-danger"

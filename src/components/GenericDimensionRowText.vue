@@ -66,6 +66,7 @@ export default {
       </span>
     </div>
     <div :class="adjustableTextClass()">
+      <br v-if="$viewModel.srMode">
       <span class="c-dim-row__large">
         {{ amountText }}
       </span>

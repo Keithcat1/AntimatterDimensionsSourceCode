@@ -301,6 +301,7 @@ export default {
     <span v-if="isImporting">
       <br>
       <div
+        v-if="!$viewModel.srMode"
         v-tooltip="canEternity ? '' : 'You are currently unable to eternity, so this will only do a normal load.'"
         class="c-modal__confirmation-toggle"
         @click="respecAndLoad = !respecAndLoad"
@@ -326,6 +327,13 @@ export default {
           </span>
         </span>
       </div>
+      <input
+        v-else
+        v-model="respecAndLoad"
+        v-tooltip="canEternity ? '' : 'You are currently unable to eternity, so this will only do a normal load.'"
+        type="checkbox"
+        aria-label="Also respec tree and eternity"
+      >
     </span>
     <template #confirm-text>
       {{ confirmText }}

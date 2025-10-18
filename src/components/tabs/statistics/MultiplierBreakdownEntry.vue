@@ -30,6 +30,10 @@ export default {
       type: Boolean,
       required: false,
       default: false,
+    },
+    ariaLevel: {
+      type: Number,
+      default: 1,
     }
   },
   data() {
@@ -350,30 +354,93 @@ export default {
     },
     isRecent(date) {
       return (this.now - date) < 200;
-    }
+    },
+    srFocus(oldNode, newNode) {
+      if(oldNode && newNode) {
+        oldNode.tabIndex = -1;
+        newNode.tabIndex = 0;
+        newNode.focus();
+      }
+    },
+    srFocusParent(node) {
+      const parent = node.closest('[role="treeitem"]:not(:scope)');
+      this.srFocus(node, parent);
+    },
+    srGoRight(event, index) {
+      const node = event.target.closest('[role="treeitem"]');
+      if (!this.hasChildEntries(index)) return;
+      if (this.showGroup[index]) {
+        const firstChild = node.querySelector('[role="group"] [role="treeitem"]');
+        this.srFocus(node, firstChild);
+      } else {
+        this.showGroup[index] = true;
+      }
+    },
+    srGoLeft(event, index) {
+      const node = event.target.closest('[role="treeitem"]');
+
+      if (!this.showGroup[index]) {
+        this.srFocusParent(node);
+      } else {
+        this.showGroup[index] = false;
+      }
+    },
+    srScroll(event, index, down) {
+      const node = event.target.closest('[role="treeitem"]');
+      if(!down) {
+        let prevSibling = node.previousElementSibling;
+        if (prevSibling) {
+          let item = prevSibling;
+          while (item.getAttribute('aria-expanded') === 'true') {
+            const group = item.querySelector('[role="group"]');
+            if (!group) break;
+            const newItem = group.querySelector('[role="treeitem"]:last-child');
+            if(!newItem) break;
+            item = newItem;
+          }
+          this.srFocus(node, item);
+          return;
+        } else {
+          this.srFocusParent(node);
+          return;
+        }
+      } else { // down pressed
+        if (this.showGroup[index]) {
+          const firstChild = node.querySelector('[role="group"] [role="treeitem"]');
+          this.srFocus(node, firstChild);
+          return;
+        } else { // item collapsed
+          var item = node;
+          while (item && item.role !== "tree") {
+            const nextSibling = item.nextElementSibling;
+            if (nextSibling) {
+              this.srFocus(node, nextSibling);
+              return;
+            }
+            const parentGroup = item.closest('[role="group"]');
+            if (parentGroup) {
+              const newItem = parentGroup.closest('[role="treeitem"]');
+              if (newItem) item = newItem;
+            } else {
+              break;
+            }
+          }
+
+
+        }
+      }
+    },
   },
 };
 </script>
 
 <template>
-  <div :class="containerClass">
-    <div
-      v-if="!isEmpty"
-      class="c-stacked-bars"
-    >
-      <div
-        v-for="(perc, index) in averagedPercentList"
-        :key="100 + index"
-        :style="styleObject(index)"
-        :class="{ 'c-bar-highlight' : mouseoverIndex === index }"
-        @mouseover="mouseoverIndex = index"
-        @mouseleave="mouseoverIndex = -1"
-        @click="showGroup[index] = !showGroup[index]"
-      >
-        <span
-          class="c-bar-overlay"
-          v-html="barSymbol(index)"
-        />
+  <div v-if="!$viewModel.srMode" :class="containerClass">
+    <div v-if="!isEmpty" class="c-stacked-bars">
+      <div v-for="(perc, index) in averagedPercentList" :key="100 + index" :style="styleObject(index)"
+        :class="{ 'c-bar-highlight': mouseoverIndex === index }" @mouseover="mouseoverIndex = index"
+        @mouseleave="mouseoverIndex = -1" @click="showGroup[index] = !showGroup[index]">
+        <span class="c-bar-overlay" v-html="barSymbol(index)" />
       </div>
     </div>
     <div />
@@ -383,53 +450,27 @@ export default {
           {{ totalString() }}
         </b>
         <span class="c-display-settings">
-          <PrimaryToggleButton
-            v-if="hasSeenPowers && allowPowerToggle"
-            v-model="replacePowers"
-            v-tooltip="'Change Display for Power effects'"
-            off="^N"
-            on="×N"
-            class="o-primary-btn c-change-display-btn"
-          />
-          <i
-            v-if="groups.length > 1"
-            v-tooltip="'Change Multiplier Grouping'"
-            class="o-primary-btn c-change-display-btn fas fa-arrows-rotate"
-            @click="changeGroup"
-          />
+          <PrimaryToggleButton v-if="hasSeenPowers && allowPowerToggle" v-model="replacePowers"
+            v-tooltip="'Change Display for Power effects'" off="^N" on="×N"
+            class="o-primary-btn c-change-display-btn" />
+          <i v-if="groups.length > 1" v-tooltip="'Change Multiplier Grouping'"
+            class="o-primary-btn c-change-display-btn fas fa-arrows-rotate" @click="changeGroup" />
         </span>
       </div>
-      <div
-        v-if="isEmpty"
-        class="c-no-effect"
-      >
+      <div v-if="isEmpty" class="c-no-effect">
         No Active Effects
         <br>
         <br>
         {{ disabledText }}
       </div>
-      <div
-        v-for="(entry, index) in entries"
-        v-else
-        :key="entry.key"
-        @mouseover="mouseoverIndex = index"
-        @mouseleave="mouseoverIndex = -1"
-      >
-        <div
-          v-if="shouldShowEntry(entry)"
-          :class="singleEntryClass(index)"
-        >
+      <div v-for="(entry, index) in entries" v-else :key="entry.key" @mouseover="mouseoverIndex = index"
+        @mouseleave="mouseoverIndex = -1">
+        <div v-if="shouldShowEntry(entry)" :class="singleEntryClass(index)">
           <div @click="showGroup[index] = !showGroup[index]">
-            <span
-              :class="expandIcon(index)"
-              :style="expandIconStyle(index)"
-            />
+            <span :class="expandIcon(index)" :style="expandIconStyle(index)" />
             {{ entryString(index) }}
           </div>
-          <MultiplierBreakdownEntry
-            v-if="showGroup[index] && hasChildEntries(index)"
-            :resource="entry"
-          />
+          <MultiplierBreakdownEntry v-if="showGroup[index] && hasChildEntries(index)" :resource="entry" />
         </div>
       </div>
       <div v-if="isDilated && !isEmpty">
@@ -439,10 +480,7 @@ export default {
           </div>
         </div>
       </div>
-      <div
-        v-if="resource.key === 'AD_total'"
-        class="c-no-effect"
-      >
+      <div v-if="resource.key === 'AD_total'" class="c-no-effect">
         <div>
           "Base AD Production" is the amount of Antimatter that you would be producing with your current AD upgrades
           as if you had waited a fixed amount of time ({{ formatInt(10) }}-{{ formatInt(40) }} seconds depending on
@@ -456,6 +494,25 @@ export default {
         </div>
       </div>
     </div>
+  </div>
+  <div v-else-if="!isEmpty">
+    <div v-for="(entry, index) in entries" v-if="shouldShowEntry(entry)" role="treeitem" tabindex="-1"
+      :aria-expanded="hasChildEntries(index) ? showGroup[index] ? 'true' : 'false' : null"
+      @keydown.right.stop.prevent="srGoRight($event, index)" @keydown.left.stop.prevent="srGoLeft($event, index)"
+      @keydown.up.stop.prevent="srScroll($event, index, false)"
+      @keydown.down.stop.prevent="srScroll($event, index, true)"
+      >
+      {{ entryString(index) }}
+      <ul v-if="showGroup[index] && hasChildEntries(index)" role="group">
+        <MultiplierBreakdownEntry :resource="entry" :aria-level="ariaLevel + 1" />
+      </ul>
+    </div>
+  </div>
+  <div v-else>
+    No Active Effects
+    <br>
+    <br>
+    {{ disabledText }}
   </div>
 </template>
 
@@ -506,12 +563,18 @@ export default {
 }
 
 @keyframes a-glow-bar {
-  0% { box-shadow: inset 0 0 0.3rem 0; }
+  0% {
+    box-shadow: inset 0 0 0.3rem 0;
+  }
+
   50% {
     box-shadow: inset 0 0 0.6rem 0;
     filter: brightness(130%);
   }
-  100% { box-shadow: inset 0 0 0.3rem 0; }
+
+  100% {
+    box-shadow: inset 0 0 0.3rem 0;
+  }
 }
 
 .c-info-list {
@@ -567,7 +630,9 @@ export default {
 }
 
 @keyframes a-glow-text {
-  50% { background-color: var(--color-accent); }
+  50% {
+    background-color: var(--color-accent);
+  }
 }
 
 .c-dilation-entry {
@@ -577,6 +642,8 @@ export default {
 }
 
 @keyframes a-glow-dilation-nerf {
-  50% { background-color: var(--color-bad); }
+  50% {
+    background-color: var(--color-bad);
+  }
 }
 </style>

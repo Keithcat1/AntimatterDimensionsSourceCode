@@ -1,11 +1,14 @@
 <script>
 import DescriptionDisplay from "@/components/DescriptionDisplay";
+import SrTimeStudyInfo from "./SrTimeStudyInfo";
 import TimeStudyButton from "./TimeStudyButton";
+
 
 export default {
   name: "DilationTimeStudy",
   components: {
     DescriptionDisplay,
+    SrTimeStudyInfo,
     TimeStudyButton
   },
   props: {
@@ -85,6 +88,7 @@ export default {
     :special-click="clickHandler()"
   >
     <DescriptionDisplay :config="study.config" />
+    <SrTimeStudyInfo v-if="$viewModel.srMode" :study="study" has-connections="false"/>
     <template v-if="showRequirement">
       <br>
       <span>{{ requirement }}</span>

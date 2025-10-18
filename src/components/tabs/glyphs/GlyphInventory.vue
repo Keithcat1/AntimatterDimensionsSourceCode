@@ -6,6 +6,12 @@ export default {
   components: {
     GlyphComponent
   },
+  props: {
+    srScroll: {
+      type: Function,
+      required: true,
+    }
+  },
   data() {
     return {
       inventory: [],
@@ -51,6 +57,7 @@ export default {
     },
     clickGlyph(col, id) {
       const glyph = Glyphs.findById(id);
+      console.log(`Clicked ${col}`);
       // If single click
       if (!this.doubleClickTimeOut) {
         this.doubleClickTimeOut = setTimeout(() => {
@@ -81,44 +88,44 @@ export default {
     },
     isUnequipped(index) {
       return player.options.showUnequippedGlyphIcon && this.unequippedGlyphs.includes(this.inventory[index].id);
-    }
+    },
   }
 };
 </script>
 
 <template>
-  <div class="l-glyph-inventory">
+  <div v-if="!$viewModel.srMode" class="l-glyph-inventory">
     Click and drag or double-click to equip Glyphs.
-    <div
-      v-for="row in rowCount"
-      :key="protectedRows + row"
-      class="l-glyph-inventory__row"
-    >
-      <div
-        v-for="col in colCount"
-        :key="col"
-        class="l-glyph-inventory__slot"
-        :class="slotClass(toIndex(row, col))"
-        @dragover="allowDrag"
-        @drop="drop(toIndex(row, col), $event)"
-      >
-        <GlyphComponent
-          v-if="inventory[toIndex(row, col)]"
-          :glyph="inventory[toIndex(row, col)]"
-          :is-new="isNew(toIndex(row, col))"
-          :is-unequipped="isUnequipped(toIndex(row, col))"
-          :is-inventory-glyph="true"
-          :show-sacrifice="glyphSacrificeUnlocked"
-          :draggable="true"
-          @shiftClicked="removeGlyph($event, false)"
-          @ctrlShiftClicked="removeGlyph($event, true)"
-          @clicked="clickGlyph(col, $event)"
-        />
+    <div v-for="row in rowCount" :key="protectedRows + row" class="l-glyph-inventory__row">
+      <div v-for="col in colCount" :key="col" class="l-glyph-inventory__slot" :class="slotClass(toIndex(row, col))"
+        @down.down.stop="" @up.down.stop="" @dragover="allowDrag" @drop="drop(toIndex(row, col), $event)">
+        <GlyphComponent v-if="inventory[toIndex(row, col)]" :glyph="inventory[toIndex(row, col)]"
+          :is-new="isNew(toIndex(row, col))" :is-unequipped="isUnequipped(toIndex(row, col))" :is-inventory-glyph="true"
+          :show-sacrifice="glyphSacrificeUnlocked" :draggable="true" @shiftClicked="removeGlyph($event, false)"
+          @ctrlShiftClicked="removeGlyph($event, true)" @clicked="clickGlyph(col, $event)" />
       </div>
     </div>
   </div>
+  <!-- Yes, you need role="table", works even better than <table>. -->
+  <div v-else class="l-glyph-inventory" id="glyph-inventory" role="table"
+  @keydown.up="srScroll($event, 'up')" @keydown.down="srScroll($event, 'down')" @keydown.left="srScroll($event, 'left')" @keydown.right="srScroll($event, 'right')">
+
+    <tr v-for="row in rowCount" :key="protectedRows + row" class="l-glyph-inventory__row">
+      <td v-for="col in colCount" :key="col" class="l-glyph-inventory__slot" :class="slotClass(toIndex(row, col))"
+        tabindex="0" @keydown.j="$emit('srInventorySlotSelect', toIndex(row, col))"
+        @keydown.delete.exact="$emit('srInventorySlotDelete', toIndex(row, col), false)"
+        @keydown.shift.delete="$emit('srInventorySlotDelete', toIndex(row, col), true)"
+        @keydown.enter="$emit('srInventorySlotEquip', toIndex(row, col))">
+        <GlyphComponent v-if="inventory[toIndex(row, col)]" :glyph="inventory[toIndex(row, col)]"
+          :is-new="isNew(toIndex(row, col))" :is-unequipped="isUnequipped(toIndex(row, col))" :is-inventory-glyph="true"
+          :show-sacrifice="glyphSacrificeUnlocked" :draggable="true">
+          <template #srSlot="{ srDescription }">
+            <div> {{ srDescription }} </div>
+          </template>
+        </GlyphComponent>
+      </td>
+    </tr>
+  </div>
 </template>
 
-<style scoped>
-
-</style>
+<style scoped></style>

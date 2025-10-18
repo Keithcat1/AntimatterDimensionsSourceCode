@@ -40,15 +40,15 @@ export default {
     reactionText() {
       if (this.resource === AlchemyResource.reality) return this.realityReactionText;
       const reagents = this.reaction.reagents
-        .map(r => `${format(r.cost)}${r.resource.symbol}`)
+        .map(r => `${format(r.cost)}${this.srSymbol(r.resource)}`)
         .join(" + ");
-      return `${reagents} ➜ ${format(this.reactionProduction, 2, 2)}${this.resource.symbol}`;
+      return `${reagents} ${this.srEquals} ${format(this.reactionProduction, 2, 2)}${this.srSymbol(this.resource)}`;
     },
     realityReactionText() {
       const reagents = this.reaction.reagents
-        .map(r => r.resource.symbol)
+        .map(r => this.srSymbol(r.resource))
         .join(" + ");
-      return `${reagents} ➜ ${this.resource.symbol}`;
+      return `${reagents} ${this.srEquals} ${this.srSymbol(this.resource)}`;
     },
     effectConfig() {
       const resource = this.resource;
@@ -70,6 +70,9 @@ export default {
       const color = this.flow > 0 ? "9CCC65" : "CC6666";
       return `<span style="color:#${color}">${resourceText}</span>`;
     },
+    srEquals() {
+      return this.$viewModel.srMode ? "=" : "➜";
+    },
     isDoomed: () => Pelle.isDoomed,
   },
   methods: {
@@ -85,7 +88,13 @@ export default {
         this.isReactionActive = !this.isDoomed && this.reaction.isActive;
         this.reactionProduction = this.reaction.reactionProduction;
       }
-    }
+    },
+    srToggleReaction() {
+      this.reaction.isActive = !this.reaction.isActive;
+    },
+    srSymbol(resource) {
+      return this.$viewModel.srMode ? resource.name : resource.symbol;
+    },
   }
 };
 </script>
@@ -95,9 +104,12 @@ export default {
     v-if="isUnlocked"
     :class="classObject"
   >
-    <span class="c-alchemy-resource-info__title">
+    <span v-if="!$viewModel.srMode" class="c-alchemy-resource-info__title">
       {{ resource.symbol }} {{ resource.name }} {{ resource.symbol }}
     </span>
+    <h1 v-else>
+      {{ resource.name }}
+    </h1>
     <span v-if="isDoomed">
       Destroyed by Pelle
     </span>
@@ -105,8 +117,12 @@ export default {
       {{ capped ? "Capped" : "Current" }}: {{ resourceAmount }}/{{ resourceCap }}
       (Recent change: <span v-html="formattedFlow" />)
     </span>
+    <br v-if="$viewModel.srMode">
     <span v-if="isBaseResource">Base Resource</span>
-    <span v-else>Reaction: {{ isReactionActive ? "Active" : "Inactive" }} ({{ reactionText }})</span>
+    <span v-else>Reaction: {{ isReactionActive ? "Active" : "Inactive" }} ({{ reactionText }})
+    <input v-if="$viewModel.srMode" type="checkbox" :checked="isReactionActive" @change="srToggleReaction" aria-label="reaction"></input>
+</span>
+    <br v-if="$viewModel.srMode">
     <span :class="{ 'o-pelle-disabled': isDoomed }">
       <EffectDisplay
         label="Effect"

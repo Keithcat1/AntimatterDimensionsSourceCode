@@ -4,6 +4,7 @@ import { ElectronRuntime } from "@/steam";
 
 import { GameKeyboard } from "./keyboard";
 
+import { srAnnounce } from "./extensions";
 // Add your hotkeys and combinations here
 // GameKeyboard.bind for single press combinations
 // GameKeyboard.bindRepeatable for repeatable combinations
@@ -224,8 +225,11 @@ export const shortcuts = [
     keys: ["tab"],
     type: "bind",
     function: () => {
-      keyboardVisibleTabsToggle();
-      return false;
+      if(!ui.view.srMode) {
+        keyboardVisibleTabsToggle();
+        return false;
+      }
+      return true;
     },
     visible: true
   }, {
@@ -384,6 +388,16 @@ GameKeyboard.bindHotkey("alt+y", () => toggleAutobuyer(Autobuyer.reality));
   for (let i = 1; i < 9; i++) bindDimensionHotkeys(i);
 }());
 
+
+(function() {
+  function bindTabHotkeys(tabIndex, key) {
+    GameKeyboard.bindHotkey(`mod+${key}`, () => jumpToTab(tabIndex));
+  }
+  const keys = "1234567890";
+  for ( let i = 0; i < keys.length; i++) bindTabHotkeys(i, keys[i]);
+}());
+
+
 // A few special GameKeyboards
 GameKeyboard.bind(
   ["mod+shift+c", "mod+shift+i", "mod+shift+j", "f12"],
@@ -414,6 +428,13 @@ function toggleBuySingles(buyer) {
   return false;
 }
 
+function jumpToTab(tabIndex) {
+  const tab = Tabs.all[tabIndex];
+  if(!tab.isHidden && tab.isUnlocked && !tab.isOpen) {
+    tab.show(true);
+    srAnnounce(tab.name);
+  }
+}
 function keyboardToggleAutobuyers() {
   if (Tab.automation.isUnlocked) {
     Autobuyers.toggle();
@@ -516,6 +537,11 @@ function keyboardVisibleTabsToggle() {
   Modal.hiddenTabs.show();
 }
 
+
+
+
+
+
 EventHub.logic.on(GAME_EVENT.ARROW_KEY_PRESSED, direction => {
   if (Quote.isOpen || Quote.isHistoryOpen) return;
   // Current tabs. Defined here as both tab and subtab movements require knowing your current tab.
@@ -531,6 +557,7 @@ EventHub.logic.on(GAME_EVENT.ARROW_KEY_PRESSED, direction => {
     // Loop around if needed
     top = (top + tabs.length) % tabs.length;
     // And now we go there.
+    srAnnounce(Tab[tabs[top]]._currentSubtab.name);
     Tab[tabs[top]].show(true);
   } else if (direction[0] === "left" || direction[0] === "right") {
     // Current subtabs
@@ -545,6 +572,7 @@ EventHub.logic.on(GAME_EVENT.ARROW_KEY_PRESSED, direction => {
     // Loop around if needed
     sub = (sub + subtabs.length) % subtabs.length;
     // And now we go there.
+    srAnnounce(Tab[currentTab][subtabs[sub]].name);
     Tab[currentTab][subtabs[sub]].show(true);
   }
 });

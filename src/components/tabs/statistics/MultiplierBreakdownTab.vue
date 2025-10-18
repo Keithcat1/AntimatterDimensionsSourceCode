@@ -26,6 +26,7 @@ export default {
     return {
       availableOptions: [],
       currentID: player.options.multiplierTab.currTab,
+      replacePowers: player.options.multiplierTab.replacePowers,
     };
   },
   computed: {
@@ -37,7 +38,7 @@ export default {
     },
     resourceSymbols() {
       return GameDatabase.multiplierTabValues[this.currentKey].total.overlay;
-    }
+    },
   },
   methods: {
     update() {
@@ -62,7 +63,34 @@ export default {
     clickSubtab(index) {
       this.currentID = this.availableOptions[index].id;
       player.options.multiplierTab.currTab = MULT_TAB_OPTIONS.find(opt => opt.key === this.currentKey).id;
+    },
+    hasSeenPowers() {
+      return InfinityChallenge(4).isCompleted || PlayerProgress.eternityUnlocked();
+    },
+    totalString() {
+      const resource = this.resource;
+      const name = resource.name;
+      const overrideStr = resource.displayOverride;
+      if (overrideStr) return `${name}: ${overrideStr}`;
+
+      const val = resource.mult;
+      return resource.isBase
+        ? `${name}: ${format(val, 2, 2)}`
+        : `${name}: ${formatX(val, 2, 2)}`;
+    },
+
+  },
+  mounted() {
+    // first tree item must be tabbable or tree doesn't work
+    const firstTreeItem = this.$refs.tree?.querySelector('[role="treeitem"]');
+    if(firstTreeItem) {
+      firstTreeItem.tabIndex = 0;
     }
+  },
+  watch: {
+    replacePowers(newValue) {
+      player.options.multiplierTab.replacePowers = newValue;
+    },
   }
 };
 </script>
@@ -70,30 +98,26 @@ export default {
 <template>
   <div class="c-stats-tab">
     <div class="l-multiplier-subtab-btn-container">
-      <button
-        v-for="(option, index) in availableOptions"
-        :key="option.key + option.isActive"
-        :class="subtabClassObject(option)"
-        @click="clickSubtab(index)"
-      >
+      <button v-for="(option, index) in availableOptions" :key="option.key + option.isActive"
+        :class="subtabClassObject(option)" @click="clickSubtab(index)">
         {{ option.text }}
       </button>
     </div>
     <div class="c-list-container">
-      <span
-        v-for="symbol in resourceSymbols"
-        :key="symbol"
-      >
-        <span
-          class="c-symbol-overlay"
-          v-html="symbol"
-        />
+      <span v-for="symbol in resourceSymbols" :key="symbol">
+        <span class="c-symbol-overlay" v-html="symbol" />
       </span>
-      <MultiplierBreakdownEntry
-        :key="resource.key"
-        :resource="resource"
-        :is-root="true"
-      />
+      <template v-if="!$viewModel.srMode">
+        <MultiplierBreakdownEntry :key="resource.key" :resource="resource" :is-root="true" />
+      </template>
+      <template v-else>
+      <br>
+        <input v-if="hasSeenPowers" type="checkbox" title="Display powers as multipliers" v-model="replacePowers"/>
+        <div> {{ totalString() }} </div>
+        <ul role="tree" ref="tree">
+          <MultiplierBreakdownEntry :key="resource.key" :resource="resource" :is-root="true" />
+        </ul>
+      </template>
       <div class="c-multiplier-tab-text-line">
         Note: Entries are only expandable if they contain multiple sources which can be different values.
         For example, any effects which affect all Dimensions of any type equally will not expand into a

@@ -189,6 +189,12 @@ export default {
     importFilterSettings() {
       Modal.importFilter.show();
     },
+    srGetSymbol(type) {
+      if(this.$viewModel.srMode) {
+        return type.capitalize();
+      }
+      return this.getSymbol(type);
+    },
   }
 };
 </script>
@@ -199,26 +205,36 @@ export default {
       <div class="c-filter-extra-btns c-top-left">
         <i
           v-tooltip="'Export filter settings'"
+          aria-label="Export filter settings"
           class="fas fa-file-export l-top-left-btn"
           @click="exportFilterSettings"
+         role="button"
         />
         <i
           v-tooltip="'Import filter settings'"
+          aria-label="Import filter settings"
           class="fas fa-file-import l-top-left-btn"
           @click="importFilterSettings"
+          role="button"
         />
       </div>
       <div class="c-filter-extra-btns c-top-right">
         <i
           v-tooltip="autoRealityTooltip"
+          :aria-label="autoRealityTooltip"
           class="fas fa-recycle l-top-right-btn"
           :class="{ 'o-quick-reality' : autoRealityForFilter }"
           @click="toggleAutoReality"
+          role="checkbox"
+          tabindex="0"
+          :aria-checked="autoRealityForFilter"
         />
         <i
+          aria-label="Filter help"
           v-tooltip="questionmarkTooltip"
           class="fas fa-question-circle l-top-right-btn o-borderless"
           @click="showFilterHowTo"
+         role="button"
         />
       </div>
       Current Filter Mode:
@@ -228,6 +244,10 @@ export default {
       <div class="c-glyph-filter-mode-container">
         <div
           v-for="index in unlockedModes"
+          role="radio"
+          tabindex="0"
+          name="glyph-filter-mode"
+          :aria-checked="(index === mode).toString()"
           :key="index"
           :class="optionClass(index)"
           @click="setMode(index)"
@@ -290,6 +310,7 @@ export default {
           :value="rarityThresholds[type.id]"
           :width="'100%'"
           @input="setRarityThreshold(type.id, $event)"
+          :aria-label="`${type.capitalize} rarity threshold`"
         />
       </div>
     </div>
@@ -297,17 +318,18 @@ export default {
       v-if="mode === modes.SPECIFIED_EFFECT"
       class="c-glyph-sacrifice-options__advanced"
     >
-      <div>
+      <div role="list">
         Glyph Type:
         <span
           v-for="type in glyphTypes"
+          role="listitem"
           :key="type.id"
           v-tooltip="type.id.capitalize()"
           class="l-glyph-sacrifice-options__advanced-type-select c-glyph-sacrifice-options__advanced-type-select"
           :style="advancedTypeSelectStyle(type)"
           @click="advancedType=type.id"
         >
-          {{ getSymbol(type.id) }}
+          {{ srGetSymbol(type.id) }}
         </span>
       </div>
       <br>
@@ -324,6 +346,7 @@ export default {
           :value="rarityThresholds[advancedType]"
           :width="'100%'"
           @input="setRarityThreshold(advancedType, $event)"
+          aria-label="Rarity"
         />
       </div>
       <template v-for="type in glyphTypes">
@@ -338,17 +361,18 @@ export default {
       v-if="mode === modes.EFFECT_SCORE"
       class="c-glyph-sacrifice-options__advanced"
     >
-      <div>
+      <div role="list" >
         Glyph Type:
         <span
           v-for="type in glyphTypes"
+          role="listitem"
           :key="type.id"
           v-tooltip="type.id.capitalize()"
           class="l-glyph-sacrifice-options__advanced-type-select c-glyph-sacrifice-options__advanced-type-select"
           :style="advancedTypeSelectStyle(type)"
           @click="advancedType=type.id"
         >
-          {{ getSymbol(type.id) }}
+          {{ srGetSymbol(type.id) }}
         </span>
       </div>
       <br>

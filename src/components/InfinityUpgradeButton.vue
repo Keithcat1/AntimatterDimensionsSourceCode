@@ -40,7 +40,7 @@ export default {
       return ui.view.shiftDown;
     },
     showChargedEffect() {
-      return this.chargePossible && (this.isCharged || this.showingCharged || this.shiftDown);
+      return this.chargePossible && (this.isCharged || this.showingCharged || this.shiftDown || this.$viewModel.srMode);
     },
     config() {
       const config = this.upgrade.config;
@@ -112,6 +112,10 @@ export default {
       <DescriptionDisplay
         :config="config"
       />
+      <template v-if="$viewModel.srMode">
+          <div v-if="isCharged">Owned</div>
+          <div v-if="isUseless">Doomed by Pelle</div>
+      </template>
       <span v-if="showWorstChallenge">
         <br>
         {{ worstChallengeString }}

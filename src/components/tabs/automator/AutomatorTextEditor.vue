@@ -111,7 +111,8 @@ export const AutomatorTextUI = {
       "Shift-Tab": cm => cm.execCommand("indentLess"),
     },
     autoCloseBrackets: true,
-    lineWrapping: true
+    lineWrapping: true,
+    screenReaderLabel: "Script editor",
   },
   initialize() {
     if (this.container) return;
@@ -121,12 +122,18 @@ export const AutomatorTextUI = {
   },
   setUpContainer() {
     this.container = document.createElement("div");
-    this.container.className = "l-automator-editor__codemirror-container";
-    this.textArea = document.createElement("textarea");
+    if (!ui.view.srMode) this.container.className = "l-automator-editor__codemirror-container";
+    this.textArea = document.createElement(ui.view.srMode ? "div" : "textarea");
     this.container.appendChild(this.textArea);
   },
   setUpEditor() {
-    this.editor = CodeMirror.fromTextArea(this.textArea, this.mode);
+    if (ui.view.srMode) {
+      this.mode.inputStyle = "contenteditable";
+      this.editor = CodeMirror(this.textArea, this.mode);
+      this.editor.getInputField().role = "null";
+    } else {
+      this.editor = CodeMirror.fromTextArea(this.textArea, this.mode);
+    }
     // CodeMirror has a built-in undo/redo functionality bound to ctrl-z/ctrl-y which doesn't have an
     // easily-configured history buffer; we need to specifically cancel this event since we have our own undo
     this.editor.on("beforeChange", (_, event) => {

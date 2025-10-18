@@ -58,7 +58,10 @@ export default {
 
 <template>
   <div class="c-modal-message l-modal-content--centered">
-    <div class="c-modal-message__text">
+    <div v-if="!$viewModel.srMode" class="c-modal-message__text">
+      {{ message }}
+    </div>
+    <div v-else role="alert" class="c-modal-message__text">
       {{ message }}
     </div>
     <div v-if="messageIndex < 3">

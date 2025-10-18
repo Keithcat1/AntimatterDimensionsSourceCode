@@ -71,7 +71,8 @@ export default {
 
 <template>
   <div class="c-dimension-row c-antimatter-dim-row c-antimatter-prestige-row">
-    <div class="l-dim-row__prestige-text c-dim-row__label c-dim-row__label--amount">
+    <div class="l-dim-row__prestige-text c-dim-row__label c-dim-row__label--amount"
+    role="heading" aria-level="4">
       Dimension Boost ({{ boostCountText }}):
       requires {{ formatInt(requirement.amount) }} {{ dimName }} Dimensions
     </div>

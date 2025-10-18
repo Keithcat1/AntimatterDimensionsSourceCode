@@ -15,6 +15,9 @@ export default {
       return {
         width: `${(this.fill * 100).toFixed(2)}%`
       };
+    },
+    srPercent() {
+      return Math.trunc(this.fill * 100);
     }
   },
   methods: {
@@ -119,9 +122,13 @@ export default {
       <span
         v-tooltip="tooltip"
         class="c-progress-bar__percents"
+        role="progressbar"
+        :aria-valuenow="srPercent"
+        :aria-label="tooltip"
       >
         {{ displayPercents }}
       </span>
     </div>
   </div>
+
 </template>

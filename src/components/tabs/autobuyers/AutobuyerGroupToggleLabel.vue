@@ -27,6 +27,7 @@ export default {
 </script>
 
 <template>
+  <h2 v-if="$viewModel.srMode"> {{ name }} </h2>
   <AutobuyerToggleLabel
     :is-active="isActive"
     :is-disabled="isDisabled"

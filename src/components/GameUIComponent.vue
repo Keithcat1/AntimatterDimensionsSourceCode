@@ -58,10 +58,18 @@ export default {
       class="c-game-ui"
     >
       <component :is="uiLayout">
-        <component
-          :is="page"
-          class="c-game-tab"
-        />
+        <template v-if="!$viewModel.srMode">
+          <component
+            :is="page"
+            class="c-game-tab"
+          />
+        </template>
+        <main v-else>
+          <component
+            :is="page"
+            class="c-game-tab"
+          />
+        </main>
       </component>
       <S12DesktopIcons v-if="isThemeS12" />
       <link

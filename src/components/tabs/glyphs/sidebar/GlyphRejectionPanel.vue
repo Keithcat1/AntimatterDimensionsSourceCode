@@ -48,6 +48,9 @@ export default {
         :key="modeID"
         :class="optionClass(modeID)"
         @click="setMode(modeID)"
+        name="glyph-sacrifice-type-mode"
+        role="radio" tabindex="0"
+        :aria-checked="mode === modeID"
       >
         {{ modeDesc(modeID) }}
       </div>

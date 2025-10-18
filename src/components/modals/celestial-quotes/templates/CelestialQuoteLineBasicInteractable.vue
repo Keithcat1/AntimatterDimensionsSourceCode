@@ -87,7 +87,7 @@ export default {
 };
 </script>
 
-<template>
+<template v-if="!$viewModel.srMode">
   <CelestialQuoteLine
     :quote="quote"
     :current-line="currentLine"
@@ -98,4 +98,18 @@ export default {
     @close="close"
     @progress-in="progressIn"
   />
+</template>
+<template v-else>
+  <div role="alert" aria-atomic="false">
+    <CelestialQuoteLine
+      :quote="quote"
+      :current-line="currentLine"
+      :left-visible="!isQuoteStart && leftVisible"
+      :right-visible="!isQuoteEnd && rightVisible"
+      :close-visible="isQuoteEnd && closeVisible"
+      primary
+      @close="close"
+      @progress-in="progressIn"
+    />
+  </div>
 </template>

@@ -122,6 +122,7 @@ export default {
       <div class="c-button-group">
         <AutomatorButton
           v-tooltip="'Rewind Automator to the first command'"
+          label="Rewind Automator to the first command"
           class="fa-fast-backward"
           @click="rewind"
         />
@@ -130,33 +131,57 @@ export default {
             content: playTooltip,
             hideOnTargetClick: false
           }"
+          :label="playTooltip"
           :class="playButtonClass"
           @click="play"
         />
         <AutomatorButton
           v-tooltip="'Stop Automator and reset position'"
+          label="Stop Automator and reset position"
           class="fa-stop"
           @click="stop"
         />
         <AutomatorButton
           v-tooltip="'Step forward one line'"
+          label="Step forward one line"
           class="fa-step-forward"
           @click="step"
         />
         <AutomatorButton
+          v-if="!$viewModel.srMode"
           v-tooltip="'Restart script automatically when it reaches the end'"
           class="fa-sync-alt"
           :class="{ 'c-automator__button--active' : repeatOn }"
           @click="repeat"
         />
+        <input
+          v-else
+          aria-label="'Restart script automatically when it reaches the end'"
+          class="fa-sync-alt"
+          :class="{ 'c-automator__button--active' : repeatOn }"
+          type="checkbox"
+          :checked="repeatOn"
+          @change="repeat"
+        >
         <AutomatorButton
+          v-if="!$viewModel.srMode"
           v-tooltip="'Automatically restart the active script when finishing or restarting a Reality'"
           class="fa-reply"
           :class="{ 'c-automator__button--active' : forceRestartOn }"
           @click="restart"
         />
+        <input
+          v-else
+          aria-label="'Automatically restart the active script when finishing or restarting a Reality'"
+          type="checkbox"
+          class="fa-reply"
+          :class="{ 'c-automator__button--active' : forceRestartOn }"
+          :checked="forceRestartOn"
+          @change="restart"
+        >
         <AutomatorButton
           v-tooltip="'Scroll Automator to follow current line'"
+          label="Scroll Automator to follow current line"
           class="fa-indent"
           :class="{ 'c-automator__button--active' : followExecution }"
           @click="follow"
@@ -172,12 +197,14 @@ export default {
       <div class="c-button-group">
         <AutomatorButton
           v-tooltip="'Undo'"
+          label="Undo"
           class="fa-arrow-rotate-left"
           :class="{ 'c-automator__button--inactive' : !hasUndo }"
           @click="undo"
         />
         <AutomatorButton
           v-tooltip="'Redo'"
+          label="Redo"
           class="fa-arrow-rotate-right"
           :class="{ 'c-automator__button--inactive' : !hasRedo }"
           @click="redo"

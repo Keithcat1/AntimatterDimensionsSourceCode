@@ -46,6 +46,7 @@ export default {
     v-if="isUnlocked"
     class="c-autobuyer-box-row"
   >
+    <h3 v-if="$viewModel.srMode"> {{ name }} </h3>
     <AutobuyerSingleToggleLabel :autobuyer="autobuyer" />
     <div>
       {{ name }}

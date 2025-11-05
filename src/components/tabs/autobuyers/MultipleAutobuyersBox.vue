@@ -80,6 +80,7 @@ export default {
       :name="name"
       @click="toggleGroup"
     />
+    <h2 v-if="$viewModel.srMode">{{ name }}</h2>
     <div class="l-autobuyer-box__title">
       {{ name }}<br>Autobuyers
       <!-- If we're showing as a group, then all attributes are the same and we can arbitrarily take the first one -->

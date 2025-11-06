@@ -67,6 +67,7 @@ export default {
       <span :class="{ 'o-pelle-disabled': isUseless }">
         {{ reward }} {{ (isLocked && !isReached) ? "(Locked behind a Pelle Upgrade)" : "" }}
       </span>
+      <div v-if="$viewModel.srMode && activeCondition !== null">{{ activeCondition }}</div>
     </button>
   </div>
 </template>

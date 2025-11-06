@@ -59,6 +59,7 @@ export default {
   >
     <span class="o-eternity-milestone__goal">
       {{ quantifyInt("Eternity", eternities) }}:
+      <span v-if="$viewModel.srMode && isReached"> (active)</span>
     </span>
     <button
       v-tooltip="activeCondition"

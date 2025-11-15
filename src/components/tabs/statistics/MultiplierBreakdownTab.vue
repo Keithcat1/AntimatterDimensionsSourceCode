@@ -63,6 +63,7 @@ export default {
     clickSubtab(index) {
       this.currentID = this.availableOptions[index].id;
       player.options.multiplierTab.currTab = MULT_TAB_OPTIONS.find(opt => opt.key === this.currentKey).id;
+      this.$nextTick(() => this.srFocusFirst());
     },
     hasSeenPowers() {
       return InfinityChallenge(4).isCompleted || PlayerProgress.eternityUnlocked();
@@ -78,14 +79,16 @@ export default {
         ? `${name}: ${format(val, 2, 2)}`
         : `${name}: ${formatX(val, 2, 2)}`;
     },
-
+    srFocusFirst() {
+      // first tree item must be tabbable or tree is a pain to focus on
+      const firstTreeItem = this.$refs.tree?.querySelector('[role="treeitem"]');
+      if(firstTreeItem) {
+        firstTreeItem.tabIndex = 0;
+      }
+    },
   },
   mounted() {
-    // first tree item must be tabbable or tree doesn't work
-    const firstTreeItem = this.$refs.tree?.querySelector('[role="treeitem"]');
-    if(firstTreeItem) {
-      firstTreeItem.tabIndex = 0;
-    }
+    this.srFocusFirst();
   },
   watch: {
     replacePowers(newValue) {

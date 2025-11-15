@@ -394,7 +394,7 @@ export default {
           while (item.getAttribute('aria-expanded') === 'true') {
             const group = item.querySelector('[role="group"]');
             if (!group) break;
-            const newItem = group.querySelector('[role="treeitem"]:last-child');
+            const newItem = group.querySelector(':scope > div > [role="treeitem"]:last-child');
             if(!newItem) break;
             item = newItem;
           }

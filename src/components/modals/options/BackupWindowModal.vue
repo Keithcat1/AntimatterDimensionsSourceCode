@@ -69,6 +69,9 @@ export default {
       Additionally, your current save is saved into the last slot any time a backup from here is loaded.
       <div
         class="c-modal__confirmation-toggle"
+        role="checkbox"
+        :aria-checked="ignoreOffline"
+        tabindex="0"
         @click="toggleOffline"
       >
         <div :class="offlineOptionClass()">

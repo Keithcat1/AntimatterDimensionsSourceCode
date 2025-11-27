@@ -63,7 +63,7 @@ export default {
     clickSubtab(index) {
       this.currentID = this.availableOptions[index].id;
       player.options.multiplierTab.currTab = MULT_TAB_OPTIONS.find(opt => opt.key === this.currentKey).id;
-      this.$nextTick(() => this.srFocusFirst());
+      this.$nextTick(() => this.srFocus(true, true));
     },
     hasSeenPowers() {
       return InfinityChallenge(4).isCompleted || PlayerProgress.eternityUnlocked();
@@ -79,16 +79,20 @@ export default {
         ? `${name}: ${format(val, 2, 2)}`
         : `${name}: ${formatX(val, 2, 2)}`;
     },
-    srFocusFirst() {
-      // first tree item must be tabbable or tree is a pain to focus on
-      const firstTreeItem = this.$refs.tree?.querySelector('[role="treeitem"]');
-      if(firstTreeItem) {
-        firstTreeItem.tabIndex = 0;
+    srFocus(first = true, setFocus = false) {
+      const item = this.$refs.tree?.querySelector(first ? '[role="treeitem"]' : ':scope > div > [role="treeitem"]:last-child');
+      if(item) {
+        item.tabIndex = 0;
+      if(setFocus) {
+        item.focus();
+        const oldItem = this.$refs.tree.querySelector('[role="treeitem"][tabindex="0"]');
+        if(oldItem) oldItem.tabIndex = -1;
+      }
       }
     },
   },
   mounted() {
-    this.srFocusFirst();
+    this.srFocus();
   },
   watch: {
     replacePowers(newValue) {
@@ -117,7 +121,7 @@ export default {
       <br>
         <input v-if="hasSeenPowers" type="checkbox" title="Display powers as multipliers" v-model="replacePowers"/>
         <div> {{ totalString() }} </div>
-        <ul role="tree" ref="tree">
+        <ul role="tree" ref="tree" @keydown.home.stop.prevent="srFocus(true, true)" @keydown.end.stop.prevent="srFocus(false, true)">
           <MultiplierBreakdownEntry :key="resource.key" :resource="resource" :is-root="true" />
         </ul>
       </template>

@@ -508,7 +508,7 @@ export default {
       </ul>
     </div>
   </div>
-  <div v-else>
+  <div v-else role="treeitem" tabindex="0">
     No Active Effects
     <br>
     <br>

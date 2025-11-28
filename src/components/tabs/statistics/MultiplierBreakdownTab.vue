@@ -82,12 +82,12 @@ export default {
     srFocus(first = true, setFocus = false) {
       const item = this.$refs.tree?.querySelector(first ? '[role="treeitem"]' : ':scope > div > [role="treeitem"]:last-child');
       if(item) {
+        if(setFocus) {
+          item.focus();
+          const oldItem = this.$refs.tree.querySelector('[role="treeitem"][tabindex="0"]');
+          if(oldItem) oldItem.tabIndex = -1;
+        }
         item.tabIndex = 0;
-      if(setFocus) {
-        item.focus();
-        const oldItem = this.$refs.tree.querySelector('[role="treeitem"][tabindex="0"]');
-        if(oldItem) oldItem.tabIndex = -1;
-      }
       }
     },
   },

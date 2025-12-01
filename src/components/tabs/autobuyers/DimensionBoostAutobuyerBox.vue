@@ -75,6 +75,7 @@ export default {
         :autobuyer="autobuyer"
         type="float"
         property="buyMaxInterval"
+        label="Boost every X seconds"
       />
     </template>
     <template
@@ -95,6 +96,7 @@ export default {
         :autobuyer="autobuyer"
         type="int"
         property="maxDimBoosts"
+        label="Limit dimension boosts to:
       />
     </template>
     <template #toggleSlot>
@@ -119,6 +121,7 @@ export default {
         :autobuyer="autobuyer"
         type="int"
         property="galaxies"
+        label="Dimension boost galaxy limit"
       />
     </template>
   </AutobuyerBox>

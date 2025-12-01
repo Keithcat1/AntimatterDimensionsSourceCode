@@ -100,6 +100,7 @@ export default {
         :autobuyer="autobuyer"
         :type="hasAlternateInputs ? 'float' : 'decimal'"
         :property="hasAlternateInputs ? 'time' : 'rm'"
+        :label="hasAlternateInputs ? 'realtime seconds' : 'reality machines'"
       />
     </template>
     <template #checkboxSlot>
@@ -113,6 +114,7 @@ export default {
         :autobuyer="autobuyer"
         :type="(hasAlternateInputs && hasRelicMode) ? 'decimal' : 'int'"
         :property="(hasAlternateInputs && hasRelicMode) ? 'shard' : 'glyph'"
+        :label="(hasAlternateInputs && hasRelicMode) ? 'relic shards' : 'glyph level'"
       />
       <div v-if="isOverCap">
         Autobuyer will trigger at the Glyph level cap of {{ formatInt(levelCap) }}.

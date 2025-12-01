@@ -135,6 +135,7 @@ export default {
         :key="mode"
         :autobuyer="autobuyer"
         v-bind="modeProps(mode).input"
+        :label="modeProps(mode).title"
       />
     </template>
     <template

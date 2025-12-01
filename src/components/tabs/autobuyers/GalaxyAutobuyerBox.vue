@@ -70,6 +70,7 @@ export default {
         :autobuyer="autobuyer"
         type="float"
         property="buyMaxInterval"
+        label="Galaxies every X seconds"
       />
     </template>
     <template #[limitGalaxiesSlot]>
@@ -87,6 +88,7 @@ export default {
         :autobuyer="autobuyer"
         type="int"
         property="maxGalaxies"
+        label="Galaxy limit"
       />
     </template>
   </AutobuyerBox>

@@ -92,10 +92,11 @@ export default {
 </script>
 
 <template>
-  <div :key="scripts.length">
+  <div :key="scripts.length" role="list">
     <div
       v-for="script in scripts"
       :key="script.id"
+      role="listitem"
       class="l-script-option c-script-option-hover-effect"
       :class="labelClassObject(script.id)"
       @click="changeScriptID(script.id)"

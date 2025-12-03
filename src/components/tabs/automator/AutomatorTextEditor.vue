@@ -1,7 +1,6 @@
 <script>
 import { createEditor } from "@/core/automator/automator-codemirror6";
-import { EditorView } from "@codemirror/view";
-import { history } from "@codemirror/commands";
+import { EditorView, keymap } from "@codemirror/view";
 import { Transaction, Compartment } from "@codemirror/state";
 
 export default {
@@ -129,7 +128,11 @@ export const AutomatorTextUI = {
     this.themeToggler = new Compartment();
     const extensions = [
       EditorView.lineWrapping,
-      history(),
+      keymap.of([
+        { key: "Mod-z", run: () => AutomatorData.undoScriptEdit(), preventDefault: true },
+        { key: "Mod-y", run: () => AutomatorData.redoScriptEdit(), preventDefault: true },
+        { key: "Shift-Mod-z", run: () => AutomatorData.redoScriptEdit(), preventDefault: true }
+      ]),
       EditorView.updateListener.of(update => {
         if (update.docChanged && update.transactions.every(t => !t.annotation(Transaction.userEvent))) {
           const scriptID = ui.view.tabs.reality.automator.editorScriptID;
@@ -145,15 +148,6 @@ export const AutomatorTextUI = {
     ];
     this.view = createEditor("", extensions);
     this.editor = this.view;
-
-    this.editor.dom.addEventListener("keydown", event => {
-      const key = event.key;
-      if (event.ctrlKey && ["z", "y"].includes(key)) {
-        event.preventDefault();
-        if (key === "z") AutomatorData.undoScriptEdit();
-        if (key === "y") AutomatorData.redoScriptEdit();
-      }
-    });
   },
   clearEditor() {
     if (!this.editor) {

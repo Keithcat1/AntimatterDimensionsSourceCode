@@ -2,7 +2,7 @@
 import { createEditor } from "@/core/automator/automator-codemirror6";
 import { EditorView } from "@codemirror/view";
 import { history } from "@codemirror/commands";
-import { Transaction } from "@codemirror/state";
+import { Transaction, Compartment } from "@codemirror/state";
 
 export default {
   name: "AutomatorTextEditor",

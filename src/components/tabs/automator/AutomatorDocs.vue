@@ -82,14 +82,13 @@ export default {
       },
       set(value) {
         this.$viewModel.tabs.reality.automator.editorScriptID = value;
-        if (AutomatorTextUI.editor) AutomatorTextUI.editor.performLint();
       }
     },
     currentScriptContent() {
       return player.reality.automator.scripts[this.currentScriptID].content;
     },
     currentScript() {
-      return CodeMirror.Doc(this.currentScriptContent, "automato").getValue();
+      return this.currentScriptContent;
     },
     errorStyle() {
       return {
@@ -111,7 +110,8 @@ export default {
         : "You have too many scripts to import another!";
     },
     currentEditorScriptName() {
-      return this.scripts.find(s => s.id === this.currentScriptID).name;
+      const script = this.scripts.find(s => s.id === this.currentScriptID);
+      return script ? script.name : "";
     },
   },
   watch: {
@@ -184,7 +184,6 @@ export default {
 
       this.$nextTick(() => {
         BlockAutomator.updateEditor(this.currentScript);
-        if (!this.isBlock && AutomatorTextUI.editor) AutomatorTextUI.editor.performLint();
       });
     },
     fixAutomatorTypeDocs() {

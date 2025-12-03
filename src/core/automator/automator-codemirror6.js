@@ -71,6 +71,7 @@ export function createEditor(doc, extensions) {
       automatorTheme,
       lineHighlightField,
       automatorHighlighter,
+      EditorView.contentAttributes.of({ "aria-label": "Script editor" }),
       ...extensions
     ],
   });

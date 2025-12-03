@@ -282,7 +282,6 @@ export const AutomatorData = {
     this.pushRedoData(this.currentScriptText());
     player.reality.automator.scripts[this.scriptIndex()].content = undoContent;
 
-    AutomatorBackend.saveScript(this.scriptIndex(), undoContent);
     if (player.reality.automator.type === AUTOMATOR_TYPE.TEXT) {
       const editor = AutomatorTextUI.editor;
       editor.dispatch({
@@ -301,7 +300,6 @@ export const AutomatorData = {
     this.pushUndoData(this.currentScriptText(), 2 * this.MIN_CHARS_BETWEEN_UNDOS);
     player.reality.automator.scripts[this.scriptIndex()].content = redoContent;
 
-    AutomatorBackend.saveScript(this.scriptIndex(), redoContent);
     if (player.reality.automator.type === AUTOMATOR_TYPE.TEXT) {
       const editor = AutomatorTextUI.editor;
       editor.dispatch({

@@ -129,19 +129,22 @@ export const AutomatorTextUI = {
     const extensions = [
       EditorView.lineWrapping,
       keymap.of([
-        { key: "Mod-z", run: () => AutomatorData.undoScriptEdit(), preventDefault: true },
-        { key: "Mod-y", run: () => AutomatorData.redoScriptEdit(), preventDefault: true },
-        { key: "Shift-Mod-z", run: () => AutomatorData.redoScriptEdit(), preventDefault: true }
+        { key: "Mod-z", run: () => { AutomatorData.undoScriptEdit(); return true; }, preventDefault: true },
+        { key: "Mod-y", run: () => { AutomatorData.redoScriptEdit(); return true; }, preventDefault: true },
+        { key: "Shift-Mod-z", run: () => { AutomatorData.redoScriptEdit(); return true; }, preventDefault: true }
       ]),
       EditorView.updateListener.of(update => {
-        if (update.docChanged && update.transactions.every(t => !t.annotation(Transaction.userEvent))) {
-          const scriptID = ui.view.tabs.reality.automator.editorScriptID;
-          const scriptText = update.state.doc.toString();
-          AutomatorBackend.saveScript(scriptID, scriptText);
-          AutomatorData.recalculateErrors();
-          const errors = AutomatorData.currentErrors().length;
-          if (errors > update.state.doc.lines) SecretAchievement(48).unlock();
-          AutomatorHighlighter.clearAllHighlightedLines();
+        if (update.docChanged) {
+          const userEvent = update.transactions.some(t => t.isUserEvent("input") || t.isUserEvent("paste"));
+          if (userEvent) {
+            const scriptID = ui.view.tabs.reality.automator.editorScriptID;
+            const scriptText = update.state.doc.toString();
+            AutomatorBackend.saveScript(scriptID, scriptText);
+            AutomatorData.recalculateErrors();
+            const errors = AutomatorData.currentErrors().length;
+            if (errors > update.state.doc.lines) SecretAchievement(48).unlock();
+            AutomatorHighlighter.clearAllHighlightedLines();
+          }
         }
       }),
       this.themeToggler.of([])

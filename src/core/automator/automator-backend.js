@@ -1,4 +1,6 @@
 import { compile } from "./compiler";
+import { Transaction } from "@codemirror/state";
+import { highlightLine } from "./automator-highlighter";
 
 export const AUTOMATOR_COMMAND_STATUS = Object.freeze({
   NEXT_INSTRUCTION: 0,
@@ -231,7 +233,7 @@ export const AutomatorData = {
   // subtab before the automator is unlocked, editor is undefined
   singleScriptCharacters() {
     return player.reality.automator.type === AUTOMATOR_TYPE.TEXT
-      ? AutomatorTextUI.editor?.getDoc().getValue().length ?? 0
+      ? AutomatorTextUI.editor?.state.doc.length ?? 0
       : BlockAutomator.parseLines(BlockAutomator.lines).join("\n").length;
   },
   totalScriptCharacters() {
@@ -280,9 +282,15 @@ export const AutomatorData = {
     this.pushRedoData(this.currentScriptText());
     player.reality.automator.scripts[this.scriptIndex()].content = undoContent;
 
-    AutomatorBackend.saveScript(this.scriptIndex(), undoContent);
-    if (player.reality.automator.type === AUTOMATOR_TYPE.TEXT) AutomatorTextUI.editor.setValue(undoContent);
-    else BlockAutomator.updateEditor(undoContent);
+    if (player.reality.automator.type === AUTOMATOR_TYPE.TEXT) {
+      const editor = AutomatorTextUI.editor;
+      editor.dispatch({
+        changes: { from: 0, to: editor.state.doc.length, insert: undoContent },
+        annotations: Transaction.userEvent.of("automator.undo")
+      });
+    } else {
+      BlockAutomator.updateEditor(undoContent);
+    }
   },
   redoScriptEdit() {
     if (this.redoBuffer.length === 0 || Tabs.current._currentSubtab.name !== "Automator") return;
@@ -292,18 +300,21 @@ export const AutomatorData = {
     this.pushUndoData(this.currentScriptText(), 2 * this.MIN_CHARS_BETWEEN_UNDOS);
     player.reality.automator.scripts[this.scriptIndex()].content = redoContent;
 
-    AutomatorBackend.saveScript(this.scriptIndex(), redoContent);
-    if (player.reality.automator.type === AUTOMATOR_TYPE.TEXT) AutomatorTextUI.editor.setValue(redoContent);
-    else BlockAutomator.updateEditor(redoContent);
+    if (player.reality.automator.type === AUTOMATOR_TYPE.TEXT) {
+      const editor = AutomatorTextUI.editor;
+      editor.dispatch({
+        changes: { from: 0, to: editor.state.doc.length, insert: redoContent },
+        annotations: Transaction.userEvent.of("automator.redo")
+      });
+    } else {
+      BlockAutomator.updateEditor(redoContent);
+    }
   }
 };
 
 export const LineEnum = { Active: "active", Event: "event", Error: "error" };
 
-// Manages line highlighting in a way which is agnostic to the current editor mode (line or block). Ironically this is
-// actually easier to manage in block mode as the Vue components render each line individually and we can just
-// conditionally add classes in the template. The highlighting in text mode needs to be spliced and removed inline
-// within the CodeMirror editor
+// Manages line highlighting in a way which is agnostic to the current editor mode (line or block).
 export const AutomatorHighlighter = {
   lines: {
     active: -1,
@@ -312,37 +323,15 @@ export const AutomatorHighlighter = {
   },
 
   updateHighlightedLine(line, key) {
-    if (player.reality.automator.type === AUTOMATOR_TYPE.TEXT && line !== -1) {
-      if (!AutomatorTextUI.editor) return;
-      this.removeHighlightedTextLine(key);
-      this.addHighlightedTextLine(line, key);
-    } else {
-      this.lines[key] = line;
+    if (player.reality.automator.type === AUTOMATOR_TYPE.TEXT && AutomatorTextUI.editor) {
+      highlightLine(AutomatorTextUI.editor, line, key);
     }
-  },
-
-  // We need to specifically remove the highlighting class from the old line before splicing it in for the new line
-  removeHighlightedTextLine(key) {
-    const removedLine = this.lines[key] - 1;
-    AutomatorTextUI.editor.removeLineClass(removedLine, "background", `c-automator-editor__${key}-line`);
-    AutomatorTextUI.editor.removeLineClass(removedLine, "gutter", `c-automator-editor__${key}-line-gutter`);
-    this.lines[key] = -1;
-  },
-  addHighlightedTextLine(line, key) {
-    AutomatorTextUI.editor.addLineClass(line - 1, "background", `c-automator-editor__${key}-line`);
-    AutomatorTextUI.editor.addLineClass(line - 1, "gutter", `c-automator-editor__${key}-line-gutter`);
     this.lines[key] = line;
   },
 
   clearAllHighlightedLines() {
     for (const lineType of Object.values(LineEnum)) {
-      if (player.reality.automator.type === AUTOMATOR_TYPE.TEXT && AutomatorTextUI.editor) {
-        for (let line = 0; line < AutomatorTextUI.editor.doc.size; line++) {
-          AutomatorTextUI.editor.removeLineClass(line, "background", `c-automator-editor__${lineType}-line`);
-          AutomatorTextUI.editor.removeLineClass(line, "gutter", `c-automator-editor__${lineType}-line-gutter`);
-        }
-      }
-      this.lines[lineType] = -1;
+      this.updateHighlightedLine(-1, lineType);
     }
   }
 };
@@ -362,8 +351,8 @@ export const AutomatorScroller = {
     if (player.reality.automator.type === AUTOMATOR_TYPE.TEXT) {
       // We can't use CodeMirror's scrollIntoView() method as that forces the entire viewport to keep the line in view.
       // This can potentially cause a softlock with "follow execution" enabled on sufficiently short screens.
-      editor = document.querySelector(".CodeMirror-scroll");
-      textHeight = AutomatorTextUI.editor.defaultTextHeight();
+      editor = document.querySelector(".cm-scroller");
+      textHeight = AutomatorTextUI.editor.defaultLineHeight;
       lineToScroll = line + 1;
     } else {
       editor = BlockAutomator.editor;
@@ -996,7 +985,7 @@ export const AutomatorBackend = {
       BlockAutomator.parseTextFromBlocks();
       player.reality.automator.type = AUTOMATOR_TYPE.TEXT;
     } else {
-      const toConvert = AutomatorTextUI.editor.getDoc().getValue();
+      const toConvert = AutomatorTextUI.editor.state.doc.toString();
       // Needs to be called to update the lines prop in the BlockAutomator object
       BlockAutomator.updateEditor(toConvert);
       AutomatorBackend.saveScript(scriptID, toConvert);

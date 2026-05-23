@@ -46,6 +46,7 @@ export const state = {
     subtab: "antimatter",
     newUI: false,
     srMode: false,
+    srAnnounceNews: false,
     news: false,
     initialized: false,
     tutorialState: 0,

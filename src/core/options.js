@@ -24,7 +24,7 @@ export class GameOptions {
     GameStorage.save();
   }
 
-  static toggleSRMode() {
+  static toggleSrMode() {
     player.options.srMode = !player.options.srMode;
     ui.view.srMode = player.options.srMode;
     GameStorage.save();
@@ -35,6 +35,12 @@ export class GameOptions {
       You can also try setting the UI mode to classic, and
       don't forget to turn off animations if they slow things down.`);
     }
+  }
+
+  static toggleSrAnnounceNews() {
+    player.options.srAnnounceNews = !player.options.srAnnounceNews;
+    ui.view.srAnnounceNews = player.options.srAnnounceNews;
+    GameStorage.save();
   }
 
   static cloudSave() {

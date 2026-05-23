@@ -137,6 +137,7 @@ export default {
       ref="line"
       class="c-news-line c-news-ticker__line"
       :class="lineClass"
+      :aria-live="$viewModel.srAnnounceNews ? 'polite': null"
       @click="onLineClick"
     />
   </div>

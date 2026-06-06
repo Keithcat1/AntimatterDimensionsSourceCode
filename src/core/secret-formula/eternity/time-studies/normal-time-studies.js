@@ -134,7 +134,7 @@ export const normalTimeStudies = [
   {
     id: 62,
     cost: 3,
-    requirement: [42, () => Perk.bypassEC5Lock.isBought || EternityChallenge(5).completions > 0],
+    requirement: [42, () => Perk.bypassEC5Lock.isBought || EternityChallenge(5).completions > 0 ? true : "1 completion of EC5"],
     reqType: TS_REQUIREMENT_TYPE.ALL,
     description: () => `You gain Replicanti ${formatInt(3)} times faster`,
     effect: 3
@@ -426,9 +426,9 @@ export const normalTimeStudies = [
     id: 181,
     cost: 200,
     requirement: [171,
-      () => EternityChallenge(1).completions > 0 || Perk.bypassEC1Lock.isBought,
-      () => EternityChallenge(2).completions > 0 || Perk.bypassEC2Lock.isBought,
-      () => EternityChallenge(3).completions > 0 || Perk.bypassEC3Lock.isBought],
+      () => EternityChallenge(1).completions > 0 || Perk.bypassEC1Lock.isBought ? true : "1 completion of EC1",
+      () => EternityChallenge(2).completions > 0 || Perk.bypassEC2Lock.isBought ? true : "1 completion of EC2",
+      () => EternityChallenge(3).completions > 0 || Perk.bypassEC3Lock.isBought ? true : "1 completion of EC3"],
     reqType: TS_REQUIREMENT_TYPE.ALL,
     description: () => `You gain ${formatPercents(0.01)} of your Infinity Points gained on crunch each second`,
     effect: () => gainedInfinityPoints().times(Time.deltaTime / 100)
@@ -437,7 +437,7 @@ export const normalTimeStudies = [
   {
     id: 191,
     cost: 400,
-    requirement: [181, () => EternityChallenge(10).completions > 0],
+    requirement: [181, () => EternityChallenge(10).completions > 0 ? true : "1 completion of EC10"],
     reqType: TS_REQUIREMENT_TYPE.ALL,
     description: () => `After Eternity you permanently keep ${formatPercents(0.05)}
     of your Infinities as Banked Infinities`,
@@ -446,7 +446,7 @@ export const normalTimeStudies = [
   {
     id: 192,
     cost: 730,
-    requirement: [181, () => EternityChallenge(10).completions > 0, () => !Enslaved.isRunning],
+    requirement: [181, () => EternityChallenge(10).completions > 0 ? true : "1 completion of EC10", () => !Enslaved.isRunning],
     reqType: TS_REQUIREMENT_TYPE.ALL,
     description: () => (Enslaved.isRunning
       ? "There is not enough space in this Reality"
@@ -455,7 +455,7 @@ export const normalTimeStudies = [
   {
     id: 193,
     cost: 300,
-    requirement: [181, () => EternityChallenge(10).completions > 0],
+    requirement: [181, () => EternityChallenge(10).completions > 0 ? true : "1 completion of EC10"],
     reqType: TS_REQUIREMENT_TYPE.ALL,
     description: "Antimatter Dimension multiplier based on Eternities",
     effect: () => (DC.E13000.pow(Currency.eternities.value.div(1e6).clampMax(1))),

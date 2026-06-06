@@ -821,10 +821,8 @@ the middle of an Eternity.
     }, {
       name: "Time Studies Accessibility",
       info: () => `
-If you buy a time study, it will say 'owned' after the ID and name. It will also tell you the IDs or numbers of adjacent studies you need to buy in order to get access to this one, if aplickable.
-<br>
-However, some studies have extra requirements - such as completing nearby ECs at least once. The study will tell you how many such unmet requirements you have if any, but due to an internal limitation can't tell you exactly what such requirements are.
-It should usually be easy enough to figure out as long as you play for a while.
+If you buy a time study, it will say 'owned' after the ID and name. It will also tell you the IDs or numbers of adjacent studies you need to buy in order to get access to this one, if aplickable. Some studies also have additional requirements besides time studies that will also be read.
+
 `,
       isUnlocked: () => PlayerProgress.eternityUnlocked() && ui.view.srMode,
       tags: ["eternity", "ts", "theorems", "tree", "study", "midgame", "accessibility"],

@@ -107,12 +107,6 @@ export default {
         Buy Max
       </button>
     </div>
-    <div
-      v-if="hasRealityButton"
-      class="tickspeed-labels"
-    >
-      {{ tickspeedDisplay }} | {{ multiplierDisplay }}
-    </div>
   </div>
 </template>
 

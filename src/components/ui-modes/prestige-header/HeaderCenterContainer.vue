@@ -36,7 +36,7 @@ export default {
       this.isDoomed = Pelle.isDoomed;
       this.antimatter.copyFrom(Currency.antimatter);
       this.hasRealityButton = PlayerProgress.realityUnlocked() || TimeStudy.reality.isBought;
-      if (!this.hasRealityButton) this.antimatterPerSec.copyFrom(Currency.antimatter.productionPerSecond);
+      this.antimatterPerSec.copyFrom(Currency.antimatter.productionPerSecond);
     },
   },
 };
@@ -48,6 +48,7 @@ export default {
     class="c-prestige-button-container"
   >
     <span>You have <span class="c-game-header__antimatter">{{ format(antimatter, 2, 1) }}</span> antimatter.</span>
+    <span>You are getting {{ format(antimatterPerSec, 2) }} antimatter per second.</span>
     <div
       v-if="hasRealityButton"
       class="c-reality-container"
@@ -59,11 +60,7 @@ export default {
       />
       <RealityButton v-else />
     </div>
-    <div v-else>
-      You are getting {{ format(antimatterPerSec, 2) }} antimatter per second.
-      <br>
-      <HeaderTickspeedInfo />
-    </div>
+  <HeaderTickspeedInfo />
   </div>
 </template>
 

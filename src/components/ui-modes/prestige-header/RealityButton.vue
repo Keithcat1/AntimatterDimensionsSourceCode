@@ -144,6 +144,7 @@ export default {
     <button
       class="c-reality-button infotooltip"
       :class="classObject"
+      v-if="hasRealityStudy"
       @click="handleClick"
     >
       <div class="l-reality-button__contents">

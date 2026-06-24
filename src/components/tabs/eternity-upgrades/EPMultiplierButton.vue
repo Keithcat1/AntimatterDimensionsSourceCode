@@ -71,6 +71,9 @@ export default {
     >
       <div :class="{ 'o-pelle-disabled': isDoomed }">
         Multiply Eternity Points from all sources by {{ formatX(5) }}
+        <div v-if="isDoomed">
+          Doomed by Pelle
+        </div>
         <br>
         Currently: {{ formatX(multiplier, 2, 0) }}
       </div>

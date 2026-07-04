@@ -1,4 +1,4 @@
-import "./automator-codemirror";
+import "./automator-codemirror6";
 
 export {
   forbiddenConstantPatterns

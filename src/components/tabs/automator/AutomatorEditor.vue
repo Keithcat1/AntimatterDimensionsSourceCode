@@ -28,7 +28,7 @@ export default {
       return player.reality.automator.scripts[this.currentScriptID].content;
     },
     currentScript() {
-      return CodeMirror.Doc(this.currentScriptContent, "automato").getValue();
+      return this.currentScriptContent;
     },
     isTextAutomator() {
       return this.automatorType === AUTOMATOR_TYPE.TEXT;

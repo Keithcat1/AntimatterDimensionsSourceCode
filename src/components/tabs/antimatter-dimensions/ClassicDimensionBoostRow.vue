@@ -80,7 +80,7 @@ export default {
 
 <template>
   <div class="c-dimension-row c-antimatter-dim-row c-antimatter-prestige-row">
-    <div class="l-dim-row__prestige-text c-dim-row__label c-dim-row__label--amount" aria-level="4">
+    <div class="l-dim-row__prestige-text c-dim-row__label c-dim-row__label--amount" role="heading" aria-level="4">
       {{ dimBoostName }} ({{ boostCountText }}):
       requires {{ formatHybridLarge(requirement.amount, 3) }} {{ dimName }} Dimensions
       <span v-if="hasSurge">{{ imaginaryText }}</span>

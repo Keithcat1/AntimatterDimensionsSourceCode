@@ -67,11 +67,6 @@ export default {
     v-if="shouldDisplay"
     class="c-prestige-button-container"
   >
-<<<<<<< HEAD
-=======
-    <span>You have <span class="c-game-header__antimatter">{{ format(antimatter, 2, 1) }}</span> antimatter.</span>
-    <span>You are getting {{ format(antimatterPerSec, 2) }} antimatter per second.</span>
->>>>>>> master
     <div
       v-if="showEndgame && !inCursedCore"
     >
@@ -102,7 +97,6 @@ export default {
         :is-header="true"
       />
     </div>
-<<<<<<< HEAD
     <div v-else-if="!inCursedCore">
       You are getting {{ format(antimatterPerSec, 2) }} {{ isFlipped ? "matter" : "antimatter" }} per second.
       <br>
@@ -111,9 +105,6 @@ export default {
     <div v-if="showDivine && !inCursedCore">
       <DivinityContainer />
     </div>
-=======
-  <HeaderTickspeedInfo />
->>>>>>> master
   </div>
 </template>
 

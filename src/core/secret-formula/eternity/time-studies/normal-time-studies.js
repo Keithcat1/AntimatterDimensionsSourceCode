@@ -133,7 +133,7 @@ export const normalTimeStudies = [
   {
     id: 62,
     cost: 3,
-    requirement: [42, () => (Perk.bypassEC5Lock.isBought && !player.disablePostReality) || EternityChallenge(5).completions > 0 ? true : "1 completion of EC5],
+    requirement: [42, () => (Perk.bypassEC5Lock.isBought && !player.disablePostReality) || EternityChallenge(5).completions > 0 ? true : "1 completion of EC5"],
     reqType: TS_REQUIREMENT_TYPE.ALL,
     description: () => `You gain Replicanti ${formatInt(3)} times faster`,
     effect: 3
@@ -442,7 +442,7 @@ export const normalTimeStudies = [
     id: 181,
     cost: 200,
     requirement: [171,
-      () => EternityChallenge(1).completions > 0 || (Perk.bypassEC1Lock.isBought && !player.disablePostReality ? true : "1 completion of EC1),
+      () => EternityChallenge(1).completions > 0 || (Perk.bypassEC1Lock.isBought && !player.disablePostReality ? true : "1 completion of EC1"),
       () => EternityChallenge(2).completions > 0 || (Perk.bypassEC2Lock.isBought && !player.disablePostReality ? true : "1 completion of EC2"),
       () => EternityChallenge(3).completions > 0 || (Perk.bypassEC3Lock.isBought && !player.disablePostReality ? true : "1 completion of EC3")],
     reqType: TS_REQUIREMENT_TYPE.ALL,

@@ -79,6 +79,9 @@ export default {
     >
       <div :class="{ 'o-pelle-disabled': isDoomed }">
         {{ epEffectText }}
+        <div v-if="isDoomed">
+          Doomed by Pelle
+        </div>
         <br>
         {{ totalEPEffectText }}
       </div>

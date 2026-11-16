@@ -59,6 +59,7 @@ export default {
   >
     <span class="o-eternity-milestone__goal">
       {{ quantifyInt("Eternity", eternities) }}:
+      <span v-if="$viewModel.srMode && isReached"> (active)</span>
     </span>
     <button
       v-tooltip="activeCondition"
@@ -67,6 +68,7 @@ export default {
       <span :class="{ 'o-pelle-disabled': isUseless }">
         {{ reward }} {{ (isLocked && !isReached) ? "(Locked behind a Pelle Upgrade)" : "" }}
       </span>
+      <div v-if="$viewModel.srMode && activeCondition !== null">{{ activeCondition }}</div>
     </button>
   </div>
 </template>

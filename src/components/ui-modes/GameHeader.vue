@@ -33,7 +33,6 @@ export default {
     <HeaderChallengeDisplay />
     <HeaderChallengeEffects />
     <HeaderPrestigeGroup />
-    <GameSpeedDisplay v-if="hasReality" />
     <br v-if="hasReality">
     <HeaderBlackHole />
   </div>

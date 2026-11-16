@@ -39,7 +39,6 @@ export default {
 
 <template>
   <div>
-    <br>
     {{ perUpgrade }}
     <br>
     {{ tickspeedDisplay }}

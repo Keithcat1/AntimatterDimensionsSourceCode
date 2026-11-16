@@ -475,7 +475,7 @@ export const credits = {
     }, {
       name: "NiZeKiHo",
       name2: "Nica",
-      roles: 19
+      roles: 15
     }, {
       name: "NotBrewst",
       name2: "Luc Leblanc",

@@ -50,7 +50,7 @@ export default {
       this.hasGalaxyGenerator = PelleRifts.recursion.milestones[2].canBeApplied || GalaxyGenerator.spentGalaxies.gt(0);
       this.antimatter.copyFrom(Currency.antimatter);
       this.hasRealityButton = PlayerProgress.realityUnlocked() || TimeStudy.reality.isBought;
-      if (!this.hasRealityButton) this.antimatterPerSec.copyFrom(Currency.antimatter.productionPerSecond);
+      this.antimatterPerSec.copyFrom(Currency.antimatter.productionPerSecond);
       this.celestialPoints.copyFrom(Currency.celestialPoints);
       this.doomedParticles.copyFrom(Currency.doomedParticles);
       this.showEndgame = PlayerProgress.endgameUnlocked();
@@ -67,6 +67,11 @@ export default {
     v-if="shouldDisplay"
     class="c-prestige-button-container"
   >
+<<<<<<< HEAD
+=======
+    <span>You have <span class="c-game-header__antimatter">{{ format(antimatter, 2, 1) }}</span> antimatter.</span>
+    <span>You are getting {{ format(antimatterPerSec, 2) }} antimatter per second.</span>
+>>>>>>> master
     <div
       v-if="showEndgame && !inCursedCore"
     >
@@ -97,6 +102,7 @@ export default {
         :is-header="true"
       />
     </div>
+<<<<<<< HEAD
     <div v-else-if="!inCursedCore">
       You are getting {{ format(antimatterPerSec, 2) }} {{ isFlipped ? "matter" : "antimatter" }} per second.
       <br>
@@ -105,6 +111,9 @@ export default {
     <div v-if="showDivine && !inCursedCore">
       <DivinityContainer />
     </div>
+=======
+  <HeaderTickspeedInfo />
+>>>>>>> master
   </div>
 </template>
 

@@ -425,7 +425,6 @@ export const PerkNetwork = {
   <div ref="tab" class="c-perk-tab">
     <PerkPointLabel />
       <PerkButton v-for="(perk, i) in perks" :key="i" :perk="perk" />
-    </template>
   </div>
 </template>
 

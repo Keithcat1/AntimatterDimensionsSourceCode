@@ -310,7 +310,7 @@ export default {
           :value="rarityThresholds[type.id]"
           :width="'100%'"
           @input="setRarityThreshold(type.id, $event)"
-          :aria-label="`${type.capitalize} rarity threshold`"
+          :aria-label="` ${srGetSymbol(type.id)} rarity threshold`"
         />
       </div>
     </div>

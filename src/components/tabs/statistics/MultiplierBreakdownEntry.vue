@@ -392,7 +392,7 @@ export default {
           while (item.getAttribute('aria-expanded') === 'true') {
             const group = item.querySelector('[role="group"]');
             if (!group) break;
-            const newItem = group.querySelector('[role="treeitem"]:last-child');
+            const newItem = group.querySelector(':scope > div > [role="treeitem"]:last-child');
             if(!newItem) break;
             item = newItem;
           }
@@ -506,7 +506,7 @@ export default {
       </ul>
     </div>
   </div>
-  <div v-else>
+  <div v-else role="treeitem" tabindex="0">
     No Active Effects
     <br>
     <br>

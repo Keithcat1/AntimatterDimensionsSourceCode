@@ -50,7 +50,11 @@ export default {
     },
     SRModeLabel() {
       return `Screen reader mode: ${this.$viewModel.srMode ? "On" : "Off"}`;
+    },
+        srAnnounceNewsLabel() {
+      return `Speak news as it arrives: ${this.$viewModel.srAnnounceNews ? "On" : "Off"}`;
     }
+
   },
   watch: {
     headerTextColored(newValue) {
@@ -84,10 +88,18 @@ export default {
         </OptionsButton>
         <OptionsButton
           class="o-primary-btn--option_font-large"
-          onclick="GameOptions.toggleSRMode()"
+          onclick="GameOptions.toggleSrMode()"
         >
           {{ SRModeLabel }}
         </OptionsButton>
+        <OptionsButton
+          class="o-primary-btn--option_font-large"
+          onclick="GameOptions.toggleSrAnnounceNews()"
+        >
+          {{ srAnnounceNewsLabel }}
+        </OptionsButton>
+
+
         <UpdateRateSlider />
         <OptionsButton
           class="o-primary-btn--option"

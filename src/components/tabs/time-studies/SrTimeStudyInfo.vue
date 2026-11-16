@@ -22,7 +22,6 @@ export default {
   },
   data: () => ({
     isBought: false,
-    unmetRequirements: 0,
   }),
   computed: {
     // Which studies any given study requires may not be obvious, so generate a description here for screen readers
@@ -32,12 +31,19 @@ export default {
       const needsAll = reqType !== TS_REQUIREMENT_TYPE.AT_LEAST_ONE;
       if (reqs.length === 0) return null;
       const studyIds = [];
+      let specialReqs = [];
       for (const i of reqs) {
         if (i instanceof Function === false) {
           studyIds.push(i);
+        } else {
+            let result = i();
+            if(typeof result === "string") {
+                specialReqs.push(result);
+            }
         }
       }
       let text;
+      let special = specialReqs.join(", ");
       if (studyIds.length > 0) {
         const joinedIds = studyIds.join(", ");
         if (studyIds.length === 1) {
@@ -45,13 +51,10 @@ export default {
         } else {
           text = `${needsAll ? "Needs all of" : "Needs one of"} ${joinedIds}`;
         }
-        if (this.unmetRequirements > 0) {
-          text += `, +${this.unmetRequirements} unmet requirements`;
+        if (specialReqs.length > 0) {
+          text += `, ${special}`
         }
         return text;
-      }
-      if (unmetRequirements > 0) {
-        return needsAll ? `${this.unmetRequirements} unmet requirements` : `Need at least 1 of ${this.unmetRequirements} unmet requirements`;
       }
       return null;
     }
@@ -59,16 +62,6 @@ export default {
   methods: {
     update() {
       this.isBought = this.study.isBought;
-      // Only normal studies have requirements
-      if (this.isNormal) {
-        let unmetRequirements = 0;
-        for (const requirement of this.study.config.requirement) {
-          if (requirement instanceof Function && requirement() === false) {
-            unmetRequirements += 1;
-          }
-        }
-        this.unmetRequirements = unmetRequirements;
-      }
     },
   },
 };

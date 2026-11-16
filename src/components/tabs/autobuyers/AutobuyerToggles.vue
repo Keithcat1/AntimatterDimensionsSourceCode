@@ -14,7 +14,9 @@ export default {
       autobuyersOn: false,
       showContinuum: false,
       disableContinuum: false,
-      allAutobuyersDisabled: false
+      allAutobuyersDisabled: false,
+      antimatterAutobuyersBuyMax: false,
+      isFlipped: false
     };
   },
   watch: {
@@ -24,6 +26,10 @@ export default {
     disableContinuum(newValue) {
       if (ImaginaryUpgrade(21).isLockingMechanics && !newValue) {
         ImaginaryUpgrade(21).tryShowWarningModal();
+        return;
+      }
+      if (DualityUpgrade(21).isLockingMechanics && !newValue) {
+        DualityUpgrade(21).tryShowWarningModal();
         return;
       }
       Laitela.setContinuum(!newValue);
@@ -36,13 +42,22 @@ export default {
       this.showContinuum = Laitela.isUnlocked;
       this.disableContinuum = player.auto.disableContinuum;
       this.allAutobuyersDisabled = Autobuyers.unlocked.every(autobuyer => !autobuyer.isActive);
+      this.antimatterAutobuyersBuyMax = Autobuyer.antimatterDimension.zeroIndexed.every(
+        autobuyer => autobuyer.mode === AUTOBUYER_MODE.BUY_10
+      );
+      this.isFlipped = player.universes.current === 2;
     },
     toggleAllAutobuyers() {
       for (const autobuyer of Autobuyers.unlocked) {
         autobuyer.isActive = this.allAutobuyersDisabled;
       }
+    },
+    toggleAntimatterSingles() {
+      for (const autobuyer of Autobuyer.antimatterDimension.zeroIndexed) {
+        autobuyer.mode = this.antimatterAutobuyersBuyMax ? AUTOBUYER_MODE.BUY_SINGLE : AUTOBUYER_MODE.BUY_10;
+      }
     }
-  }
+  },
 };
 </script>
 
@@ -60,7 +75,13 @@ export default {
     >
       {{ allAutobuyersDisabled ? "Enable" : "Disable" }} all autobuyers
     </PrimaryButton>
-    <span v-if="isDoomed">
+    <PrimaryButton
+      class="o-primary-btn--subtab-option"
+      @click="toggleAntimatterSingles()"
+    >
+      Set {{ isFlipped ? "MD" : "AD" }} autobuyers to buy {{ antimatterAutobuyersBuyMax ? "singles" : "max" }}
+    </PrimaryButton>
+    <span v-if="false">
       <PrimaryButton
         v-if="showContinuum"
         class="o-primary-btn--subtab-option"

@@ -22,11 +22,16 @@ export class TimeDimensionAutobuyerState extends IntervaledAutobuyerState {
   }
 
   get isUnlocked() {
-    return RealityUpgrade(13).isBought && (!Pelle.isDoomed || PelleUpgrade.TDAutobuyers.canBeApplied);
+    if (LHC.voidRunning && NullUpgrade.limerick5.isBought) return true;
+    return !player.disablePostReality && RealityUpgrade(13).isBought && (!Pelle.isDoomed || PelleUpgrade.TDAutobuyers.canBeApplied || PelleRealityUpgrade.telemechanicalProcess.canBeApplied);
   }
 
   get resetTickOn() {
     return PRESTIGE_EVENT.REALITY;
+  }
+
+  get disabledByContinuum() {
+    return Laitela.continuumActive && Alpha.currentStage >= 17 && !Alpha.isRunning;
   }
 
   get hasUnlimitedBulk() {
@@ -43,7 +48,7 @@ export class TimeDimensionAutobuyerState extends IntervaledAutobuyerState {
     const tier = this.tier;
     if (!TimeDimension(tier).isAvailableForPurchase) return;
     super.tick();
-    if (Currency.eternityPoints.exponent >= 10) {
+    if (Currency.eternityPoints.value.add(1).log10().gte(10)) {
       buyMaxTimeDimension(tier, 1, true);
     } else {
       buySingleTimeDimension(tier, true);

@@ -4,20 +4,31 @@ import { GameDatabase } from "../secret-formula/game-database";
 import { Quotes } from "./quotes";
 
 export const Teresa = {
-  timePoured: 0,
+  timePoured: new Decimal(0),
   lastUnlock: "effarig",
-  pouredAmountCap: 1e24,
+  get pouredAmountCap() {
+    return (ExpansionPack.teresaPack.isBought && !player.disablePostReality) ? DC.BEMAX : new Decimal(1e24);
+  },
   displayName: "Teresa",
   possessiveName: "Teresa's",
   get isUnlocked() {
+    if (EndgameMilestone.celestialEarlyUnlock.isReached) return true;
     return Achievement(147).isUnlocked;
   },
-  pourRM(diff) {
-    if (this.pouredAmount >= Teresa.pouredAmountCap) return;
-    this.timePoured += diff;
+  pourRM(diff, auto = false) {
+    if (this.pouredAmount.gte(Teresa.pouredAmountCap)) return;
+    if (auto) {
+      const autoPouredRM = Currency.realityMachines.value.div(1000);
+      this.pouredAmount = this.pouredAmount.add(autoPouredRM);
+      Currency.realityMachines.subtract(autoPouredRM);
+      this.checkForUnlocks();
+      return;
+    }
+    this.timePoured = this.timePoured.add(diff);
     const rm = Currency.realityMachines.value;
-    const rmPoured = Math.min((this.pouredAmount + 1e6) * 0.01 * Math.pow(this.timePoured, 2), rm.toNumber());
-    this.pouredAmount += Math.min(rmPoured, Teresa.pouredAmountCap - this.pouredAmount);
+    const rmPoured = Decimal.min((this.pouredAmount.plus(1e6)).times(0.01).times(Decimal.pow(this.timePoured, 2)), rm);
+    const leftToCap = this.pouredAmount.gte(1e100) ? Teresa.pouredAmountCap.sub(this.pouredAmount) : new Decimal(Teresa.pouredAmountCap.toNumber() - this.pouredAmount.toNumber());
+    this.pouredAmount = this.pouredAmount.add(Decimal.min(rmPoured, leftToCap));
     Currency.realityMachines.subtract(rmPoured);
     this.checkForUnlocks();
   },
@@ -31,7 +42,7 @@ export const Teresa = {
     player.celestials.teresa.run = true;
   },
   rewardMultiplier(antimatter) {
-    return Decimal.max(Decimal.pow(antimatter.plus(1).log10() / 1.5e8, 12), 1).toNumber();
+    return Decimal.max(Decimal.pow(antimatter.plus(1).log10().div(1.5e8), 12), 1);
   },
   get pouredAmount() {
     return player.celestials.teresa.pouredAmount;
@@ -40,13 +51,13 @@ export const Teresa = {
     player.celestials.teresa.pouredAmount = amount;
   },
   get fill() {
-    return Math.min(Math.log10(this.pouredAmount) / 24, 1);
+    return Decimal.min(Decimal.log10(this.pouredAmount.add(1)).div(24), 1).toNumber();
   },
   get possibleFill() {
-    return Math.min(Currency.realityMachines.value.plus(this.pouredAmount).log10() / 24, 1);
+    return Decimal.min(Currency.realityMachines.value.plus(this.pouredAmount).add(1).log10().div(24), 1).toNumber();
   },
   get rmMultiplier() {
-    return Math.max(250 * Math.pow(this.pouredAmount / 1e24, 0.1), 1);
+    return Decimal.max(new Decimal(250).times(Decimal.pow(this.pouredAmount.div(1e24), 0.1)), 1);
   },
   get runRewardMultiplier() {
     return this.rewardMultiplier(player.celestials.teresa.bestRunAM);
@@ -57,6 +68,15 @@ export const Teresa = {
   get runCompleted() {
     return player.celestials.teresa.bestRunAM.gt(1);
   },
+  get totalCharges() {
+    return PerkShopUpgrade.addCharges.effectOrDefault(0);
+  },
+  get chargesLeft() {
+    return this.totalCharges - player.celestials.teresa.charged.size;
+  },
+  get chargeModeOn() {
+    return player.celestials.teresa.chargeMode;
+  },
   quotes: Quotes.teresa,
   symbol: "Ϟ"
 };
@@ -65,10 +85,22 @@ class PerkShopUpgradeState extends RebuyableMechanicState {
   constructor(config) {
     super(config);
     this.costCap = config.costCap;
+    this.showEffectAfterCharge = config.showEffectAfterCharge;
+    this.chargedEffect = config.chargedEffect;
+    this.preChargedEffect = config.preChargedEffect;
+    this.effect = config.effect;
+  }
+
+  get chargedValue() {
+    return this.viewCharge ? this.chargedEffect : this.effect;
+  }
+
+  get displayEffect() {
+    return !this.viewCharge || this.showEffectAfterCharge;
   }
 
   get currency() {
-    return Currency.perkPoints;
+    return this.id === 6 ? Currency.celestialPoints : Currency.perkPoints;
   }
 
   get boughtAmount() {
@@ -80,12 +112,12 @@ class PerkShopUpgradeState extends RebuyableMechanicState {
   }
 
   get isCapped() {
-    return this.cost === this.costCap(this.bought);
+    return this.id === 6 ? new Decimal(this.cost).gte(this.costCap(this.bought)) : this.cost >= this.costCap(this.bought);
   }
 
   get isAvailableForPurchase() {
     const otherReq = this.config.otherReq ? this.config.otherReq() : true;
-    return this.cost <= this.currency.value && otherReq;
+    return new Decimal(this.cost).lte(new Decimal(this.currency.value)) && otherReq;
   }
 
   onPurchased() {
@@ -96,7 +128,8 @@ class PerkShopUpgradeState extends RebuyableMechanicState {
       Autobuyer.reality.bumpAmount(2);
     }
     // Give a single music glyph
-    if (this.id === 4 && !Pelle.isDoomed) {
+    if (this.id === 4 && (!Pelle.isDoomed || PelleDestructionUpgrade.teresaShop.canBeApplied)) {
+      if (Slabdrill.isCursed) return;
       if (GameCache.glyphInventorySpace.value === 0) {
         // Refund the perk point if they didn't actually get a glyph
         Currency.perkPoints.add(1);
@@ -107,12 +140,75 @@ class PerkShopUpgradeState extends RebuyableMechanicState {
       }
     }
     // Fill the inventory with music glyphs
-    if (this.id === 5 && !Pelle.isDoomed) {
+    if (this.id === 5 && (!Pelle.isDoomed || PelleDestructionUpgrade.teresaShop.canBeApplied)) {
+      if (Slabdrill.isCursed) return;
       const toCreate = GameCache.glyphInventorySpace.value;
       for (let count = 0; count < toCreate; count++) Glyphs.addToInventory(GlyphGenerator.musicGlyph());
-      GameUI.notify.success(`Created ${quantifyInt("Music Glyph", toCreate)}`);
+      if (!PerkShopUpgrade.musicGlyph.isCharged) GameUI.notify.success(`Created ${quantifyInt("Music Glyph", toCreate)}`);
     }
   }
+
+  get viewCharge() {
+    return (Teresa.chargeModeOn || this.isCharged || ui.view.shiftDown) && this.ableToCharge && ExpansionPack.teresaPack.isBought && !player.disablePostReality;
+  }
+
+  get ableToCharge() {
+    return this.id <= 4;
+  }
+
+  get isCharged() {
+    return player.celestials.teresa.charged.has(this.id);
+  }
+
+  get canCharge() {
+    return !this.isCharged && Teresa.chargesLeft !== 0 && this.ableToCharge && this.boughtAmount >= [20, 20, 14, 6, 0, Infinity, Infinity][this.id];
+  }
+
+  charge() {
+    player.celestials.teresa.charged.add(this.id);
+    if (this.id === 0) {
+      GameCache.staticGlyphWeights.invalidate();
+    }
+  }
+
+  disCharge() {
+    player.celestials.teresa.charged.delete(this.id);
+    if (this.id === 0) {
+      GameCache.staticGlyphWeights.invalidate();
+    }
+  }
+}
+
+export function tryChargeAllPerkUpgrades() {
+  if (Teresa.chargesLeft < 5) return;
+  const upgrades = [
+    PerkShopUpgrade.glyphLevel,
+    PerkShopUpgrade.rmMult,
+    PerkShopUpgrade.bulkDilation,
+    PerkShopUpgrade.autoSpeed,
+    PerkShopUpgrade.musicGlyph
+  ];
+  for (const upgrade of upgrades) {
+    if (upgrade.canCharge) {
+      upgrade.charge();
+    }
+  }
+}
+
+export function disChargeAllPerkUpgrades() {
+  const upgrades = [
+    PerkShopUpgrade.glyphLevel,
+    PerkShopUpgrade.rmMult,
+    PerkShopUpgrade.bulkDilation,
+    PerkShopUpgrade.autoSpeed,
+    PerkShopUpgrade.musicGlyph
+  ];
+  for (const upgrade of upgrades) {
+    if (upgrade.isCharged) {
+      upgrade.disCharge();
+    }
+  }
+  player.celestials.teresa.disCharge = false;
 }
 
 class TeresaUnlockState extends BitUpgradeState {
@@ -124,15 +220,19 @@ class TeresaUnlockState extends BitUpgradeState {
   }
 
   get pelleDisabled() {
-    return Pelle.isDoomed && this.config.isDisabledInDoomed;
+    return Pelle.isDoomed && this.isDisabledInDoomed;
+  }
+
+  get isDisabledInDoomed() {
+    return this.config.isDisabledInDoomed ? this.config.isDisabledInDoomed() : false;
   }
 
   get isEffectActive() {
-    return !this.pelleDisabled;
+    return !this.pelleDisabled && !player.disablePostReality;
   }
 
   get canBeUnlocked() {
-    return !this.isUnlocked && Teresa.pouredAmount >= this.price;
+    return !this.isUnlocked && Teresa.pouredAmount.gte(new Decimal(this.price));
   }
 
   get description() {

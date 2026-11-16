@@ -1,8 +1,15 @@
 <script>
 import AutobuyerToggles from "./AutobuyerToggles";
 import BigCrunchAutobuyerBox from "./BigCrunchAutobuyerBox";
+import BulkSingularityAutobuyerBox from "./BulkSingularityAutobuyerBox";
+import CelestialCrunchAutobuyerBox from "./CelestialCrunchAutobuyerBox";
+import CelestialDimensionBoostAutobuyerBox from "./CelestialDimensionBoostAutobuyerBox";
+import CelestialEternityAutobuyerBox from "./CelestialEternityAutobuyerBox";
+import CelestialGalaxyAutobuyerBox from "./CelestialGalaxyAutobuyerBox";
+import CelestialTickspeedAutobuyerBox from "./CelestialTickspeedAutobuyerBox";
 import DimensionAutobuyerBox from "./DimensionAutobuyerBox";
 import DimensionBoostAutobuyerBox from "./DimensionBoostAutobuyerBox";
+import EndgameAutobuyerBox from "./EndgameAutobuyerBox";
 import EternityAutobuyerBox from "./EternityAutobuyerBox";
 import GalaxyAutobuyerBox from "./GalaxyAutobuyerBox";
 import OpenModalHotkeysButton from "@/components/OpenModalHotkeysButton";
@@ -15,11 +22,18 @@ export default {
   components: {
     AutobuyerToggles,
     OpenModalHotkeysButton,
+    EndgameAutobuyerBox,
     RealityAutobuyerBox,
+    CelestialEternityAutobuyerBox,
     EternityAutobuyerBox,
+    CelestialCrunchAutobuyerBox,
     BigCrunchAutobuyerBox,
+    CelestialGalaxyAutobuyerBox,
     GalaxyAutobuyerBox,
+    CelestialDimensionBoostAutobuyerBox,
     DimensionBoostAutobuyerBox,
+    BulkSingularityAutobuyerBox,
+    CelestialTickspeedAutobuyerBox,
     TickspeedAutobuyerBox,
     DimensionAutobuyerBox,
     SimpleAutobuyersMultiBox
@@ -27,9 +41,11 @@ export default {
   data() {
     return {
       hasInfinity: false,
+      tickBought: false,
       hasContinuum: false,
       displayADAutobuyersIndividually: false,
       hasInstant: false,
+      isFlipped: false
     };
   },
   computed: {
@@ -45,7 +61,9 @@ export default {
   methods: {
     update() {
       this.hasInfinity = PlayerProgress.infinityUnlocked();
+      this.tickBought = Autobuyer.tickspeed.isBought;
       this.hasContinuum = Laitela.continuumActive;
+      this.isFlipped = player.universes.current === 2;
       this.checkADAutoStatus();
     },
     checkADAutoStatus() {
@@ -80,15 +98,22 @@ export default {
     </div>
     <b>Autobuyers with no displayed bulk have unlimited bulk by default.</b>
     <b>
-      Antimatter Dimension Autobuyers can have their bulk upgraded once interval is below {{ formatInt(100) }} ms.
+      {{ isFlipped ? "Matter" : "Antimatter" }} Dimension Autobuyers can have their bulk upgraded once interval is below {{ formatInt(100) }} ms.
     </b>
     <b v-if="hasInstant">Autobuyers with "Instant" interval will trigger every game tick ({{ gameTickLength }}).</b>
+    <EndgameAutobuyerBox class="c-endgame-pos" />
     <RealityAutobuyerBox class="c-reality-pos" />
+    <CelestialEternityAutobuyerBox class="c-celestial-eternity-pos" />
     <EternityAutobuyerBox class="c-eternity-pos" />
+    <CelestialCrunchAutobuyerBox class="c-celestial-infinity-pos" />
     <BigCrunchAutobuyerBox class="c-infinity-pos" />
+    <CelestialGalaxyAutobuyerBox />
     <GalaxyAutobuyerBox />
+    <CelestialDimensionBoostAutobuyerBox />
     <DimensionBoostAutobuyerBox />
-    <TickspeedAutobuyerBox v-if="!hasContinuum" />
+    <BulkSingularityAutobuyerBox />
+    <CelestialTickspeedAutobuyerBox />
+    <TickspeedAutobuyerBox v-if="!hasContinuum || !tickBought" />
     <template v-if="displayADAutobuyersIndividually">
       <DimensionAutobuyerBox
         v-for="tier in 8"
@@ -105,11 +130,23 @@ export default {
 when they're open. It looks slightly hacky but actually can't be done any other way; each AutobuyerBox creates
 its own stacking context, which means that all z-indices specified within are essentially scoped and the
 AutobuyerBox components will always render in page order regardless of internal z-indices without these. */
+.c-endgame-pos {
+  z-index: 6;
+}
+  
 .c-reality-pos {
-  z-index: 3;
+  z-index: 5;
+}
+
+.c-celestial-eternity-pos {
+  z-index: 4;
 }
 
 .c-eternity-pos {
+  z-index: 3;
+}
+
+.c-celestial-infinity-pos {
   z-index: 2;
 }
 

@@ -19,7 +19,7 @@ class AlchemyResourceState extends GameMechanicState {
   }
 
   get description() {
-    return this.config.description;
+    return typeof this.config.description === "function" ? this.config.description() : this.config.description;
   }
 
   get isBaseResource() {
@@ -66,6 +66,10 @@ class AlchemyResourceState extends GameMechanicState {
     return this.unlockedWith.level >= this.unlockedAt;
   }
 
+  get isDestroyed() {
+    return Pelle.isDoomed && this.config.destroyed();
+  }
+
   get lockText() {
     return `${this.unlockedWith.name} Level ${formatInt(this.unlockedAt)}`;
   }
@@ -75,9 +79,13 @@ class AlchemyResourceState extends GameMechanicState {
   }
 
   get effectValue() {
+    if (SlabdrillUnlocks.dilation.isUnlocked && (this.config.id <= 4 || this.config.id === 10)) {
+      return this.config.effect(this.amount);
+    }
+    if (player.disablePostReality) return this.config.effect(0);
     // Disable Exponential alchemy effect in V reality.
     if (V.isRunning && this.config.id === 14) return 0;
-    return this.config.effect(Pelle.isDisabled("alchemy") ? 0 : this.amount);
+    return this.config.effect(Pelle.isDisabled("alchemy") && this.isDestroyed ? 0 : this.amount);
   }
 
   get reaction() {
@@ -111,6 +119,7 @@ class BasicAlchemyResourceState extends AlchemyResourceState {
   }
 
   get cap() {
+    if (SlabdrillUnlocks.dilation.isUnlocked) return Slabdrill.power.div(1e12).toNumber();
     return Math.clampMax(Ra.alchemyResourceCap, this.highestRefinementValue);
   }
 }
@@ -174,7 +183,7 @@ class AlchemyReaction {
     let maxReagent = Glyphs.levelCap;
     for (const reagent of this._reagents) {
       const afterReaction = reagent.resource.amount - reagent.cost * this.actualYield;
-      maxReagent = Math.min(maxReagent, afterReaction);
+      maxReagent = Decimal.min(maxReagent, afterReaction).toNumber();
     }
     return maxReagent;
   }
@@ -210,7 +219,7 @@ class AlchemyReaction {
   combineReagents() {
     if (!this.isActive || this.reactionYield === 0) return;
     const unpredictabilityEffect = AlchemyResource.unpredictability.effectValue;
-    const times = 1 + poissonDistribution(unpredictabilityEffect / (1 - unpredictabilityEffect));
+    const times = Math.clampMax(1 + poissonDistribution(unpredictabilityEffect / (1 - unpredictabilityEffect)), 50);
     const cap = this._product.cap;
     for (let i = 0; i < times; i++) {
       const reactionYield = this.actualYield;

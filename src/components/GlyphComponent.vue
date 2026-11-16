@@ -67,6 +67,86 @@ const rarityBorderStyles = {
       colorSplit: [65, 85],
     },
   ],
+  elysian: [
+    {
+      lineType: "bump",
+      colorSplit: [15, 35],
+    },
+    {
+      lineType: "radial",
+      colorSplit: [65, 85],
+    },
+    {
+      lineType: "linear",
+      angles: [45, 135],
+      colorSplit: [10, 12, 14, 16, 84, 86, 88, 90],
+    }
+  ],
+  empyrean: [
+    {
+      lineType: "bump",
+      colorSplit: [15, 35],
+    },
+    {
+      lineType: "radial",
+      colorSplit: [65, 85],
+    },
+    {
+      lineType: "linear",
+      angles: [45, 135],
+      colorSplit: [10, 12, 14, 16, 18, 20, 80, 82, 84, 86, 88, 90],
+    }
+  ],
+  sublime: [
+    {
+      lineType: "bump",
+      colorSplit: [15, 40],
+    },
+    {
+      lineType: "radial",
+      colorSplit: [60, 85],
+    },
+    {
+      lineType: "linear",
+      angles: [45, 135],
+      colorSplit: [10, 12, 14, 16, 18, 20, 80, 82, 84, 86, 88, 90],
+    }
+  ],
+  superlunary: [
+    {
+      lineType: "bump",
+      colorSplit: [15, 40],
+    },
+    {
+      lineType: "radial",
+      colorSplit: [60, 85],
+    },
+    {
+      lineType: "linear",
+      angles: [45, 135],
+      colorSplit: [10, 12, 14, 16, 18, 20, 22, 24, 76, 78, 80, 82, 84, 86, 88, 90],
+    }
+  ],
+  perfect: [
+    {
+      lineType: "bump",
+      colorSplit: [15, 40],
+    },
+    {
+      lineType: "radial",
+      colorSplit: [60, 85],
+    },
+    {
+      lineType: "linear",
+      angles: [45, 135],
+      colorSplit: [10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 72, 74, 76, 78, 80, 82, 84, 86, 88, 90],
+    },
+    {
+      lineType: "linear",
+      angles: [0, 90],
+      colorSplit: [10, 12, 14, 16, 18, 20, 80, 82, 84, 86, 88, 90],
+    }
+  ],
   cursed: [
     {
       lineType: "spike",
@@ -269,7 +349,7 @@ export default {
       sacrificeReward: 0,
       uncappedRefineReward: 0,
       refineReward: 0,
-      displayLevel: 0,
+      displayLevel: new Decimal(),
       // We use this to not create a ton of tooltip components as soon as the glyph tab loads.
       tooltipLoaded: false,
       logTotalSacrifice: 0,
@@ -530,9 +610,11 @@ export default {
       switch (options.glyphInfoType) {
         case typeEnum.LEVEL:
           this.updateDisplayLevel();
-          return formatInt(this.displayLevel === 0 ? this.glyph.level : this.displayLevel);
+          return formatHybridLarge(new Decimal(this.displayLevel).eq(0) ? this.glyph.level : this.displayLevel, 3);
         case typeEnum.RARITY:
-          return formatRarity(strengthToRarity(Pelle.isDoomed ? Pelle.glyphStrength : this.glyph.strength));
+          return formatRarity(strengthToRarity(Slabdrill.isCursed
+            ? rarityToStrength(Math.clamp((Slabdrill.currentStage - 4) * 20, 0, 100))
+            : (Pelle.isDoomed && !PelleDestructionUpgrade.glyphRarity.canBeApplied ? Pelle.glyphStrength : this.glyph.strength)));
         case typeEnum.SAC_VALUE:
           return format(this.sacrificeReward, 2, 2);
         case typeEnum.FILTER_SCORE:
@@ -614,7 +696,7 @@ export default {
     },
     updateDisplayLevel() {
       if (this.ignoreModifiedLevel) {
-        this.displayLevel = 0;
+        this.displayLevel = DC.D0;
         return;
       }
       // We have to consider some odd interactions in order to properly show level. The getAdjustedGlyphLevel() function
@@ -631,8 +713,8 @@ export default {
       if (this.isActiveGlyph) this.displayLevel = getAdjustedGlyphLevel(this.glyph);
       else if (this.isInventoryGlyph) this.displayLevel = getAdjustedGlyphLevel(this.glyph, 0);
       else {
-        this.displayLevel = this.glyph.level +
-          (BASIC_GLYPH_TYPES.includes(this.glyph.type) ? this.realityGlyphBoost : 0);
+        this.displayLevel = this.glyph.level.add(
+          (BASIC_GLYPH_TYPES.includes(this.glyph.type) ? this.realityGlyphBoost : 0));
       }
     },
     hideTooltip() {

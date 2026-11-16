@@ -47,7 +47,8 @@ class GlyphEffectConfig {
     /** @type {string} See info about setup, above */
     this._totalDesc = setup.totalDesc ?? setup.singleDesc;
     /** @type {string} description of the effect without a specific value */
-    this._genericDesc = setup.genericDesc ?? setup.singleDesc.replace("{value}", "x");
+    this._genericDesc = setup.genericDesc ?? (typeof setup.singleDesc === "function"
+      ? setup.singleDesc().replace("{value}", "x") : setup.singleDesc.replace("{value}", "x"));
     /** @type {string} shortened description for use in glyph choice info modal */
     this._shortDesc = setup.shortDesc;
     /**
@@ -82,8 +83,8 @@ class GlyphEffectConfig {
     this.alterationType = setup.alterationType;
     /** @type {boolean} Indicates whether the effect grows with level or shrinks */
     this._biggerIsBetter = undefined;
-    /** @type {boolean} Determines if effect is disabled while in doomed */
-    this._enabledInDoomed = setup.enabledInDoomed ?? false;
+    /** @type {boolean | function(): boolean} Determines if effect is disabled while in doomed */
+    this._enabledInDoomed = setup.enabledInDoomed;
   }
 
   /**
@@ -114,8 +115,13 @@ class GlyphEffectConfig {
     return typeof shortDesc === "function" ? shortDesc() : shortDesc;
   }
 
+  get enabledInDoomed() {
+    const enabledInDoomed = this._enabledInDoomed;
+    return typeof enabledInDoomed === "function" ? enabledInDoomed() : enabledInDoomed;
+  }
+
   get isDisabledByDoomed() {
-    return Pelle.isDoomed && !this._enabledInDoomed;
+    return Pelle.isDoomed && !this.enabledInDoomed;
   }
 
   /** @returns {number} */
@@ -129,8 +135,8 @@ class GlyphEffectConfig {
    * @returns {boolean}
    */
   checkBiggerIsBetter() {
-    const baseEffect = new Decimal(this.effect(1, 1.01));
-    const biggerEffect = new Decimal(this.effect(100, 2));
+    const baseEffect = new Decimal(this.effect(DC.D1, 1.01));
+    const biggerEffect = new Decimal(this.effect(DC.E2, 2));
     return biggerEffect.gt(baseEffect);
   }
 
@@ -154,10 +160,6 @@ class GlyphEffectConfig {
       if (emptyCombine.value === undefined || emptyCombine.capped === undefined) {
         throw new Error(`The combine function for Glyph effect "${setup.id}" has invalid return type`);
       }
-      if (setup.softcap) {
-        throw new Error(`The combine function for Glyph effect "${setup.id}" gives capped information, ` +
-          `but there's also a softcap method`);
-      }
     }
   }
 
@@ -167,7 +169,7 @@ class GlyphEffectConfig {
     const softcap = setup.softcap;
     const emptyCombine = combine([]);
     // No supplied capped indicator
-    if (typeof (emptyCombine) === "number") {
+    if (typeof (emptyCombine) === "number" || softcap && typeof (emptyCombine.value) === "number") {
       if (softcap === undefined) return effects => ({ value: combine(effects), capped: false });
       return effects => {
         const rawValue = combine(effects);
@@ -175,10 +177,10 @@ class GlyphEffectConfig {
         return { value: cappedValue, capped: rawValue !== cappedValue };
       };
     }
-    if (emptyCombine instanceof Decimal) {
+    if (emptyCombine instanceof Decimal || softcap && emptyCombine.value instanceof Decimal) {
       if (softcap === undefined) return effects => ({ value: combine(effects), capped: false });
       const neqTest = emptyCombine.value instanceof Decimal ? (a, b) => a.neq(b) : (a, b) => a !== b;
-      return combine = effects => {
+      return effects => {
         const rawValue = combine(effects);
         const cappedValue = softcap(rawValue.value);
         return { value: cappedValue, capped: rawValue.capped || neqTest(rawValue.value, cappedValue) };
@@ -235,8 +237,8 @@ class FunctionalGlyphType {
     this._isUnlocked = setup.isUnlocked;
     /** @type {number} */
     this.alchemyResource = setup.alchemyResource;
-    /** @type {boolean} */
-    this.hasRarity = setup.hasRarity;
+    /** @type {undefined | function(): boolean} */
+    this._hasRarity = setup.hasRarity;
     if (!GLYPH_TYPES.includes(this.id)) {
       throw new Error(`Id ${this.id} not found in GLYPH_TYPES`);
     }
@@ -245,6 +247,11 @@ class FunctionalGlyphType {
   /** @returns {boolean} */
   get isUnlocked() {
     return this._isUnlocked?.() ?? true;
+  }
+
+  /** @returns {boolean} */
+  get hasRarity() {
+    return this._hasRarity?.() ?? false;
   }
 }
 

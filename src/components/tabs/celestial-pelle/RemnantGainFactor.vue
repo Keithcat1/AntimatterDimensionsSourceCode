@@ -21,8 +21,11 @@ export default {
         ep: new Decimal(0)
       },
       dilationMult: [1, 1, 1],
-      remnants: 0,
-      remnantsGain: 0
+      milestoneMult: [1, 1, 1],
+      hasMilestone: false,
+      isBuffed: false,
+      remnants: new Decimal(0),
+      remnantsGain: new Decimal(0)
     };
   },
   computed: {
@@ -36,8 +39,11 @@ export default {
       this.best.ip.copyFrom(player.celestials.pelle.records.totalInfinityPoints);
       this.best.ep.copyFrom(player.celestials.pelle.records.totalEternityPoints);
       this.dilationMult = PelleStrikes.dilation.hasStrike ? [500, 10, 5] : [1, 1, 1];
-      this.remnants = Pelle.cel.remnants;
-      this.remnantsGain = Pelle.remnantsGain;
+      this.milestoneMult = (EndgameMastery(61).isBought && !player.disablePostReality) ? [10000, 500, 25] : [1, 1, 1];
+      this.hasMilestone = (EndgameMastery(61).isBought && !player.disablePostReality);
+      this.isBuffed = false;
+      this.remnants.copyFrom(Pelle.cel.remnants);
+      this.remnantsGain.copyFrom(Pelle.remnantsGain);
     }
   }
 };
@@ -58,13 +64,13 @@ export default {
           <div class="l-remnant-factors-row">
             <div class="l-remnant-factors-col l-remnant-factors-col--first">
               <div class="l-remnant-factors-item">
-                log10(log10(am){{ dilationMult[0] > 1 ? `*${dilationMult[0]}` : "" }} + 2)
+                log10(log10(am){{ dilationMult[0] > 1 ? `*${dilationMult[0]}` : "" }}{{ milestoneMult[0] > 1 ? `*${milestoneMult[0]}` : "" }} + 2)
               </div>
               <div class="l-remnant-factors-item">
-                log10(log10(ip){{ dilationMult[1] > 1 ? `*${dilationMult[1]}` : "" }} + 2)
+                log10(log10(ip){{ dilationMult[1] > 1 ? `*${dilationMult[1]}` : "" }}{{ milestoneMult[1] > 1 ? `*${milestoneMult[1]}` : "" }} + 2)
               </div>
               <div class="l-remnant-factors-item">
-                log10(log10(ep){{ dilationMult[2] > 1 ? `*${dilationMult[2]}` : "" }} + 2)
+                log10(log10(ep){{ dilationMult[2] > 1 ? `*${dilationMult[2]}` : "" }}{{ milestoneMult[2] > 1 ? `*${milestoneMult[2]}` : "" }} + 2)
               </div>
               <div class="l-remnant-factors-item">
                 Static divisor
@@ -99,25 +105,25 @@ export default {
             </div>
             <div class="l-remnant-factors-col">
               <div class="l-remnant-factors-item">
-                {{ format(Math.log10(best.am.add(1).log10()*dilationMult[0] + 2), 2, 2) }}
+                {{ format(best.am.add(1).log10().times(dilationMult[0]).times(milestoneMult[0]).add(2).log10(), 2, 2) }}
               </div>
               <div class="l-remnant-factors-item">
-                {{ format(Math.log10(best.ip.add(1).log10()*dilationMult[1] + 2), 2, 2) }}
+                {{ format(best.ip.add(1).log10().times(dilationMult[1]).times(milestoneMult[1]).add(2).log10(), 2, 2) }}
               </div>
               <div class="l-remnant-factors-item">
-                {{ format(Math.log10(best.ep.add(1).log10()*dilationMult[2] + 2), 2, 2) }}
+                {{ format(best.ep.add(1).log10().times(dilationMult[2]).times(milestoneMult[2]).add(2).log10(), 2, 2) }}
               </div>
               <div class="l-remnant-factors-item">
-                {{ format(1.64, 2, 2) }}
+                {{ format(isBuffed ? 1.2 : (hasMilestone ? 1.6 : 1.7), 2, 2) }}
               </div>
               <div class="l-remnant-factors-item">
-                {{ format(7.5, 2, 2) }}
+                {{ format(isBuffed ? 8.5 : (hasMilestone ? 8.2 : 8), 2, 2) }}
               </div>
               <div class="l-remnant-factors-item">
                 {{ format(remnants, 2, 0) }}
               </div>
               <div class="l-remnant-factors-item">
-                {{ format(remnantsGain, 2, remnantsGain >= 1 ? 0 : 2) }}
+                {{ format(remnantsGain, 2, remnantsGain.gte(1) ? 0 : 2) }}
               </div>
             </div>
           </div>

@@ -1,29 +1,74 @@
-import { DC } from "./constants";
-
 export function effectiveBaseGalaxies() {
+  let alternation = Decimal.max(0, Replicanti.amount.add(1).log10().div(1e6)).times(AlchemyResource.alternation.effectValue).add(1);
+  let galaxies = player.galaxies;
+  if (Slabdrill.isCursed && SlabdrillUnlocks.timeStudy181.isUnlocked) {
+    galaxies = galaxies.min(100).add(galaxies.sub(100).max(0).div(10));
+  }
+  if (!player.disablePostReality && Alpha.currentStage >= 3) galaxies = galaxies.times(alternation);
+  let generatedGalaxies = GalaxyGenerator.galaxies;
+  if (!player.disablePostReality && Alpha.currentStage >= 3) generatedGalaxies = generatedGalaxies.times(alternation);
   // Note that this already includes the "50% more" active path effect
   let replicantiGalaxies = Replicanti.galaxies.bought;
-  replicantiGalaxies *= (1 + Effects.sum(
+  if (Slabdrill.isCursed && SlabdrillUnlocks.timeStudy181.isUnlocked) {
+    replicantiGalaxies = replicantiGalaxies.min(100).add(replicantiGalaxies.sub(100).max(0).div(10));
+  }
+  replicantiGalaxies = replicantiGalaxies.times(1 + Effects.sum(
     TimeStudy(132),
     TimeStudy(133)
   ));
   // "extra" galaxies unaffected by the passive/idle boosts come from studies 225/226 and Effarig Infinity
-  replicantiGalaxies += Replicanti.galaxies.extra;
-  const nonActivePathReplicantiGalaxies = Math.min(Replicanti.galaxies.bought,
+  replicantiGalaxies = replicantiGalaxies.add(Replicanti.galaxies.extra);
+  const nonActivePathReplicantiGalaxies = Decimal.min(Replicanti.galaxies.bought,
     ReplicantiUpgrade.galaxies.value);
   // Effects.sum is intentional here - if EC8 is not completed,
   // this value should not be contributed to total replicanti galaxies
-  replicantiGalaxies += nonActivePathReplicantiGalaxies * Effects.sum(EternityChallenge(8).reward);
+  replicantiGalaxies = replicantiGalaxies.add(nonActivePathReplicantiGalaxies.times(Effects.sum(EternityChallenge(8).reward)));
+  if (!player.disablePostReality && Alpha.currentStage >= 3) replicantiGalaxies = replicantiGalaxies.times(alternation);
   let freeGalaxies = player.dilation.totalTachyonGalaxies;
-  freeGalaxies *= 1 + Math.max(0, Replicanti.amount.log10() / 1e6) * AlchemyResource.alternation.effectValue;
-  return Math.max(player.galaxies + GalaxyGenerator.galaxies + replicantiGalaxies + freeGalaxies, 0);
+  if (Slabdrill.isCursed && SlabdrillUnlocks.timeStudy181.isUnlocked) {
+    freeGalaxies = freeGalaxies.min(100).add(freeGalaxies.sub(100).max(0).div(10));
+  }
+  freeGalaxies = freeGalaxies.times(alternation);
+  let extraGalaxies = GalacticPower.freeGalaxies;
+  if (!player.disablePostReality && Alpha.currentStage >= 3) extraGalaxies = extraGalaxies.times(alternation);
+  return GalacticPowers.galacticAscension.isUnlocked ?
+    Decimal.max(galaxies.max(1).times(generatedGalaxies.max(1)).times(replicantiGalaxies.max(1)).times(
+    freeGalaxies.max(1)).times(extraGalaxies.max(1)), 0).div(galacticInstability()) : Decimal.max(
+      galaxies.add(generatedGalaxies).add(replicantiGalaxies).add(freeGalaxies).add(extraGalaxies), 0).div(
+      galacticInstability());
+}
+
+export function actualBaseGalaxiesBeforeOverflow() {
+  return GalacticPowers.galacticAscension.isUnlocked
+    ? Replicanti.galaxies.total.max(1).times(player.galaxies.max(1)).times(player.dilation.totalTachyonGalaxies.max(1)).times(
+      GalaxyGenerator.galaxies.max(1)).times(GalacticPower.freeGalaxies.max(1))
+    : Replicanti.galaxies.total.add(player.galaxies).add(player.dilation.totalTachyonGalaxies).add(GalaxyGenerator.galaxies).add(
+      GalacticPower.freeGalaxies);
+}
+
+export function galacticInstability() {
+  const withoutGeneration = GalacticPowers.galacticAscension.isUnlocked
+    ? Replicanti.galaxies.total.max(1).times(player.galaxies.max(1)).times(player.dilation.totalTachyonGalaxies.max(1)).times(
+      GalacticPower.freeGalaxies.max(1))
+    : Replicanti.galaxies.total.add(player.galaxies).add(player.dilation.totalTachyonGalaxies).add(GalacticPower.freeGalaxies);
+  return withoutGeneration.div(DC.NUMMAX).max(1).pow(2/3);
+}
+
+export function actualBaseGalaxies() {
+  return actualBaseGalaxiesBeforeOverflow().div(galacticInstability());
+}
+
+export function actualBaseGalaxiesWithoutGeneration() {
+  return GalacticPowers.galacticAscension.isUnlocked
+    ? actualBaseGalaxies().div(GalaxyGenerator.galaxies.max(1))
+    : actualBaseGalaxies().sub(GalaxyGenerator.galaxies);
 }
 
 export function getTickSpeedMultiplier() {
   if (InfinityChallenge(3).isRunning) return DC.D1;
   if (Ra.isRunning) return DC.C1D1_1245;
   let galaxies = effectiveBaseGalaxies();
-  const effects = Effects.product(
+  const effects = DC.D1.timesEffectsOf(
     InfinityUpgrade.galaxyBoost,
     InfinityUpgrade.galaxyBoost.chargedEffect,
     BreakInfinityUpgrade.galaxyBoost,
@@ -32,39 +77,54 @@ export function getTickSpeedMultiplier() {
     Achievement(86),
     Achievement(178),
     Achievement(193),
+    EndgameMastery(52),
     InfinityChallenge(5).reward,
     PelleUpgrade.galaxyPower,
-    PelleRifts.decay.milestones[1]
+    PelleRifts.decay.milestones[1],
+    BreakInfinityUpgrade.galaxyBoost.chargedEffect
   );
-  if (galaxies < 3) {
+  if (galaxies.lt(3)) {
     // Magic numbers are to retain balancing from before while displaying
     // them now as positive multipliers rather than negative percentages
-    let baseMultiplier = 1 / 1.1245;
-    if (player.galaxies === 1) baseMultiplier = 1 / 1.11888888;
-    if (player.galaxies === 2) baseMultiplier = 1 / 1.11267177;
+    let baseMultiplier = DC.D1.div(1.1245);
+    if (player.galaxies.eq(1)) baseMultiplier = DC.D1.div(1.11888888);
+    if (player.galaxies.eq(2)) baseMultiplier = DC.D1.div(1.11267177);
     if (NormalChallenge(5).isRunning) {
-      baseMultiplier = 1 / 1.08;
-      if (player.galaxies === 1) baseMultiplier = 1 / 1.07632;
-      if (player.galaxies === 2) baseMultiplier = 1 / 1.072;
+      baseMultiplier = DC.D1.div(1.08);
+      if (player.galaxies.eq(1)) baseMultiplier = DC.D1.div(1.07632);
+      if (player.galaxies.eq(2)) baseMultiplier = DC.D1.div(1.072);
     }
-    const perGalaxy = 0.02 * effects;
-    if (Pelle.isDoomed) galaxies *= 0.5;
+    const perGalaxy = new Decimal(0.02).times(effects);
+    if (Pelle.isDoomed && !PelleDestructionUpgrade.disableGalaxyNerf.canBeApplied) galaxies = galaxies.times(0.5);
+    if (Slabdrill.isCursed) galaxies = galaxies.times(0.5);
+    if (SlabdrillUnlocks.galaxy.isUnlocked) galaxies = galaxies.times(Slabdrill.slabPowers.galMult());
 
-    galaxies *= Pelle.specialGlyphEffect.power;
-    return DC.D0_01.clampMin(baseMultiplier - (galaxies * perGalaxy));
+    galaxies = galaxies.times(Pelle.specialGlyphEffect.power);
+    return DC.D0_01.clampMin(baseMultiplier.sub(galaxies.times(perGalaxy)));
   }
-  let baseMultiplier = 0.8;
-  if (NormalChallenge(5).isRunning) baseMultiplier = 0.83;
-  galaxies -= 2;
-  galaxies *= effects;
-  galaxies *= getAdjustedGlyphEffect("cursedgalaxies");
-  galaxies *= getAdjustedGlyphEffect("realitygalaxies");
-  galaxies *= 1 + ImaginaryUpgrade(9).effectOrDefault(0);
-  if (Pelle.isDoomed) galaxies *= 0.5;
-
-  galaxies *= Pelle.specialGlyphEffect.power;
+  let baseMultiplier = new Decimal(0.8);
+  if (NormalChallenge(5).isRunning) baseMultiplier = new Decimal(0.83);
+  galaxies = galaxies.sub(2);
+  galaxies = galaxies.times(effects);
+  galaxies = galaxies.times(getAdjustedGlyphEffect("cursedgalaxies"));
+  galaxies = galaxies.times(getAdjustedGlyphEffect("realitygalaxies"));
+  galaxies = galaxies.times(1 + ImaginaryUpgrade(9).effectOrDefault(0));
+  if (Pelle.isDoomed && !PelleDestructionUpgrade.disableGalaxyNerf.canBeApplied) galaxies = galaxies.times(0.5);
+  if (Pelle.isDoomed) galaxies = galaxies.timesEffectOf(EndgameMastery(51));
+  if (GalacticPowers.galaxyStrength.isUnlocked) galaxies = galaxies.times(GalacticPowers.galaxyStrength.reward);
+  galaxies = galaxies.timesEffectsOf(DualityUpgrade(9), DualityUpgrade(23), DualityUpgrade(24));
+  if (LHC.voidRunning) galaxies = galaxies.timesEffectOf(Accelerators.cosmic._milestones[0]);
+  galaxies = galaxies.timesEffectOf(ResurgenceUpgrade.synergy4);
+  galaxies = galaxies.times(Pelle.specialGlyphEffect.power);
+  if (Alpha.isRunning) galaxies = galaxies.times(AlphaUnlocks.firstGalaxy.effects.nerf.effectOrDefault(1));
+  if (Alpha.isRunning && Alpha.currentStage >= 6) galaxies = galaxies.times(2);
+  if (Slabdrill.isCursed) galaxies = galaxies.times(0.5);
+  if (SlabdrillUnlocks.galaxy.isUnlocked) galaxies = galaxies.times(Slabdrill.slabPowers.galMult());
+  if (Slabdrill.isCursed) galaxies = galaxies.timesEffectOf(EternityChallenge(5).reward);
+  if (Slabdrill.isCursed) galaxies = galaxies.timesEffectsOf(TimeStudy(223), TimeStudy(224));
+  galaxies = galaxies.times(NormalChallenge(5).chargedEffect);
   const perGalaxy = DC.D0_965;
-  return perGalaxy.pow(galaxies - 2).times(baseMultiplier);
+  return perGalaxy.pow(galaxies.sub(2)).times(baseMultiplier);
 }
 
 export function buyTickSpeed() {
@@ -75,7 +135,7 @@ export function buyTickSpeed() {
   }
   Tutorial.turnOffEffect(TUTORIAL_STATE.TICKSPEED);
   Currency.antimatter.subtract(Tickspeed.cost);
-  player.totalTickBought++;
+  player.totalTickBought = player.totalTickBought.add(1);
   player.records.thisInfinity.lastBuyTime = player.records.thisInfinity.time;
   player.requirementChecks.permanent.singleTickspeed++;
   if (NormalChallenge(2).isRunning) player.chall2Pow = 0;
@@ -94,17 +154,17 @@ export function buyMaxTickSpeed() {
     while (Currency.antimatter.gt(cost) && cost.lt(goal)) {
       Tickspeed.multiplySameCosts();
       Currency.antimatter.subtract(cost);
-      player.totalTickBought++;
+      player.totalTickBought = player.totalTickBought.add(1);
       boughtTickspeed = true;
       cost = Tickspeed.cost;
     }
   } else {
-    const purchases = Tickspeed.costScale.getMaxBought(player.totalTickBought, Currency.antimatter.value, 1);
+    const purchases = Tickspeed.costScale.getMaxBoughtDecimal(player.totalTickBought, Currency.antimatter.value, 1);
     if (purchases === null) {
       return;
     }
     Currency.antimatter.subtract(Decimal.pow10(purchases.logPrice));
-    player.totalTickBought += purchases.quantity;
+    player.totalTickBought = player.totalTickBought.add(purchases.quantity);
     boughtTickspeed = true;
   }
 
@@ -115,22 +175,23 @@ export function buyMaxTickSpeed() {
 }
 
 export function resetTickspeed() {
-  player.totalTickBought = 0;
-  player.chall9TickspeedCostBumps = 0;
+  player.totalTickBought = DC.D0;
+  player.chall9TickspeedCostBumps = DC.D0;
 }
 
 export const Tickspeed = {
 
   get isUnlocked() {
-    return AntimatterDimension(2).bought > 0 || EternityMilestone.unlockAllND.isReached ||
-      PlayerProgress.realityUnlocked();
+    return (AntimatterDimension(2).bought.gt(0) || EternityMilestone.unlockAllND.isReached ||
+      PlayerProgress.realityUnlocked() || Slabdrill.isCursed) && !Slabdrill.coreActive;
   },
 
   get isAvailableForPurchase() {
     return this.isUnlocked &&
       !EternityChallenge(9).isRunning &&
+      player.universes.current !== 1 &&
       !Laitela.continuumActive &&
-      (player.break || this.cost.lt(Decimal.NUMBER_MAX_VALUE));
+      (player.break || this.cost.lt(DC.NUMMAX));
   },
 
   get isAffordable() {
@@ -142,28 +203,35 @@ export const Tickspeed = {
   },
 
   get current() {
-    const tickspeed = Effarig.isRunning
+    let tickspeed = Effarig.isRunning
       ? Effarig.tickspeed
       : this.baseValue.powEffectOf(DilationUpgrade.tickspeedPower);
-    return player.dilation.active || PelleStrikes.dilation.hasStrike ? dilatedValueOf(tickspeed) : tickspeed;
+    if (SlabdrillUnlocks.infinity.isUnlocked) tickspeed = tickspeed.pow(0.42);
+    if (SlabdrillUnlocks.replicanti.isUnlocked) tickspeed = tickspeed.pow(0.42);
+    tickspeed = (player.dilation.active || (PelleStrikes.dilation.hasStrike && !PelleStrikes.dilation.isDestroyed())) ? dilatedValueOf(tickspeed) : tickspeed;
+    tickspeed = player.compression.active ? compressedMultiplier(tickspeed) : tickspeed;
+    if (player.endgame.overcharge.isRunning) {
+      tickspeed = dilateMultiplier(tickspeed, Ascension.overchargePenalty);
+    }
+    return tickspeed;
   },
 
   get cost() {
-    return this.costScale.calculateCost(player.totalTickBought + player.chall9TickspeedCostBumps);
+    return this.costScale.calculateCostDecimal(player.totalTickBought.add(player.chall9TickspeedCostBumps));
   },
 
   get costScale() {
     return new ExponentialCostScaling({
       baseCost: 1000,
-      baseIncrease: 10,
+      baseIncrease: Slabdrill.isCursed ? (InfinityChallenge(5).isRunning ? 1000 : 2) : 10,
       costScale: Player.tickSpeedMultDecrease,
       scalingCostThreshold: Number.MAX_VALUE
     });
   },
 
   get continuumValue() {
-    if (!this.isUnlocked) return 0;
-    return this.costScale.getContinuumValue(Currency.antimatter.value, 1) * Laitela.matterExtraPurchaseFactor;
+    if (!this.isUnlocked || player.universes.current === 1) return DC.D0;
+    return this.costScale.getContinuumValue(Currency.antimatter.value, 1).times(Laitela.matterExtraPurchaseFactor);
   },
 
   get baseValue() {
@@ -173,14 +241,14 @@ export const Tickspeed = {
       Achievement(66),
       Achievement(83)
     )
-      .times(getTickSpeedMultiplier().pow(this.totalUpgrades));
+      .times(getTickSpeedMultiplier().pow(this.totalUpgrades).powEffectOf(Ra.unlocks.tickspeedPower));
   },
 
   get totalUpgrades() {
     let boughtTickspeed;
     if (Laitela.continuumActive) boughtTickspeed = this.continuumValue;
     else boughtTickspeed = player.totalTickBought;
-    return boughtTickspeed + player.totalTickGained;
+    return CMilestones.tickspeedEqualizer(boughtTickspeed, player.totalTickGained);
   },
 
   get perSecond() {
@@ -189,7 +257,7 @@ export const Tickspeed = {
 
   multiplySameCosts() {
     for (const dimension of AntimatterDimensions.all) {
-      if (dimension.cost.e === this.cost.e) dimension.costBumps++;
+      if (dimension.cost.max(1).log10().floor().eq(this.cost.max(1).log10().floor())) dimension.costBumps = dimension.costBumps.add(1);
     }
   }
 };
@@ -207,45 +275,50 @@ export const FreeTickspeed = {
 
   get softcap() {
     let softcap = FreeTickspeed.BASE_SOFTCAP;
-    if (Enslaved.has(ENSLAVED_UNLOCKS.FREE_TICKSPEED_SOFTCAP)) {
+    if (Enslaved.has(ENSLAVED_UNLOCKS.FREE_TICKSPEED_SOFTCAP) && !player.disablePostReality) {
       softcap += 100000;
     }
+    if (SlabdrillUnlocks.eternityChallengeTen.isUnlocked) softcap /= 10;
     return softcap;
   },
 
   fromShards(shards) {
-    const tickmult = (1 + (Effects.min(1.33, TimeStudy(171)) - 1) *
-      Math.max(getAdjustedGlyphEffect("cursedtickspeed"), 1));
-    const logTickmult = Math.log(tickmult);
-    const logShards = shards.ln();
-    const uncapped = Math.max(0, logShards / logTickmult);
-    if (uncapped <= FreeTickspeed.softcap) {
+    const alphaMult = Alpha.isRunning ? AlphaUnlocks.ec11Bulk.effects.nerfB.effectOrDefault(1.33) : 1.33;
+    const tickmult = Decimal.min(Effects.min(1.33, TimeStudy(171)), alphaMult).sub(1).times(
+      Decimal.max(getAdjustedGlyphEffect("cursedtickspeed"), 1)).add(1);
+    const logTickmult = Decimal.ln(tickmult);
+    const logShards = Decimal.max(1, shards).ln();
+    const uncapped = Decimal.max(0, logShards.div(logTickmult));
+    const exponentIncrease = new Decimal(FreeTickspeed.GROWTH_EXP).pow(Penteracts.softcapReduction());
+    if (uncapped.lte(FreeTickspeed.softcap)) {
       this.multToNext = tickmult;
       return {
-        newAmount: Math.ceil(uncapped),
-        nextShards: Decimal.pow(tickmult, Math.ceil(uncapped))
+        newAmount: Decimal.ceil(uncapped),
+        nextShards: Decimal.pow(tickmult, Decimal.ceil(uncapped))
       };
     }
     // Log of (cost - cost up to softcap)
-    const priceToCap = FreeTickspeed.softcap * logTickmult;
+    const priceToCap = new Decimal(FreeTickspeed.softcap).times(logTickmult);
     // In the following we're implicitly applying the function (ln(x) - priceToCap) / logTickmult to all costs,
     // so, for example, if the cost is 1 that means it's actually exp(priceToCap) * tickmult.
-    const desiredCost = (logShards - priceToCap) / logTickmult;
-    const costFormulaCoefficient = FreeTickspeed.GROWTH_RATE / FreeTickspeed.GROWTH_EXP / logTickmult;
+    const desiredCost = logShards.sub(priceToCap).div(logTickmult);
+    const costFormulaCoefficient = new Decimal(FreeTickspeed.GROWTH_RATE).div(exponentIncrease).div(logTickmult).times(
+      Decimal.pow(Effects.product(EndgameMastery(103)), 2)).times(Decimal.pow(
+      SlabdrillUnlocks.eternityChallengeTen.isUnlocked ? 10 : 1, 2));
     // In the following we're implicitly subtracting softcap from bought,
     // so, for example, if bought is 1 that means it's actually softcap + 1.
     // The first term (the big one) is the asymptotically more important term (since FreeTickspeed.GROWTH_EXP > 1),
     // but is small initially. The second term allows us to continue the pre-cap free tickspeed upgrade scaling
     // of tickmult per upgrade.
-    const boughtToCost = bought => costFormulaCoefficient * Math.pow(
-      Math.max(bought, 0), FreeTickspeed.GROWTH_EXP) + bought;
-    const derivativeOfBoughtToCost = x => FreeTickspeed.GROWTH_EXP * costFormulaCoefficient * Math.pow(
-      Math.max(x, 0), FreeTickspeed.GROWTH_EXP - 1) + 1;
-    const newtonsMethod = bought => bought - (boughtToCost(bought) - desiredCost) / derivativeOfBoughtToCost(bought);
+    const boughtToCost = bought => costFormulaCoefficient.times(Decimal.pow(
+      Decimal.max(bought, 0), exponentIncrease)).add(bought);
+    const derivativeOfBoughtToCost = x => new Decimal(exponentIncrease).times(costFormulaCoefficient).times(Decimal.pow(
+      Decimal.max(x, 0), exponentIncrease.sub(1))).add(1);
+    const newtonsMethod = bought => bought.sub(boughtToCost(bought).sub(desiredCost).div(derivativeOfBoughtToCost(bought)));
     let oldApproximation;
-    let approximation = Math.min(
+    let approximation = Decimal.min(
       desiredCost,
-      Math.pow(desiredCost / costFormulaCoefficient, 1 / FreeTickspeed.GROWTH_EXP)
+      Decimal.pow(desiredCost.div(costFormulaCoefficient), DC.D1.div(exponentIncrease))
     );
     let counter = 0;
     // The bought formula is concave upwards. We start with an over-estimate; when using newton's method,
@@ -254,14 +327,14 @@ export const FreeTickspeed = {
     do {
       oldApproximation = approximation;
       approximation = newtonsMethod(approximation);
-    } while (approximation < oldApproximation && ++counter < 100);
-    const purchases = Math.floor(approximation);
+    } while (approximation.lt(oldApproximation) && ++counter < 100);
+    const purchases = Decimal.floor(approximation);
     // This undoes the function we're implicitly applying to costs (the "+ 1") is because we want
     // the cost of the next upgrade.
-    const next = Decimal.exp(priceToCap + boughtToCost(purchases + 1) * logTickmult);
-    this.multToNext = Decimal.exp((boughtToCost(purchases + 1) - boughtToCost(purchases)) * logTickmult);
+    const next = Decimal.exp(priceToCap.add(boughtToCost(purchases.add(1)).times(logTickmult)));
+    this.multToNext = Decimal.exp(boughtToCost(purchases.add(1)).sub(boughtToCost(purchases)).times(logTickmult));
     return {
-      newAmount: purchases + FreeTickspeed.softcap,
+      newAmount: purchases.add(FreeTickspeed.softcap),
       nextShards: next,
     };
   }

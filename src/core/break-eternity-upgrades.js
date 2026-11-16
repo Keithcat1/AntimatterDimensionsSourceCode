@@ -1,6 +1,10 @@
 import { RebuyableMechanicState, SetPurchasableMechanicState } from "./game-mechanics";
 
 export class BreakEternityUpgradeState extends SetPurchasableMechanicState {
+  get name() {
+    return this.config.name;
+  }
+  
   get currency() {
     return Currency.antimatter;
   }
@@ -8,9 +12,21 @@ export class BreakEternityUpgradeState extends SetPurchasableMechanicState {
   get set() {
     return player.breakEternityUpgrades;
   }
+
+  onPurchased() {
+    this.config.onPurchased?.();
+  }
+
+  get isAvailable() {
+    return !Pelle.isDoomed;
+  }
 }
 
 class RebuyableBreakEternityUpgradeState extends RebuyableMechanicState {
+  get name() {
+    return typeof this.config.name === "function" ? this.config.name() : this.config.name;
+  }
+  
   get currency() {
     return Currency.antimatter;
   }
@@ -37,7 +53,7 @@ class RebuyableBreakEternityUpgradeState extends RebuyableMechanicState {
 }
 
 export const BreakEternityUpgrade = mapGameDataToObject(
-  GameDatabase.endgame.upgrades,
+  GameDatabase.endgame.breakUpgrades,
   config => (config.rebuyable
     ? new RebuyableBreakEternityUpgradeState(config)
     : new BreakEternityUpgradeState(config))

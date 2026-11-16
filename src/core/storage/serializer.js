@@ -40,7 +40,7 @@ export const GameSaveSerializer = {
   // confuse your saves with AD saves but can still import AD saves (this will
   // also require changing some other code slightly, particularly decode).
   startingString: {
-    savefile: "AntimatterDimensionsSavefileFormat",
+    savefile: "AntimatterDimensionsEndgameSavefileFormat",
     "automator script": "AntimatterDimensionsAutomatorScriptFormat",
     "automator data": "AntimatterDimensionsAutomatorDataFormat",
     "glyph filter": "AntimatterDimensionsGlyphFilterFormat",
@@ -122,6 +122,9 @@ export const GameSaveSerializer = {
   // old automator scripts (where this function is also used) are very unlikely
   // to start with our magic string because it is longer than a few characters.
   decodeText(text, type) {
+    if (text.startsWith("AntimatterDimensionsSavefileFormat")) {
+      text = text.replace("AntimatterDimensionsSavefileFormat", "AntimatterDimensionsEndgameSavefileFormat");
+    }
     if (text.startsWith(this.startingString[type])) {
       const len = this.startingString[type].length;
       const version = text.slice(len, len + 3);

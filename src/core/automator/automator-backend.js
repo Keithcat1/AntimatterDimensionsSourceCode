@@ -214,7 +214,7 @@ export const AutomatorData = {
       // Messages often overflow the 120 col limit and extra spacing gets included in the message - remove it
       message: message.replaceAll(/\s?\n\s+/gu, " "),
       line: AutomatorBackend.translateLineNumber(line),
-      thisReality: Time.thisRealityRealTime.totalSeconds,
+      thisReality: Time.thisRealityRealTime.totalSeconds.toNumber(),
       timestamp: currTime,
       timegap: currTime - this.lastEvent
     });
@@ -451,7 +451,8 @@ export const AutomatorBackend = {
   },
 
   get currentInterval() {
-    return Math.clampMin(Math.pow(0.994, Currency.realities.value) * 500, 1);
+    if (EndgameMastery(21).isBought && !player.disablePostReality) return Math.clampMin(Math.pow(0.94, Currency.realities.value.toNumber()) * 500, 1);
+    return Math.clampMin(Math.pow(0.994, Currency.realities.value.toNumber()) * 500, 1);
   },
 
   get currentRawText() {
@@ -736,7 +737,7 @@ export const AutomatorBackend = {
         return;
     }
 
-    player.reality.automator.execTimer += diff;
+    player.reality.automator.execTimer += new Decimal(diff).toNumber();
     const commandsThisUpdate = Math.min(
       Math.floor(player.reality.automator.execTimer / this.currentInterval), this.MAX_COMMANDS_PER_UPDATE
     );

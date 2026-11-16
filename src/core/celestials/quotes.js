@@ -1,4 +1,4 @@
-import { BitUpgradeState } from "../game-mechanics";
+import { GameMechanicState } from "../game-mechanics";
 import wordShift from "../word-shift";
 
 export const Quote = {
@@ -76,17 +76,23 @@ class QuoteLine {
   constructor(line, parent) {
     this._parent = parent;
     this._showCelestialName = line.showCelestialName ?? true;
+    this._celestialName = line.celestialName
+      ? (typeof line.celestialName === "function" ? line.celestialName() : line.celestialName)
+      : false;
 
-    this._celestialArray = line.background
+    this._celestialArray = typeof line.background === "string" ? [[line.background, 1]] : (line.background
       ? () => blendCel(line.background)
-      : [[parent.celestial, 1]];
+      : [[parent.celestial, 1]]);
 
     const replacementMatch = /\$(\d+)/gu;
 
+    const usernameReplacementMatch = /%name+/gu;
+
     this._line = typeof line === "string"
-      ? line
+      ? () => line.replaceAll(usernameReplacementMatch, player.username)
       // This matches each digit after a $ and replaces it with the wordCycle of an array with the digit it matched.
-      : () => line.text.replaceAll(replacementMatch, (_, i) => wordShift.wordCycle(line[i]));
+      : () => line.text.replaceAll(replacementMatch, (_, i) => wordShift.wordCycle(line[i])).replaceAll(
+        usernameReplacementMatch, player.username);
   }
 
   get line() {
@@ -98,6 +104,16 @@ class QuoteLine {
   }
 
   get celestialSymbols() {
+    if (Celestials[this.celestials[0][0]] === undefined) {
+      if (this.celestials[0][0] === "destroyer") {
+        let y = [];
+        y.push(Destroyer.symbol);
+        return y;
+      }
+      let s = [];
+      s.push(Elemental.symbol);
+      return s;
+    }
     return this.celestials.map(c => Celestials[c[0]].symbol);
   }
 
@@ -106,19 +122,44 @@ class QuoteLine {
   }
 
   get celestialName() {
+    if (this._celestialName) {
+      if (this._celestialName === "elemental") return Elemental.displayName;
+      if (this._celestialName === "destroyer") return Destroyer.displayName;
+      return Celestials[this._celestialName.toLowerCase()].displayName;
+    }
+    if (Celestials[this._parent.celestial] === undefined) return Elemental.displayName;
     return Celestials[this._parent.celestial].displayName;
   }
 }
 
-class CelQuotes extends BitUpgradeState {
+class CelQuotes extends GameMechanicState {
   constructor(config, celestial) {
     super(config);
     this._celestial = celestial;
     this._lines = config.lines.map(line => new QuoteLine(line, this));
   }
 
-  get bits() { return player.celestials[this._celestial].quoteBits; }
-  set bits(value) { player.celestials[this._celestial].quoteBits = value; }
+  /*get bits() {
+    return player.celestials[this._celestial] ? player.celestials[this._celestial].quoteBits : player.expanse.elemental.quoteBits;
+  }
+  set bits(value) {
+    if (player.celestials[this._celestial]) {
+      player.celestials[this._celestial].quoteBits = value;
+    }
+    else {
+      player.expanse.elemental.quoteBits = value;
+    }
+  }*/
+
+  get isUnlocked() {
+    return player.celestials[this._celestial]
+      ? player.celestials[this._celestial].quotes.includes(this.id)
+      : player.expanse.elemental.quotes.includes(this.id);
+  }
+
+  get canBeUnlocked() {
+    return !this.isUnlocked;
+  }
 
   get requirement() {
     // If requirement is defined, it is always a function returning a boolean.
@@ -138,7 +179,22 @@ class CelQuotes extends BitUpgradeState {
   }
 
   show() { this.unlock(); }
-  onUnlock() { this.present(); }
+
+  unlock() {
+    if (this.canBeUnlocked) {
+      player.celestials[this._celestial]
+        ? player.celestials[this._celestial].quotes.push(this.id)
+        : player.expanse.elemental.quotes.push(this.id);
+      this.onUnlock();
+    }
+  }
+
+  onUnlock() {
+    player.celestials[this._celestial]
+      ? player.celestials[this._celestial].quotes.push(this.id)
+      : player.expanse.elemental.quotes.push(this.id);
+    this.present();
+  }
 
   present() {
     Quote.addToQueue(this);
@@ -175,4 +231,16 @@ export const Quotes = {
     GameDatabase.celestials.quotes.pelle,
     config => new CelQuotes(config, "pelle")
   ),
+  alpha: mapGameDataToObject(
+    GameDatabase.celestials.quotes.alpha,
+    config => new CelQuotes(config, "alpha")
+  ),
+  slabdrill: mapGameDataToObject(
+    GameDatabase.celestials.quotes.slabdrill,
+    config => new CelQuotes(config, "slabdrill")
+  ),
+  elemental: mapGameDataToObject(
+    GameDatabase.celestials.quotes.elemental,
+    config => new CelQuotes(config, "elemental")
+  )
 };

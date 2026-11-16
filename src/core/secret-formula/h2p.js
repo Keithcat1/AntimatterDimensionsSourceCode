@@ -1,5 +1,3 @@
-import { DC } from "../constants";
-
 import { credits } from "@/core/secret-formula/credits";
 
 export const h2p = {
@@ -915,7 +913,7 @@ would otherwise be able to complete the Reality normally.</b>
 <br>
 <br>
 You need to redo the requirements for each Achievement in order to get their rewards again, but you will also passively
-unlock the next incomplete Achievement every ${timeDisplayNoDecimals(30 * 60000)} without any effort even if you
+unlock the next incomplete Achievement every ${timeDisplayNoDecimals(new Decimal(30 * 60000))} without any effort even if you
 otherwise do not have the requirements to do so. This automatic completion can be disabled, in which case the timer will
 count down to zero and pause, immediately completing another Achievement when unpaused. The timer still progresses
 at the same rate while offline.
@@ -943,7 +941,7 @@ You get exactly ${formatInt(1)} Perk Point per Reality.
 <b>Hotkey: Y</b> will try to perform a Reality reset.
 `,
       isUnlocked: () => PlayerProgress.realityUnlocked() || TimeStudy.reality.isBought,
-      tags: ["rm", "machines", "glyph", "perk", "reset", "prestige", "endgame", "lategame"],
+      tags: ["rm", "machines", "glyph", "perk", "reset", "prestige", "lategame"],
       tab: "reality/upgrades"
     }, {
       name: "Reality upgrades accessibility",
@@ -1012,7 +1010,7 @@ slightly shorter descriptions, making it more suitable for sharing with others. 
 in the Statistics page, your equipped Glyphs, and the Upcoming Glyph Selection this Reality.
 `,
       isUnlocked: () => PlayerProgress.realityUnlocked() || TimeStudy.reality.isBought,
-      tags: ["reality", "sacrifice", "level", "endgame", "lategame"],
+      tags: ["reality", "sacrifice", "level", "lategame"],
       tab: "reality/glyphs"
     }, {
       name: "Glyph Accessibility",
@@ -1046,7 +1044,7 @@ diamond-shaped Perks give Automator Points in addition to their normal effect. D
 different colors, roughly indicating which part of the game they affect the most.
 `,
       isUnlocked: () => PlayerProgress.realityUnlocked() || TimeStudy.reality.isBought,
-      tags: ["pp", "reality", "tree", "endgame", "lategame"],
+      tags: ["pp", "reality", "tree", "lategame"],
       tab: "reality/perks"
     }, {
       name: "Perks Accessibility",
@@ -1094,7 +1092,7 @@ will not be lost or overwritten.
 <b>Hotkey: U</b> will pause/unpause the Automator.
 `,
       isUnlocked: () => Player.automatorUnlocked,
-      tags: ["automation", "reality", "code", "script", "endgame", "lategame"],
+      tags: ["automation", "reality", "code", "script", "lategame"],
       tab: "automation/automator"
     }, {
       name: "Automator Technical Details",
@@ -1150,7 +1148,7 @@ behavior while offline, depending on how exactly your script depends on the game
 Additionally, the PAUSE command may behave oddly due to it also being based on real time.
 `,
       isUnlocked: () => Player.automatorUnlocked,
-      tags: ["automation", "reality", "code", "script", "endgame", "lategame"],
+      tags: ["automation", "reality", "code", "script", "lategame"],
       tab: "automation/automator"
     }, {
       name: "Black Hole",
@@ -1237,7 +1235,7 @@ but the same cost multipliers.
 <b>Hotkey: B</b> will pause/unpause the Black Holes.
 `,
       isUnlocked: () => player.blackHole[0].unlocked,
-      tags: ["reality", "time", "speed", "duration", "interval", "rm", "endgame", "lategame"],
+      tags: ["reality", "time", "speed", "duration", "interval", "rm", "lategame"],
       tab: "reality/hole"
     }, {
       name: "Celestials",
@@ -1260,7 +1258,7 @@ Celestials are timeless entities. Unless otherwise stated, any new mechanics int
 by game speed multipliers and instead refer specifically to real time instead of game time.
 `,
       isUnlocked: () => Teresa.isUnlocked,
-      tags: ["reality", "challenges", "endgame", "lategame"],
+      tags: ["reality", "challenges", "lategame"],
       tab: "celestials/celestial-navigation"
     }, {
       name: "Teresa, Celestial of Reality",
@@ -1288,7 +1286,7 @@ ${Teresa.runCompleted
     : "(More information available - complete Teresa's Reality)"}
 `,
       isUnlocked: () => Teresa.isUnlocked,
-      tags: ["rm", "endgame", "lategame", "perks", "sacrifice", "boo", "ghost", "celestial"],
+      tags: ["rm", "lategame", "perks", "sacrifice", "boo", "ghost", "celestial"],
       tab: "celestials/teresa"
     }, {
       name: "Effarig, Celestial of Ancient Relics",
@@ -1332,7 +1330,7 @@ ${Ra.unlocks.glyphEffectCount.canBeApplied
 <br>
 `,
       isUnlocked: () => TeresaUnlocks.effarig.canBeApplied,
-      tags: ["glyph", "sacrifice", "shards", "reality", "spectralflame", "lategame", "endgame", "celestial"],
+      tags: ["glyph", "sacrifice", "shards", "reality", "spectralflame", "lategame", "celestial"],
       tab: "celestials/effarig"
     }, {
       name: "Advanced Glyph Mechanics",
@@ -1402,8 +1400,7 @@ will always be the one equipped. Just like other groups of circular Glyphs, you 
 in order to bring up a modal summarizing the whole set of Glyphs.
 `,
       isUnlocked: () => EffarigUnlock.adjuster.isUnlocked,
-      tags: ["glyph", "weight", "adjustment", "sacrifice", "filter", "threshold", "set", "save", "reality", "lategame",
-        "endgame"],
+      tags: ["glyph", "weight", "adjustment", "sacrifice", "filter", "threshold", "set", "save", "reality", "lategame"],
       tab: "celestials/glyphfilter"
     }, {
       name: "The Nameless Ones, Celestial of Time",
@@ -1443,13 +1440,13 @@ lasted ${format(0.2, 2, 2)} seconds, you will use ${formatInt(200)} seconds to s
 You can toggle a setting to automatically store offline time as stored real time.
 <br>
 <br>
-Their first unlock costs ${format(TimeSpan.fromMilliseconds(ENSLAVED_UNLOCKS.FREE_TICKSPEED_SOFTCAP.price).totalYears)}
+Their first unlock costs ${format(TimeSpan.fromMilliseconds(new Decimal(ENSLAVED_UNLOCKS.FREE_TICKSPEED_SOFTCAP.price)).totalYears)}
 years of stored game time. It increases the softcap to Tickspeed Upgrades gained from Time Dimensions
 (the point at which their cost starts increasing faster)
 by ${format(1e5)} Tickspeed Upgrades.
 <br>
 <br>
-At ${format(TimeSpan.fromMilliseconds(ENSLAVED_UNLOCKS.RUN.price).totalYears)} years of stored game time, you are able
+At ${format(TimeSpan.fromMilliseconds(new Decimal(ENSLAVED_UNLOCKS.RUN.price)).totalYears)} years of stored game time, you are able
 to finally unlock their Reality. The reward for completing The Nameless Ones' Reality is
 ${Enslaved.isCompleted
     ? "unlocking Tesseracts, which have their own How To Play entry."
@@ -1459,7 +1456,7 @@ ${Enslaved.isCompleted
 The Nameless Ones will not directly unlock the next Celestial.
 `,
       isUnlocked: () => EffarigUnlock.eternity.isUnlocked,
-      tags: ["reality", "time", "blackhole", "lategame", "endgame", "testers", "celestial",
+      tags: ["reality", "time", "blackhole", "lategame", "testers", "celestial",
         ...credits.people.map(p => p.name)
       ],
       tab: "celestials/enslaved"
@@ -1484,7 +1481,7 @@ Dimensions tab. Additionally, your current Infinity Points will now also show a 
 If affordable, the Infinity button itself will visually change and bring you to the Infinity Dimension tab when clicked.
 `,
       isUnlocked: () => Enslaved.isCompleted,
-      tags: ["reality", "lategame", "endgame", "tesseract", "id", "celestial"],
+      tags: ["reality", "lategame", "tesseract", "id", "celestial"],
       tab: "celestials/tesseract"
     }, {
       name: "V, Celestial of Achievements",
@@ -1539,7 +1536,7 @@ ${VUnlocks.vAchievementUnlock.isUnlocked
     : "<span style='color: var(--color-bad);'>(unlock V's Reality to see further details)</span>"}
 `,
       isUnlocked: () => Achievement(151).isUnlocked,
-      tags: ["reality", "lategame", "endgame", "girlfriend", "challenges", "achievement", "space", "theorems",
+      tags: ["reality", "lategame", "girlfriend", "challenges", "achievement", "space", "theorems",
         "study", "triad", "celestial"],
       tab: "celestials/v"
     }, {
@@ -1591,7 +1588,7 @@ ${Ra.unlocks.vUnlock.canBeApplied
 <br>
 Ra will not directly unlock the next Celestial.`,
       isUnlocked: () => VUnlocks.raUnlock.isUnlocked,
-      tags: ["reality", "memories", "razenpok", "levels", "glyphs", "lategame", "endgame",
+      tags: ["reality", "memories", "razenpok", "levels", "glyphs", "lategame",
         "effarig", "teresa", "nameless", "v", "celestial"],
       tab: "celestials/ra"
     }, {
@@ -1621,7 +1618,7 @@ with a higher refinement value.
 `,
       isUnlocked: () => Ra.unlocks.unlockGlyphAlchemy.canBeApplied,
       // Oh god I'm so sorry this is so many words
-      tags: ["reality", "lategame", "endgame", "ra", "effarig", "alchemy", "power", "infinity", "time", "replication",
+      tags: ["reality", "lategame", "ra", "effarig", "alchemy", "power", "infinity", "time", "replication",
         "dilation", "cardinality", "eternity", "dimensionality", "inflation", "alternation", "synergism", "momentum",
         "decoherence", "force", "exponential", "uncountability", "boundless", "unpredictability", "multiversal",
         "reaction"],
@@ -1649,7 +1646,7 @@ be applied, moving lines will be shown from all reagents to the product. If a co
 that the reaction cannot proceed due to not having enough of that reagent to get more of the product due to its cap.
 `,
       isUnlocked: () => Ra.unlocks.unlockGlyphAlchemy.canBeApplied,
-      tags: ["reality", "lategame", "endgame", "ra", "effarig", "alchemy", "power", "infinity", "time", "replication",
+      tags: ["reality", "lategame", "ra", "effarig", "alchemy", "power", "infinity", "time", "replication",
         "dilation", "cardinality", "eternity", "dimensionality", "inflation", "alternation", "synergism", "momentum",
         "decoherence", "force", "exponential", "uncountability", "boundless", "unpredictability", "multiversal",
         "reaction"],
@@ -1682,7 +1679,7 @@ modifiers to game speed.
 Imaginary Machine upgrades will unlock the final two Celestials.
 `,
       isUnlocked: () => MachineHandler.isIMUnlocked,
-      tags: ["imaginary", "machines", "reality", "lategame", "endgame"],
+      tags: ["imaginary", "machines", "reality", "lategame"],
       tab: "reality/imag_upgrades"
     }, {
       name: "Lai'tela, Celestial of Dimensions",
@@ -1731,7 +1728,7 @@ to Dark Energy gain.
 Lai'tela will not directly unlock the next Celestial.
 `,
       isUnlocked: () => Laitela.isUnlocked,
-      tags: ["omsi", "reality", "dark", "matter", "dimensions", "lategame", "endgame", "ascend", "celestial"],
+      tags: ["omsi", "reality", "dark", "matter", "dimensions", "lategame", "ascend", "celestial"],
       tab: "celestials/laitela"
     }, {
       name: "Continuum",
@@ -1758,7 +1755,7 @@ so all the related autobuyer settings for these autobuyers are now hidden on tha
       // Apparently continuumUnlocked is really important in a lot of places and if we keep it unlocked
       // Things break, so we check for the iMU instead.
       isUnlocked: () => ImaginaryUpgrade(15).isBought,
-      tags: ["continuum", "purchase", "reality", "lategame", "endgame"],
+      tags: ["continuum", "purchase", "reality", "lategame"],
       tab: ""
     }, {
       name: "Singularities",
@@ -1793,7 +1790,7 @@ Independently of the milestone type, milestones also have an icon indicating wha
 <i class="fas fa-compress-arrows-alt"></i> These milestones improve Lai'tela based on something outside of Lai'tela
 `,
       isUnlocked: () => Laitela.isUnlocked,
-      tags: ["reality", "lategame", "endgame", "laitela", "dark"],
+      tags: ["reality", "lategame", "laitela", "dark"],
       tab: ""
     }, {
       name: "Pelle, Celestial of Antimatter",
@@ -1837,7 +1834,7 @@ ${Pelle.isDoomed
 }
 `,
       isUnlocked: () => Pelle.isUnlocked,
-      tags: ["reality", "antimatter", "lategame", "endgame", "final", "hevipelle", "celestial", "doom"],
+      tags: ["reality", "antimatter", "lategame", "final", "hevipelle", "celestial", "doom"],
       tab: "celestials/pelle"
     }, {
       name: "Pelle Strikes",
@@ -1858,7 +1855,7 @@ ${PelleStrikes.eternity.hasStrike
 In addition, each Rift offers three milestone rewards for filling them up to a certain percentage.
 `,
       isUnlocked: () => PelleStrikes.infinity.hasStrike,
-      tags: ["reality", "antimatter", "lategame", "endgame", "final", "pelle", "strike", "rift", "celestial"],
+      tags: ["reality", "antimatter", "lategame", "final", "pelle", "strike", "rift", "celestial"],
       tab: "celestials/pelle"
     }, {
       name: "The Galaxy Generator",
@@ -1874,9 +1871,27 @@ Generated Galaxies. Replicanti or Tachyon Galaxies cannot be spent for purchasin
 The <b>Galaxy Generator</b> has a maximum number of Galaxies it can generate, which can only be increased by draining
 Rifts once the current cap has been reached.`,
       isUnlocked: () => Pelle.hasGalaxyGenerator,
-      tags: ["reality", "antimatter", "lategame", "endgame", "final", "pelle", "galaxy",
+      tags: ["reality", "antimatter", "lategame", "final", "pelle", "galaxy",
         "galaxies", "generator", "celestial"],
       tab: "celestials/pelle"
+    }, {
+      name: "Endgame",
+      info: () => `
+After reaching ${format(DC.E9E15)} antimatter in the Doomed Reality, you will be able to do an <b>Endgame</b>.
+This resets everything except things under the General tab in Statistics, Achievements in rows ${formatInt(19)}+,
+and challenge times. You will get one Endgame for performing an Endgame reset. Endgames grant milestones to make
+the game faster and easier, both outside and inside the Doomed Reality.
+<br>
+<br>
+After performing an <b>Endgame</b>, you will get two different resources: Celestial Points and Doomed Particles.
+Celestial Points are used for purchasing Celestial Dimensions, and Doomed Particles are for nerfing the Doomed Reality
+and re-enabling things inside of it. You will eventually be able to pass ${format(DC.E9E15)} antimatter,
+but for now it is impossible.
+`,
+      isUnlocked: () => PlayerProgress.endgameUnlocked(),
+      tags: ["endgame", "cp", "celp", "dp", "points", "particles", "end", "reset", "prestige", "enter",
+        "simulation", "supersonic", "seven"],
+      tab: "endgame/endgame"
     }
   ]
 };

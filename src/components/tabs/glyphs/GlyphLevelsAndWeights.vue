@@ -17,7 +17,7 @@ export default {
       showAutoAdjustWeights: false,
       isAutoAdjustWeightsOn: false,
       factors: getGlyphLevelInputs(),
-      shardsGained: 0,
+      shardsGained: new Decimal(0),
       weights: Object.assign({}, player.celestials.effarig.glyphWeights),
       rows: 3,
       srGlyphLevel: 0,
@@ -83,7 +83,7 @@ export default {
       return RealityUpgrade(18).isBought;
     },
     shardVisible() {
-      return Ra.unlocks.relicShardGlyphLevelBoost.canBeApplied && this.shardsGained !== 0;
+      return Ra.unlocks.relicShardGlyphLevelBoost.canBeApplied && this.shardsGained.neq(0);
     },
     singularityVisible() {
       return SingularityMilestone.glyphLevelFromSingularities.canBeApplied;
@@ -122,7 +122,7 @@ export default {
       this.perkShopVisible = glyphFactors.perkShop !== 1;
       this.rowVisible = glyphFactors.rowFactor > 0;
       this.achievementVisible = glyphFactors.achievementFactor > 0;
-      if (glyphFactors.scalePenalty !== 1) {
+      if (glyphFactors.scalePenalty.neq(1)) {
         this.penaltyVisible = true;
         this.lastInstability = Date.now();
       } else if (this.penaltyVisible) {
@@ -134,7 +134,7 @@ export default {
         this.rows = 6;
       }
       this.factors = glyphFactors;
-      this.shardsGained = Effarig.shardsGained;
+      this.shardsGained.copyFrom(Effarig.shardsGained);
       let same = true;
       this.glyphWeightFields.forEach(e => {
         if (this.weights[e] !== player.celestials.effarig.glyphWeights[e]) same = false;
@@ -157,13 +157,13 @@ export default {
     formatFactor(x) {
       // Not applied to + perks since it's always whole; for factors < 1, the slice makes the
       // factor be fixed point.
-      return Notations.current.isPainful || x > 1000
+      return Notations.current.isPainful || new Decimal(x).gt(1000)
         ? format(x, 2, 2)
         : x.toPrecision(5).slice(0, 6);
     },
     formatLevel(x) {
-      return x > 1000 || this.$viewModel.srMode
-        ? formatInt(Math.floor(x))
+      return x.gt(1000) || this.$viewModel.srMode
+        ? formatHybridLarge(Decimal.floor(x), 3)
         : format(x, 2, 4);
     },
     makeRowStyle(r) {

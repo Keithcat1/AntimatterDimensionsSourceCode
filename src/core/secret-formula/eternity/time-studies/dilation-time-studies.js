@@ -2,17 +2,17 @@ export const dilationTimeStudies = [
   {
     id: 1,
     description: "Unlock Time Dilation",
-    cost: 5000,
+    cost: () => Alpha.isRunning ? AlphaUnlocks.ec11Bulk.effects.nerfA.effectOrDefault(5000) : 5000,
     requirement: () => {
       const ttRequirement = Currency.timeTheorems.max.gte(TimeStudy.dilation.totalTimeTheoremRequirement);
-      if (Ra.unlocks.autoUnlockDilation.canBeApplied &&
+      if ((Ra.unlocks.autoUnlockDilation.canBeApplied && !player.disablePostReality) &&
           ttRequirement &&
           !isInCelestialReality() && !Pelle.isDoomed
       ) {
         return true;
       }
       const tsRequirement = [231, 232, 233, 234].some(id => TimeStudy(id).isBought);
-      if (Perk.bypassECDilation.canBeApplied) return tsRequirement;
+      if (Perk.bypassECDilation.canBeApplied && !player.disablePostReality) return tsRequirement;
       const ecRequirement = EternityChallenge(11).isFullyCompleted && EternityChallenge(12).isFullyCompleted;
       return tsRequirement && ecRequirement && ttRequirement;
     }
@@ -53,7 +53,7 @@ export const dilationTimeStudies = [
     scrambleText: ["You cannot escape a Doomed Reality", "Escape the Doomed Reality (Requires e9e15 Antimatter)"],
     cost: 1,
     requirement: () => TimeStudy.timeDimension(8).isBought &&
-      player.records.thisReality.maxEP.exponent >= 4000 &&
+      player.records.thisReality.maxEP.log10().gte(4000) &&
       (Perk.firstPerk.isBought || Achievements.preReality.every(a => a.isUnlocked)) &&
       !Pelle.isDoomed
   }

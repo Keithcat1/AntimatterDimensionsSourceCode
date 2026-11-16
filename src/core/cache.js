@@ -44,8 +44,18 @@ class Lazy {
 }
 window.Lazy = Lazy;
 
+function highestInArray(array, isNum = false) {
+  let i = 0;
+  let highestVal = isNum ? 0 : new Decimal(0);
+  while (array[i] !== undefined) {
+    highestVal = isNum ? Math.max(highestVal, array[i]) : Decimal.max(highestVal, array[i]);
+    i++;
+  }
+  return highestVal;
+}
+
 export const GameCache = {
-  worstChallengeTime: new Lazy(() => player.challenge.normal.bestTimes.max()),
+  worstChallengeTime: new Lazy(() => highestInArray(player.challenge.normal.bestTimes)),
 
   bestRunIPPM: new Lazy(() =>
     player.records.recentInfinities
@@ -53,18 +63,52 @@ export const GameCache = {
       .reduce(Decimal.maxReducer)
   ),
 
+  bestRunCIPPM: new Lazy(() =>
+    player.records.recentCelestialInfinities
+      .map(run => ratePerMinute(run[2], run[1]))
+      .reduce(Decimal.maxReducer)
+  ),
+
+  bestRunVSPM: new Lazy(() =>
+    player.records.recentCondenses
+      .map(run => ratePerMinute(run[2], run[1]))
+      .reduce(Decimal.maxReducer)
+  ),
+
   averageRealTimePerEternity: new Lazy(() => player.records.recentEternities
     .map(run => run[1])
     .reduce(Number.sumReducer) / (1000 * player.records.recentEternities.length)),
 
-  tickSpeedMultDecrease: new Lazy(() => 10 - Effects.sum(
+  tickSpeedMultDecrease: new Lazy(() => (SlabdrillUnlocks.breakInfinity.isUnlocked ? 25 :
+    (Alpha.isRunning ? AlphaUnlocks.breakInfinity.effects.nerfB.effectOrDefault(10) : 10)) - Effects.sum(
     BreakInfinityUpgrade.tickspeedCostMult,
-    EternityChallenge(11).reward
-  )),
+    EternityChallenge(11).reward) - (player.disablePostReality ? 0 : Effects.sum(
+    AlphaUnlocks.breakInfinity.effects.buffA,
+    AlphaUnlocks.breakUpgrades.effects.buffA,
+    AlphaUnlocks.eternityChallenge11.effects.buff,
+    AlphaUnlocks.ec11Bulk.effects.buff
+  ))),
 
-  dimensionMultDecrease: new Lazy(() => 10 - Effects.sum(
+  dimensionMultDecrease: new Lazy(() => (SlabdrillUnlocks.breakInfinity.isUnlocked ? 25 :
+    (Alpha.isRunning ? AlphaUnlocks.breakInfinity.effects.nerfB.effectOrDefault(10) : 10)) - Effects.sum(
     BreakInfinityUpgrade.dimCostMult,
-    EternityChallenge(6).reward
+    EternityChallenge(6).reward) - (player.disablePostReality ? 0 : Effects.sum(
+    AlphaUnlocks.breakInfinity.effects.buffB,
+    AlphaUnlocks.breakUpgrades.effects.buffB
+  ))),
+
+  celestialTickSpeedMultDecrease: new Lazy(() => 10 - Effects.sum(
+    CelestialBreakInfinityUpgrade.celTickspeedCostMult
+  ) - CelestialEternityUpgrade.celTickReduction.effectOrDefault(0) -
+  CelestialEternityPlusUpgrade.megaCelTickspeedReduction.effectOrDefault(0)),
+
+  celestialDimensionMultDecrease: new Lazy(() => 10 - Effects.sum(
+    CelestialBreakInfinityUpgrade.celDimCostMult
+  ) - CelestialEternityUpgrade.celDimReduction.effectOrDefault(0) -
+  CelestialEternityPlusUpgrade.megaCelDimReduction.effectOrDefault(0)),
+
+  divineDimensionMultDecrease: new Lazy(() => 10 - Effects.sum(
+    DivinityUpgrade.divineL3U1
   )),
 
   timeStudies: new Lazy(() => NormalTimeStudyState.studies
@@ -72,12 +116,17 @@ export const GameCache = {
 
   currentStudyTree: new Lazy(() => new TimeStudyTree(TimeStudyTree.currentStudies)),
 
-  achievementPeriod: new Lazy(() => TimeSpan.fromMinutes(30 - Effects.sum(
+  endgameMasteries: new Lazy(() => EndgameMasteryState.masteries
+    .map(s => player.endgameMasteries.masteries.includes(s.id))),
+
+  currentMasteryTree: new Lazy(() => new EndgameMasteryTree(EndgameMasteryTree.currentMasteries)),
+
+  achievementPeriod: new Lazy(() => TimeSpan.fromMinutes(new Decimal(30).sub(Effects.sum(
     Perk.achievementGroup1,
     Perk.achievementGroup2,
     Perk.achievementGroup3,
     Perk.achievementGroup4
-  )).totalMilliseconds),
+  ))).totalMilliseconds.toNumber()),
 
   buyablePerks: new Lazy(() => Perks.all.filter(p => p.canBeBought)),
 
@@ -94,7 +143,7 @@ export const GameCache = {
   antimatterDimensionCommonMultiplier: new Lazy(() => antimatterDimensionCommonMultiplier()),
 
   // 0 will cause a crash if invoked; this way the tier can be used as an index
-  antimatterDimensionFinalMultipliers: Array.range(0, 9)
+  antimatterDimensionFinalMultipliers: Array.range(0, 10)
     .map(tier => new Lazy(() => getDimensionFinalMultiplierUncached(tier))),
 
   infinityDimensionCommonMultiplier: new Lazy(() => infinityDimensionCommonMultiplier()),
@@ -102,6 +151,8 @@ export const GameCache = {
   timeDimensionCommonMultiplier: new Lazy(() => timeDimensionCommonMultiplier()),
 
   celestialDimensionCommonMultiplier: new Lazy(() => celestialDimensionCommonMultiplier()),
+
+  divineDimensionCommonMultiplier: new Lazy(() => divineDimensionCommonMultiplier()),
 
   glyphInventorySpace: new Lazy(() => Glyphs.freeInventorySpace),
 
@@ -113,9 +164,11 @@ export const GameCache = {
 
   totalIPMult: new Lazy(() => totalIPMult()),
 
-  challengeTimeSum: new Lazy(() => player.challenge.normal.bestTimes.sum()),
+  totalCIPMult: new Lazy(() => totalCIPMult()),
 
-  infinityChallengeTimeSum: new Lazy(() => player.challenge.infinity.bestTimes.sum()),
+  challengeTimeSum: new Lazy(() => player.challenge.normal.bestTimes.reduce(Decimal.sumReducer)),
+
+  infinityChallengeTimeSum: new Lazy(() => player.challenge.infinity.bestTimes.reduce(Decimal.sumReducer)),
 };
 
 EventHub.logic.on(GAME_EVENT.GLYPHS_CHANGED, () => {

@@ -1,6 +1,7 @@
 import { sha512_256 } from "js-sha512";
 
-import { DC } from "./constants";
+import { Player } from "./player";
+
 import FullScreenAnimationHandler from "./full-screen-animation-handler";
 
 /* eslint-disable no-console */
@@ -113,8 +114,8 @@ dev.resetDilation = function() {
   player.dilation.rebuyables[1] = 0;
   player.dilation.rebuyables[2] = 0;
   player.dilation.rebuyables[3] = 0;
-  player.dilation.baseTachyonGalaxies = 0;
-  player.dilation.totalTachyonGalaxies = 0;
+  player.dilation.baseTachyonGalaxies = DC.D0;
+  player.dilation.totalTachyonGalaxies = DC.D0;
 };
 
 // We want to give a large degree of options
@@ -142,7 +143,7 @@ dev.setCompanionGlyphEP = function(eternityPoints) {
   const glyph = player.reality.glyphs.active
     .concat(player.reality.glyphs.inventory)
     .filter(g => g.type === "companion")[0];
-  glyph.strength = rarityToStrength(eternityPoints.log10() / 1e6);
+  glyph.strength = rarityToStrength(Decimal.min(eternityPoints.log10().div(1e6), 100).toNumber());
 };
 
 dev.decriminalize = function() {
@@ -189,7 +190,7 @@ dev.realize = function() {
 };
 
 dev.respecPerks = function() {
-  player.reality.perkPoints += player.reality.perks.size;
+  player.reality.perkPoints = player.reality.perkPoints.add(player.reality.perks.size);
   player.reality.perks = new Set();
   GameCache.achievementPeriod.invalidate();
   GameCache.buyablePerks.invalidate();
@@ -214,7 +215,7 @@ dev.buyAllPerks = function() {
   const visited = [];
   const toVisit = [Perk.firstPerk];
   while (toVisit.length > 0) {
-    if (player.reality.perkPoints < 1) break;
+    if (player.reality.perkPoints.lt(1)) break;
     const perk = toVisit.shift();
     visited.push(perk);
     toVisit.push(...perk.connectedPerks.filter(p => !visited.includes(p)));
@@ -224,17 +225,17 @@ dev.buyAllPerks = function() {
 
 // This should help for balancing different glyph types, strong rounding of values is intentional
 dev.printResourceTotals = function() {
-  console.log(`Antimatter: e${Currency.antimatter.exponent.toPrecision(3)}`);
-  console.log(`RM: e${Math.round(MachineHandler.gainedRealityMachines.log10())}`);
+  console.log(`Antimatter: e${Currency.antimatter.value.log10().toPrecision(3)}`);
+  console.log(`RM: e${Decimal.round(MachineHandler.gainedRealityMachines.log10())}`);
   console.log(`Glyph level: ${100 * Math.floor(gainedGlyphLevel().actualLevel / 100 + 0.5)}`);
 
-  console.log(`Tickspeed: e${-Tickspeed.current.exponent.toPrecision(3)}`);
-  console.log(`Gamespeed: ${Math.pow(getGameSpeedupFactor(), 1.2).toPrecision(1)}`);
-  const aGalaxy = 100 * Math.floor(player.galaxies / 100 + 0.5);
-  const rGalaxy = 100 * Math.floor(Replicanti.galaxies.total / 100 + 0.5);
-  const dGalaxy = 100 * Math.floor(player.dilation.totalTachyonGalaxies / 100 + 0.5);
+  console.log(`Tickspeed: e${-Tickspeed.current.log10().toPrecision(3)}`);
+  console.log(`Gamespeed: ${Decimal.pow(getGameSpeedupFactor(), 1.2).toPrecision(1)}`);
+  const aGalaxy = Decimal.floor(player.galaxies.div(100).add(0.5)).times(100);
+  const rGalaxy = Decimal.floor(Replicanti.galaxies.total.div(100).add(0.5)).times(100);
+  const dGalaxy = Decimal.floor(player.dilation.totalTachyonGalaxies.div(100).add(0.5)).times(100);
   console.log(`Galaxies: ${aGalaxy}+${rGalaxy}+${dGalaxy} (${aGalaxy + rGalaxy + dGalaxy})`);
-  console.log(`Tick reduction: e${-Math.round(getTickSpeedMultiplier().log10())}`);
+  console.log(`Tick reduction: e${-Decimal.round(getTickSpeedMultiplier().log10())}`);
 
   let ADmults = DC.D1;
   for (let i = 1; i <= 8; i++) {
@@ -253,13 +254,13 @@ dev.printResourceTotals = function() {
   console.log(`TD mults: e${TDmults.log10().toPrecision(3)}`);
   console.log(`Tickspeed from TD: ${formatWithCommas(1000 * Math.floor(player.totalTickGained / 1000 + 0.5))}`);
 
-  console.log(`Infinities: e${Math.round(player.infinities.log10())}`);
-  console.log(`Eternities: e${Math.round(player.eternities.log10())}`);
-  console.log(`Replicanti: e${formatWithCommas(1e5 * Math.floor(Replicanti.amount.log10() / 1e5 + 0.5))}`);
+  console.log(`Infinities: e${Decimal.round(player.infinities.log10())}`);
+  console.log(`Eternities: e${Decimal.round(player.eternities.log10())}`);
+  console.log(`Replicanti: e${formatWithCommas(Decimal.floor(Replicanti.amount.log10().div(1e5).add(0.5)).times(1e5))}`);
 
-  console.log(`TT: e${Math.round(player.timestudy.theorem.log10())}`);
-  console.log(`DT: e${Math.round(player.dilation.dilatedTime.log10())}`);
-  console.log(`TP: e${Math.round(player.dilation.tachyonParticles.log10())}`);
+  console.log(`TT: e${Decimal.round(player.timestudy.theorem.log10())}`);
+  console.log(`DT: e${Decimal.round(player.dilation.dilatedTime.log10())}`);
+  console.log(`TP: e${Decimal.round(player.dilation.tachyonParticles.log10())}`);
 };
 
 dev.unlockCelestialQuotes = function(celestial) {
@@ -360,11 +361,11 @@ dev.testReplicantiCode = function(singleId, useDebugger = false) {
     ],
     [
       function() {
-        player.replicanti.boughtGalaxyCap = 100;
+        player.replicanti.boughtGalaxyCap = new Decimal(100);
       },
       function() {
-        player.replicanti.boughtGalaxyCap = 100;
-        player.replicanti.galaxies = 50;
+        player.replicanti.boughtGalaxyCap = new Decimal(100);
+        player.replicanti.galaxies = new Decimal(50);
       }
     ],
     [
@@ -483,11 +484,11 @@ dev.testGlyphs = function(config) {
     const done = padString(`${Math.floor(100 * (index + 1) / glyphSets.length)}%`, 4, true);
     const rm = padString(MachineHandler.gainedRealityMachines.toPrecision(2), 9);
     const gl = padString(gainedGlyphLevel().actualLevel, 4);
-    const ep = padString(player.eternityPoints.exponent.toString(), 6);
-    const ip = padString(player.infinityPoints.exponent.toString(), 8);
-    const am = padString(Currency.antimatter.exponent.toString(), 12);
+    const ep = padString(player.eternityPoints.log10().toString(), 6);
+    const ip = padString(player.infinityPoints.log10().toString(), 8);
+    const am = padString(Currency.antimatter.value.log10().toString(), 12);
     const dimboosts = DimBoost.purchasedBoosts;
-    const galaxies = Replicanti.galaxies.total + player.galaxies + player.dilation.totalTachyonGalaxies;
+    const galaxies = Replicanti.galaxies.total.add(player.galaxies).add(player.dilation.totalTachyonGalaxies);
     const glyphData = glyphSets[index].map(glyphToShortString).sum();
     console.log(`${done} ${glyphData} rm=${rm} gl=${gl} ep=${ep} ip=${ip} am=${am} ` +
       `dimboosts=${dimboosts} galaxies=${galaxies}`);
@@ -527,4 +528,53 @@ dev.forceCloudSave = async function() {
 // TODO Figure out if we want to remove this before release
 dev.unlockAllCosmeticSets = function() {
   player.reality.glyphs.cosmetics.unlockedFromNG = Object.keys(GameDatabase.reality.glyphCosmeticSets);
+};
+
+function nanFuckIteration(value, value2) {
+  for (const item in value) {
+    console.log(value[item]);
+    console.log(value2[item]);
+    if (value[item] instanceof Decimal && value2[item] !== undefined) {
+      if (value2[item].neq(0)) {
+        if (value[item].lt(0) || value[item].layer > 8e15)
+          value[item] = value2[item];
+      } else if (value[item].layer > 8e15)
+        value[item] = value2[item];
+    }
+    if (value[item] instanceof Number && value2[item] !== undefined) {
+      if (value2[item] === 0) {
+        if (value[item] > 1e300) {
+          value[item] = value2[item];
+        }
+      } else if (value[item] > 1e300 || value[item] < 0);
+      value[item] = value2[item];
+    }
+    if ((value[item] instanceof Object || value[item] instanceof Array) &&
+      !(value[item] instanceof Decimal) && value2[item] !== undefined)
+      value[item] = dev.beTests.nanFuckIteration(value[item], value2[item]);
+    if (value[item] === undefined && value2[item] !== undefined)
+      value[item] = value2[item];
+  }
+  return value;
+};
+
+dev.nanFuck = function() {
+  player = nanFuckIteration(player, Player.defaultStart);
+  GameStorage.save();
+};
+
+dev.skipIntro = function() {
+  player.hasSeenIntro = true;
+  player.introTick = 90000;
+  player.introFrozen = true;
+  player.expanse.elemental.quotes.push(0);
+  player.expanse.elemental.quotes.push(1);
+  player.expanse.elemental.quotes.push(2);
+};
+
+dev.restartIntro = function() {
+  player.hasSeenIntro = false;
+  player.introTick = 0;
+  player.introFrozen = true;
+  player.expanse.elemental.quotes = player.expanse.elemental.quotes.filter(q => q >= 3);
 };

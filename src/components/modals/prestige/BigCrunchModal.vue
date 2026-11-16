@@ -10,9 +10,10 @@ export default {
     return {
       gainedInfinities: new Decimal(),
       gainedInfinityPoints: new Decimal(),
-      startingBoosts: 0,
+      startingBoosts: new Decimal(0),
       startingAM: 10,
-      willStartWithGalaxy: false
+      willStartWithGalaxy: false,
+      isFlipped: false
     };
   },
   computed: {
@@ -21,7 +22,8 @@ export default {
     },
     message() {
       const info = this.isFirstInfinity ? this.firstInfinityInfo : ``;
-      return `Upon Infinity, all Dimensions, Dimension Boosts, and Antimatter Galaxies are reset. ${info}`;
+      return `Upon Infinity, all Dimensions, Dimension Boosts, and ${this.isFlipped ? "Matter" : "Antimatter"} Galaxies
+        are reset. ${info}`;
     },
     firstInfinityInfo() {
       return `In return, you gain an Infinity Point (IP). This allows you to buy multiple upgrades that you can
@@ -33,8 +35,9 @@ export default {
     },
     startingResources() {
       const gainedResources = [];
-      if (this.startingAM.gte(10)) gainedResources.push(`${quantify("Antimatter", this.startingAM, 2, 1)}`);
-      if (this.startingBoosts > 0) gainedResources.push(`${quantify("Dimension Boost", this.startingBoosts)}`);
+      if (this.startingAM.gte(10) && !this.isFlipped) gainedResources.push(`${quantify("Antimatter", this.startingAM, 2, 1)}`);
+      if (this.startingAM.gte(10) && this.isFlipped) gainedResources.push(`${quantify("Matter", this.startingAM, 2, 1)}`);
+      if (this.startingBoosts.gt(0)) gainedResources.push(`${quantify("Dimension Boost", this.startingBoosts)}`);
       if (this.willStartWithGalaxy) gainedResources.push(`${quantify("Galaxy", 1)}`);
 
       return `You will start your next Infinity with ${makeEnumeration(gainedResources)}.`;
@@ -44,9 +47,10 @@ export default {
     update() {
       this.gainedInfinities = gainedInfinities().round();
       this.gainedInfinityPoints = gainedInfinityPoints().round();
-      this.startingBoosts = DimBoost.startingDimensionBoosts;
+      this.startingBoosts.copyFrom(DimBoost.startingDimensionBoosts);
       this.startingAM = Currency.antimatter.startingValue;
       this.willStartWithGalaxy = InfinityUpgrade.skipResetGalaxy.isBought;
+      this.isFlipped = player.universes.current === 2;
     },
     handleYesClick() {
       bigCrunchResetRequest();

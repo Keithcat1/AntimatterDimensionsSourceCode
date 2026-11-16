@@ -1,4 +1,3 @@
-import { DC } from "./constants";
 import FullScreenAnimationHandler from "./full-screen-animation-handler";
 
 export function bigCrunchAnimation() {
@@ -59,6 +58,15 @@ export function bigCrunchReset(
   }
 
   bigCrunchResetValues(enteringAntimatterChallenge);
+  if (Alpha.isRunning && player.infinities.eq(1) && Alpha.currentStage === 3) {
+    Alpha.advanceLayer();
+    Alpha.quotes.infinity.show();
+  }
+  if (Slabdrill.isCursed && Slabdrill.currentStage === 2) {
+    player.breakEternityRebuyables = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+    Slabdrill.advanceLayer();
+    Slabdrill.quotes.infinity.show();
+  }
   EventHub.dispatch(GAME_EVENT.BIG_CRUNCH_AFTER);
 }
 
@@ -92,9 +100,9 @@ function bigCrunchUpdateStatistics() {
   );
 
   player.records.bestInfinity.time =
-    Math.min(player.records.bestInfinity.time, player.records.thisInfinity.time);
+    Decimal.min(player.records.bestInfinity.time, player.records.thisInfinity.time);
   player.records.bestInfinity.realTime =
-    Math.min(player.records.bestInfinity.realTime, player.records.thisInfinity.realTime);
+    Math.clamp(player.records.bestInfinity.realTime, 1, player.records.thisInfinity.realTime);
 
   player.requirementChecks.reality.noInfinities = false;
 
@@ -106,7 +114,7 @@ function bigCrunchUpdateStatistics() {
 }
 
 function bigCrunchTabChange(firstInfinity) {
-  const earlyGame = player.records.bestInfinity.time > 60000 && !player.break;
+  const earlyGame = player.records.bestInfinity.time.gt(60000) && !player.break;
   const inAntimatterChallenge = Player.isInAntimatterChallenge;
   handleChallengeCompletion();
 
@@ -125,13 +133,14 @@ export function bigCrunchResetValues(enteringAntimatterChallenge) {
   // code structure similar to what it was before to avoid new bugs.
   secondSoftReset(enteringAntimatterChallenge);
 
-  let remainingGalaxies = 0;
-  if (Achievement(95).isUnlocked && !Pelle.isDoomed) {
+  let remainingGalaxies = DC.D0;
+  if (Achievement(95).isUnlocked && (!Pelle.isDoomed || PelleAchievementUpgrade.achievement95.canBeApplied) &&
+      (!player.disablePostReality || SlabdrillUnlocks.eternityChallengeTen.isUnlocked)) {
     Replicanti.amount = currentReplicanti;
-    remainingGalaxies += Math.min(currentReplicantiGalaxies, 1);
+    remainingGalaxies = remainingGalaxies.add(Decimal.min(currentReplicantiGalaxies, 1));
   }
-  if (TimeStudy(33).isBought && !Pelle.isDoomed) {
-    remainingGalaxies += Math.floor(currentReplicantiGalaxies / 2);
+  if (TimeStudy(33).isBought && (!Pelle.isDoomed || PelleDestructionUpgrade.timestudy33.canBeApplied)) {
+    remainingGalaxies = remainingGalaxies.add(Decimal.floor(currentReplicantiGalaxies.div(2)));
   }
 
   if (PelleUpgrade.replicantiGalaxyNoReset.canBeApplied) {
@@ -139,7 +148,7 @@ export function bigCrunchResetValues(enteringAntimatterChallenge) {
   }
   // I don't think this Math.clampMax is technically needed, but if we add another source
   // of keeping Replicanti Galaxies then it might be.
-  player.replicanti.galaxies = Math.clampMax(remainingGalaxies, currentReplicantiGalaxies);
+  player.replicanti.galaxies = Decimal.clampMax(remainingGalaxies, currentReplicantiGalaxies);
 }
 
 function bigCrunchCheckUnlocks() {
@@ -152,16 +161,16 @@ function bigCrunchCheckUnlocks() {
 }
 
 export function secondSoftReset(enteringAntimatterChallenge) {
-  player.dimensionBoosts = 0;
-  player.galaxies = 0;
+  player.dimensionBoosts = DC.D0;
+  player.galaxies = DC.D0;
   player.records.thisInfinity.maxAM = DC.D0;
   Currency.antimatter.reset();
   softReset(0, true, true, enteringAntimatterChallenge);
   InfinityDimensions.resetAmount();
   if (player.replicanti.unl) Replicanti.amount = DC.D1;
-  player.replicanti.galaxies = 0;
-  player.records.thisInfinity.time = 0;
-  player.records.thisInfinity.lastBuyTime = 0;
+  player.replicanti.galaxies = DC.D0;
+  player.records.thisInfinity.time = DC.D0;
+  player.records.thisInfinity.lastBuyTime = DC.D0;
   player.records.thisInfinity.realTime = 0;
   player.records.totalInfinityAntimatter = DC.E1;
   Player.resetRequirements("infinity");
@@ -170,20 +179,23 @@ export function secondSoftReset(enteringAntimatterChallenge) {
 
 export function preProductionGenerateIP(diff) {
   if (InfinityUpgrade.ipGen.isBought) {
-    const genPeriod = Time.bestInfinity.totalMilliseconds * 10;
+    const genPeriod = Alpha.isRunning
+      ? Time.bestInfinityRealTime.totalMilliseconds.clampMin(1e-100).times(10)
+      : Time.bestInfinity.totalMilliseconds.clampMin(1e-100).times(10);
     let genCount;
-    if (diff >= 1e300 * genPeriod) {
+    if (new Decimal(diff).gte(DC.E100)) {
       genCount = Decimal.div(diff, genPeriod);
     } else {
       // Partial progress (fractions from 0 to 1) are stored in player.partInfinityPoint
-      player.partInfinityPoint += diff / genPeriod;
-      genCount = Math.floor(player.partInfinityPoint);
-      player.partInfinityPoint -= genCount;
+      const diffnum = Decimal.clamp(new Decimal(diff), 1e-300, 1e300);
+      player.partInfinityPoint = player.partInfinityPoint.add(diffnum.div(genPeriod.clampMax(1e300)));
+      genCount = Decimal.floor(player.partInfinityPoint);
+      player.partInfinityPoint = player.partInfinityPoint.sub(genCount);
     }
-    let gainedPerGen = player.records.bestInfinity.time >= 999999999999 ? DC.D0 : InfinityUpgrade.ipGen.effectValue;
-    if (Laitela.isRunning) gainedPerGen = dilatedValueOf(gainedPerGen);
+    let gainedPerGen = player.records.bestInfinity.time.gte(999999999999) ? DC.D0 : InfinityUpgrade.ipGen.effectValue;
+    if (Laitela.isRunning && gainedPerGen.gt(1)) gainedPerGen = dilatedValueOf(gainedPerGen);
     const gainedThisTick = new Decimal(genCount).times(gainedPerGen);
-    Currency.infinityPoints.add(gainedThisTick);
+    if (Decimal.isFinite(gainedThisTick)) Currency.infinityPoints.add(gainedThisTick);
   }
-  Currency.infinityPoints.add(BreakInfinityUpgrade.ipGen.effectOrDefault(DC.D0).times(diff / 60000));
+  Currency.infinityPoints.add(BreakInfinityUpgrade.ipGen.effectOrDefault(DC.D0).times(diff).div(60000));
 }

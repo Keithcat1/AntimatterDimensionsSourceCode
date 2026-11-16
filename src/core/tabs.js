@@ -5,7 +5,7 @@ class SubtabState {
   }
 
   get name() {
-    return this.config.name;
+    return typeof this.config.name === "function" ? this.config.name() : this.config.name;
   }
 
   get symbol() {
@@ -35,7 +35,7 @@ class SubtabState {
   }
 
   get hasNotification() {
-    return player.tabNotifications.has(this._parent.key + this.key);
+    return this.isUnlocked && player.tabNotifications.has(this._parent.key + this.key);
   }
 
   get key() {
@@ -96,7 +96,7 @@ class TabState {
   }
 
   get name() {
-    return this.config.name;
+    return typeof this.config.name === "function" ? this.config.name() : this.config.name;
   }
 
   get key() {
@@ -150,6 +150,8 @@ class TabState {
 
     if (!this._currentSubtab.isUnlocked) this.resetToUnlocked();
     if (!this._currentSubtab.isAvailable) this.resetToAvailable();
+
+    if (!Tab[this.key].isUnlocked || !Tab[this.key].subtabs[this._currentSubtab.id].isUnlocked) return;
 
     ui.view.tab = this.key;
     ui.view.subtab = this._currentSubtab.key;
@@ -207,6 +209,9 @@ export const Tabs = (function() {
       Tab.reality,
       Tab.celestials,
       Tab.endgame,
+      Tab.cdexpansion,
+      Tab.divinity,
+      Tab.universes,
       Tab.shop
     ],
     newUI: [
@@ -218,6 +223,9 @@ export const Tabs = (function() {
       Tab.reality,
       Tab.celestials,
       Tab.endgame,
+      Tab.cdexpansion,
+      Tab.divinity,
+      Tab.universes,
       Tab.achievements,
       Tab.statistics,
       Tab.options,

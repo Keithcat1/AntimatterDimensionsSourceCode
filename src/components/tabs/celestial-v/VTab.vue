@@ -4,12 +4,14 @@ import GlyphSetPreview from "@/components/GlyphSetPreview";
 import PrimaryButton from "@/components/PrimaryButton";
 import { V_REDUCTION_MODE } from "@/core/secret-formula";
 import VUnlockRequirement from "./VUnlockRequirement";
+import VUpgradeButton from "./VUpgradeButton";
 
 export default {
   name: "VTab",
   components: {
     CelestialQuoteHistory,
     VUnlockRequirement,
+    VUpgradeButton,
     PrimaryButton,
     GlyphSetPreview
   },
@@ -18,7 +20,7 @@ export default {
       mainUnlock: false,
       canUnlockCelestial: false,
       totalUnlocks: 0,
-      pp: 0,
+      pp: new Decimal(0),
       showReduction: false,
       runRecords: [],
       runGlyphs: [],
@@ -26,6 +28,7 @@ export default {
       wantsFlipped: true,
       isRunning: false,
       hasAlchemy: false,
+      hasUpgrades: false,
     };
   },
   computed: {
@@ -78,6 +81,11 @@ export default {
         ],
       ];
     },
+    upgrades() {
+      return [
+        VUpgrade.auto,
+      ];
+    },
     runButtonClassObject() {
       return {
         "l-v-hexagon": true,
@@ -90,21 +98,22 @@ export default {
     runDescription() {
       return GameDatabase.celestials.descriptions[3].effects().replace(/^\w/u, c => c.toUpperCase());
     },
-    isDoomed: () => Pelle.isDoomed,
+    isDoomed: () => Pelle.isDoomed || Slabdrill.isCursed,
   },
   methods: {
     update() {
       this.mainUnlock = VUnlocks.vAchievementUnlock.isUnlocked;
       this.canUnlockCelestial = V.canUnlockCelestial;
       this.totalUnlocks = V.spaceTheorems;
-      this.pp = Currency.perkPoints.value;
+      this.pp.copyFrom(Currency.perkPoints.value);
       this.showReduction = VUnlocks.shardReduction.isUnlocked;
-      this.runRecords = Array.from(player.celestials.v.runRecords);
-      this.runGlyphs = player.celestials.v.runGlyphs.map(gList => Glyphs.copyForRecords(gList));
+      this.runRecords = cloneDeep(player.celestials.v.runRecords);
+      this.runGlyphs = cloneDeep(player.celestials.v.runGlyphs.map(gList => Glyphs.copyForRecords(gList)));
       this.isFlipped = V.isFlipped;
       this.wantsFlipped = player.celestials.v.wantsFlipped;
       this.isRunning = V.isRunning;
       this.hasAlchemy = Ra.unlocks.unlockGlyphAlchemy.canBeApplied;
+      this.hasUpgrades = ExpansionPack.vPack.isBought && !player.disablePostReality;
     },
     unlockCelestial() {
       if (V.canUnlockCelestial) V.unlockCelestial();
@@ -125,7 +134,7 @@ export default {
         : format(Decimal.pow10(hex.reduction));
     },
     showRecord(hex) {
-      return this.runRecords[hex.id] > 0 || hex.completions > 0;
+      return new Decimal(this.runRecords[hex.id]).gt(0) || hex.completions > 0;
     },
     reduceGoals(hex) {
       if (!Currency.perkPoints.purchase(hex.reductionCost)) return;
@@ -154,7 +163,7 @@ export default {
     },
     createCursedGlyph() {
       Glyphs.giveCursedGlyph();
-    }
+    },
   }
 };
 </script>
@@ -218,6 +227,14 @@ export default {
       >
         You have {{ quantify("Perk Point", pp, 2, 0) }}.
       </div>
+      <div class="l-v-upgrades-grid">
+        <VUpgradeButton
+          v-if="hasUpgrades"
+          v-for="upgrade in upgrades"
+          :key="upgrade.id"
+          :upgrade="upgrade"
+        />
+      </div>
       <div class="l-v-unlocks-container">
         <li
           v-for="(hex, hexId) in hexGrid"
@@ -260,7 +277,7 @@ export default {
                 <div class="l-v-goal-reduction-spacer" />
                 <button
                   class="o-primary-btn l-v-reduction"
-                  :class="{ 'o-primary-btn--disabled': !hex.canBeReduced || pp < hex.reductionCost }"
+                  :class="{ 'o-primary-btn--disabled': !hex.canBeReduced || pp.lt(hex.reductionCost) }"
                   :ach-tooltip="reductionTooltip(hex)"
                   :aria-label="reductionTooltip(hex)"
                   @click="reduceGoals(hex)"
@@ -323,7 +340,7 @@ export default {
             :class="{'o-v-milestone--unlocked':
               has(milestone)}"
           >
-            <div :class="{ 'o-pelle-disabled': isDoomed }">
+            <div :class="{ 'o-pelle-disabled': isDoomed && milestone.pelleDisabled }">
               <p>{{ milestone.description }}</p>
               <p>Reward: {{ milestone.rewardText }}</p>
               <p v-if="milestone.formattedEffect">

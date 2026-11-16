@@ -1,7 +1,7 @@
 import { GameMechanicState } from "./game-mechanics";
 
 export function tryCompleteInfinityChallenges() {
-  if (EternityMilestone.autoIC.isReached) {
+  if (EternityMilestone.autoIC.isReached || (PelleDestructionUpgrade.autoICComp.canBeApplied && !player.disablePostReality)) {
     const toComplete = InfinityChallenges.all.filter(x => x.isUnlocked && !x.isCompleted);
     for (const challenge of toComplete) challenge.complete();
   }
@@ -25,11 +25,12 @@ class InfinityChallengeState extends GameMechanicState {
   }
 
   get unlockAM() {
-    return this.config.unlockAM;
+    return this.config.unlockAM();
   }
 
   get isUnlocked() {
-    return player.records.thisEternity.maxAM.gte(this.unlockAM) || (Achievement(133).isUnlocked && !Pelle.isDoomed) ||
+    return player.records.thisEternity.maxAM.gte(this.unlockAM) ||
+      (Achievement(133).isUnlocked && !Pelle.isDoomed && (!player.disablePostReality || SlabdrillUnlocks.eternityChallengeTen.isUnlocked)) ||
       (PelleUpgrade.keepInfinityChallenges.canBeApplied && Pelle.cel.records.totalAntimatter.gte(this.unlockAM));
   }
 
@@ -48,6 +49,7 @@ class InfinityChallengeState extends GameMechanicState {
   }
 
   start() {
+    if (this.id === 8 && Alpha.isRunning && Alpha.currentStage < 8) return;
     if (!this.isUnlocked || this.isRunning) return;
     // Forces big crunch reset but ensures IP gain, if any.
     bigCrunchReset(true, true);
@@ -65,6 +67,14 @@ class InfinityChallengeState extends GameMechanicState {
   complete() {
     player.challenge.infinity.completedBits |= 1 << this.id;
     EventHub.dispatch(GAME_EVENT.INFINITY_CHALLENGE_COMPLETED);
+    if (player.challenge.infinity.completedBits === 510 && Alpha.isRunning && Alpha.currentStage === 8) {
+      Alpha.advanceLayer();
+      Alpha.quotes.allInfinityChalls.show();
+    }
+    if (this.id === 4 && Slabdrill.isCursed && Slabdrill.currentStage === 4) {
+      Slabdrill.advanceLayer();
+      Slabdrill.quotes.infinityChallengeFour.show();
+    }
   }
 
   get isEffectActive() {
@@ -83,12 +93,12 @@ class InfinityChallengeState extends GameMechanicState {
   }
 
   get goal() {
-    return this.config.goal;
+    return this.config.goal();
   }
 
   updateChallengeTime() {
     const bestTimes = player.challenge.infinity.bestTimes;
-    if (bestTimes[this.id - 1] <= player.records.thisInfinity.time) {
+    if (bestTimes[this.id - 1].lte(player.records.thisInfinity.time)) {
       return;
     }
     player.challenge.infinity.bestTimes[this.id - 1] = player.records.thisInfinity.time;
@@ -146,6 +156,7 @@ export const InfinityChallenges = {
     // Disable the popup if the user will automatically complete the IC.
     if (EternityMilestone.autoIC.isReached) return;
     if (InfinityChallenges.nextIC === undefined) return;
+    if (player.celestials.slabdrill.core.isActive) return;
     for (const ic of InfinityChallenges.all) {
       if (ic.isUnlocked || ic.isCompleted) continue;
       if (value.lt(ic.unlockAM)) break;

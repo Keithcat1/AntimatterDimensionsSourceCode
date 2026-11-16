@@ -1,14 +1,14 @@
 <script>
-import { DC } from "@/core/constants";
-
 import CelestialQuoteHistory from "@/components/CelestialQuoteHistory";
 import CustomizeableTooltip from "@/components/CustomizeableTooltip";
 import GlyphSetPreview from "@/components/GlyphSetPreview";
 import PerkShopUpgradeButton from "./PerkShopUpgradeButton";
+import PrimaryButton from "@/components/PrimaryButton";
 
 export default {
   name: "TeresaTab",
   components: {
+    PrimaryButton,
     GlyphSetPreview,
     PerkShopUpgradeButton,
     CelestialQuoteHistory,
@@ -18,23 +18,30 @@ export default {
     return {
       pour: false,
       time: new Date().getTime(),
-      pouredAmount: 0,
+      pouredAmount: new Decimal(0),
       isPouredAmountCapped: false,
       rm: new Decimal(0),
       percentage: "",
       possibleFillPercentage: "",
-      rmMult: 0,
+      rmMult: new Decimal(0),
       bestAM: new Decimal(0),
       bestAMSet: [],
       lastMachines: new Decimal(0),
-      runReward: 0,
-      perkPoints: 0,
+      runReward: new Decimal(0),
+      perkPoints: new Decimal(0),
       hasReality: false,
       hasEPGen: false,
       hasPerkShop: false,
       raisedPerkShop: false,
       isRunning: false,
       canUnlockNextPour: false,
+      chargeUnlocked: false,
+      totalCharges: 0,
+      chargesUsed: 0,
+      disCharge: false,
+      chargeView: false,
+      autoPour: false,
+      isFlipped: false
     };
   },
   computed: {
@@ -52,6 +59,7 @@ export default {
         PerkShopUpgrade.musicGlyph,
       ];
       if (this.raisedPerkShop) upgrades.push(PerkShopUpgrade.fillMusicGlyph);
+      if (ExpansionPack.teresaPack.isBought && !player.disablePostReality) upgrades.push(PerkShopUpgrade.addCharges);
       return upgrades;
     },
     runButtonClassObject() {
@@ -72,6 +80,16 @@ export default {
         "c-disabled-pour": this.isPouredAmountCapped
       };
     },
+    autoClassObject() {
+      return {
+        "o-teresa-shop-button": true,
+        "c-teresa-pour": true,
+        "o-teresa-shop-button--available": true
+      };
+    },
+    autoText() {
+      return this.autoPour ? "Auto ON" : "Auto OFF";
+    },
     pourText() {
       return this.isPouredAmountCapped ? "Filled" : "Pour RM";
     },
@@ -79,47 +97,81 @@ export default {
       return GameDatabase.celestials.descriptions[0].effects();
     },
     lastMachinesString() {
-      return this.lastMachines.lt(DC.E10000)
-        ? `${quantify("Reality Machine", this.lastMachines, 2)}`
-        : `${quantify("Imaginary Machine", this.lastMachines.dividedBy(DC.E10000), 2)}`;
+      return this.lastMachines.gte(DC.E20000)
+        ? `${quantify("Dual Machine", this.lastMachines.dividedBy(DC.E20000), 2)}`
+        : (this.lastMachines.lt(DC.E10000)
+          ? `${quantify("Reality Machine", this.lastMachines, 2)}`
+          : `${quantify("Imaginary Machine", this.lastMachines.dividedBy(DC.E10000), 2)}`);
     },
     unlockInfoTooltipArrowStyle() {
       return {
         borderRight: "0.5rem solid var(--color-teresa--base)"
       };
     },
-    isDoomed: () => Pelle.isDoomed,
+    isDoomed: () => Pelle.isDoomed || Slabdrill.isCursed,
+    isEPGenDoomed: () => Pelle.isDoomed && !PelleCelestialUpgrade.passiveEPGen.canBeApplied,
+    disChargeClassObject() {
+      return {
+        "o-primary-btn--subtab-option": true,
+        "o-primary-btn--charged-respec-active": this.disCharge
+      };
+    },
+    chargeDisplay() {
+      return `Charge Upgrades: ${this.chargeView ? "ON" : "OFF"}`;
+    },
+    shouldDisplayPourLimit() {
+      return this.pouredAmountCap.lt(DC.BEMAX);
+    }
+  },
+  watch: {
+    disCharge(newValue) {
+      player.celestials.teresa.disCharge = newValue;
+    },
+    chargeView(newValue) {
+      player.celestials.teresa.chargeMode = newValue;
+    }
   },
   methods: {
     update() {
       const now = new Date().getTime();
       if (this.pour) {
-        const diff = (now - this.time) / 1000;
-        Teresa.pourRM(diff);
+        if (EndgameUpgrade(10).isLockingMechanics) EndgameUpgrade(10).tryShowWarningModal();
+        else {
+          const diff = (now - this.time) / 1000;
+          Teresa.pourRM(diff);
         // Turn off the checkbox when out of RM
         if (this.$viewModel.srMode && this.rm.isZero) this.pour = false;
+
+        }
       } else {
-        Teresa.timePoured = 0;
+        Teresa.timePoured = new Decimal(0);
       }
       this.time = now;
-      this.pouredAmount = player.celestials.teresa.pouredAmount;
-      this.isPouredAmountCapped = this.pouredAmount === this.pouredAmountCap;
+      this.pouredAmount.copyFrom(player.celestials.teresa.pouredAmount);
+      this.isPouredAmountCapped = this.pouredAmount.eq(new Decimal(this.pouredAmountCap));
       this.percentage = `${(Teresa.fill * 100).toFixed(2)}%`;
       this.possibleFillPercentage = `${(Teresa.possibleFill * 100).toFixed(2)}%`;
-      this.rmMult = Teresa.rmMultiplier;
+      this.rmMult.copyFrom(Teresa.rmMultiplier);
       this.hasReality = TeresaUnlocks.run.isUnlocked;
       this.hasEPGen = TeresaUnlocks.epGen.isUnlocked;
       this.hasPerkShop = TeresaUnlocks.shop.isUnlocked;
       this.raisedPerkShop = Ra.unlocks.perkShopIncrease.canBeApplied;
       this.bestAM.copyFrom(player.celestials.teresa.bestRunAM);
-      this.bestAMSet = Glyphs.copyForRecords(player.celestials.teresa.bestAMSet);
+      this.bestAMSet = cloneDeep(Glyphs.copyForRecords(player.celestials.teresa.bestAMSet));
       this.lastMachines.copyFrom(player.celestials.teresa.lastRepeatedMachines);
-      this.runReward = Teresa.runRewardMultiplier;
-      this.perkPoints = Currency.perkPoints.value;
+      this.runReward.copyFrom(Teresa.runRewardMultiplier);
+      this.perkPoints.copyFrom(Currency.perkPoints.value);
       this.rm.copyFrom(Currency.realityMachines);
       this.isRunning = Teresa.isRunning;
       this.canUnlockNextPour = TeresaUnlocks.all
         .filter(unlock => this.rm.plus(this.pouredAmount).gte(unlock.price) && !unlock.isUnlocked).length > 0;
+      this.chargeUnlocked = ExpansionPack.teresaPack.isBought && !player.disablePostReality;
+      this.totalCharges = Teresa.totalCharges;
+      this.chargesUsed = Teresa.totalCharges - Teresa.chargesLeft;
+      this.disCharge = player.celestials.teresa.disCharge;
+      this.chargeView = Teresa.chargeModeOn;
+      this.autoPour = player.celestials.teresa.autoPour;
+      this.isFlipped = player.universes.current === 2;
     },
     startRun() {
       if (this.isDoomed) return;
@@ -138,6 +190,9 @@ export default {
         "c-teresa-unlock-description": true,
         "c-teresa-unlock-description--unlocked": this.hasUnlock(unlockInfo)
       };
+    },
+    toggleAuto() {
+      return player.celestials.teresa.autoPour = !player.celestials.teresa.autoPour;
     }
   }
 };
@@ -146,7 +201,24 @@ export default {
 <template>
   <div class="l-teresa-celestial-tab">
     <CelestialQuoteHistory celestial="teresa" />
-    <div aria-live="polite">
+    <div
+      v-if="chargeUnlocked"
+      class="c-subtab-option-container"
+    >
+      <PrimaryButton
+        :class="disChargeClassObject"
+        @click="disCharge = !disCharge"
+      >
+        Respec Charged Perk Upgrades on next Endgame
+      </PrimaryButton>
+    </div>
+    <div v-if="chargeUnlocked">
+      You have charged {{ formatInt(chargesUsed) }}/{{ formatInt(totalCharges) }} Perk Upgrades.
+      Charged Perk Upgrades have their effect altered.
+      <br>
+      Hold shift to show Charged Perk Upgrades. You can freely respec your choices on Endgame.
+    </div>
+    <div>
       You have {{ quantify("Reality Machine", rm, 2, 2) }}.
     </div>
     <div class="l-mechanics-container">
@@ -167,10 +239,11 @@ export default {
           {{ runDescription }}
           <br><br>
           <div>
-            This Reality can be repeated for a stronger reward based on the antimatter gained within it.
+            This Reality can be repeated for a stronger reward based on the {{ isFlipped ? "matter" : "antimatter" }} gained
+            within it.
             <br><br>
             <span v-if="showRunReward">
-              Your record antimatter in Teresa's Reality is {{ format(bestAM, 2) }},
+              Your record {{ isFlipped ? "matter" : "antimatter" }} in Teresa's Reality is {{ format(bestAM, 2) }},
               achieved with {{ lastMachinesString }}.
               <br><br>
               Glyph Set used:
@@ -196,29 +269,30 @@ export default {
           v-if="hasEPGen"
           class="c-teresa-unlock"
         >
-          <span :class="{ 'o-pelle-disabled': isDoomed }">
+          <span :class="{ 'o-pelle-disabled': isEPGenDoomed }">
             Every second, you gain {{ formatPercents(0.01) }} of your peaked Eternity Points per minute this Reality.
           </span>
         </div>
       </div>
       <div class="l-rm-container l-teresa-mechanic-container">
         <button
-          v-if="!$viewModel.srMode"
+          v-if="chargeUnlocked"
+          :class="autoClassObject"
+          @click="toggleAuto"
+        >
+          {{ autoText }}
+        </button>
+        <button
           :class="pourButtonClassObject"
           @mousedown="pour = true"
           @touchstart="pour = true"
           @mouseup="pour = false"
           @touchend="pour = false"
           @mouseleave="pour = false"
+          :aria-pressed="pour"
         >
           {{ pourText }}
         </button>
-        <input
-          v-else
-          v-model="pour"
-          type="checkbox"
-          :aria-label="pourText"
-        >
         <div class="c-rm-store">
           <div
             class="c-rm-store-inner c-rm-store-inner--light"
@@ -231,7 +305,13 @@ export default {
             <div class="c-rm-store-label">
               {{ formatX(rmMult, 2, 2) }} RM gain
               <br>
-              {{ format(pouredAmount, 2, 2) }}/{{ format(pouredAmountCap, 2, 2) }}
+              {{ format(pouredAmount, 2, 2) }}
+              <span v-if="shouldDisplayPourLimit">
+                / {{ format(pouredAmountCap, 2, 2) }}
+              </span>
+              <span v-else>
+                RM
+              </span>
             </div>
           </div>
           <CustomizeableTooltip
@@ -271,6 +351,13 @@ export default {
           :key="upgrade.id"
           :upgrade="upgrade"
         />
+        <PrimaryButton
+          v-if="chargeUnlocked"
+          class="o-primary-btn--subtab-option"
+          @click="chargeView = !chargeView"
+        >
+          {{ chargeDisplay }}
+        </PrimaryButton>
         You can now modify the appearance of your Glyphs to look like Music Glyphs.
       </div>
       <div

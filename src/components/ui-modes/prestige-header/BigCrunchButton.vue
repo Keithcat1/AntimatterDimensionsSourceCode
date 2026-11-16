@@ -17,6 +17,7 @@ export default {
       headerTextColored: true,
       creditsClosed: false,
       showIPRate: false,
+      isFlipped: false
     };
   },
   computed: {
@@ -50,15 +51,15 @@ export default {
         ],
         [0, 255, 0]
       ];
-      const ratio = this.gainedIP.log10() / this.currentIP.log10();
+      const ratio = this.gainedIP.log10().div(this.currentIP.log10());
       const interFn = index => {
-        if (ratio < 0.9) return stepRGB[0][index];
-        if (ratio < 1) {
-          const r = 10 * (ratio - 0.9);
+        if (ratio.lt(0.9)) return stepRGB[0][index];
+        if (ratio.lt(1)) {
+          const r = (ratio.sub(0.9)).times(10).toNumber();
           return Math.round(stepRGB[0][index] * (1 - r) + stepRGB[1][index] * r);
         }
-        if (ratio < 1.1) {
-          const r = 10 * (ratio - 1);
+        if (ratio.lt(1.1)) {
+          const r = (ratio.sub(1)).times(10).toNumber();
           return Math.round(stepRGB[1][index] * (1 - r) + stepRGB[2][index] * r);
         }
         return stepRGB[2][index];
@@ -84,10 +85,11 @@ export default {
       const gainedIP = gainedInfinityPoints();
       this.currentIP.copyFrom(Currency.infinityPoints);
       this.gainedIP.copyFrom(gainedIP);
-      this.currentIPRate.copyFrom(gainedIP.dividedBy(Math.clampMin(0.0005, Time.thisInfinityRealTime.totalMinutes)));
+      this.currentIPRate.copyFrom(gainedIP.dividedBy(Math.clampMin(0.0005, Time.thisInfinityRealTime.totalMinutes.toNumber())));
       this.peakIPRate.copyFrom(player.records.thisInfinity.bestIPmin);
       this.peakIPRateVal.copyFrom(player.records.thisInfinity.bestIPminVal);
       this.showIPRate = this.peakIPRate.lte(this.rateThreshold);
+      this.isFlipped = player.universes.current === 2;
     },
     switchToInfinity() {
       Tab.dimensions.infinity.show(true);
@@ -113,7 +115,7 @@ export default {
     <template v-if="!canCrunch">
       Reach {{ format(infinityGoal, 2, 2) }}
       <br>
-      antimatter
+      {{ isFlipped ? "matter" : "antimatter" }}
     </template>
 
     <!-- Can Crunch in challenge -->

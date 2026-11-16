@@ -19,7 +19,8 @@ export default {
       completedRows: 0,
       cappedResources: 0,
       hasStrike: false,
-      hasGalaxyGenerator: false
+      hasGalaxyGenerator: false,
+      hasEndgame: false,
     };
   },
   computed: {
@@ -38,12 +39,14 @@ export default {
       this.isDoomed = Pelle.isDoomed;
       if (!this.isDoomed) {
         this.completedRows = Achievements.prePelleRows.countWhere(r => r.every(a => a.isUnlocked));
-        this.cappedResources = AlchemyResources.all.countWhere(r => r.capped);
+        this.cappedResources = AlchemyResources.all.countWhere(r => r.amount >= 25000);
         this.canEnterPelle = this.completedRows === this.totalRows &&
-          this.cappedResources === this.totalAlchemyResources;
+          this.cappedResources === this.totalAlchemyResources && !Alpha.isRunning && !LHC.voidRunning && !LHC.nullifiedVoidRunning &&
+          !Slabdrill.isCursed && !player.endgame.overcharge.isRunning && !player.compression.active && player.universes.current === 0;
       }
       this.hasStrike = PelleStrikes.all.some(s => s.hasStrike);
-      this.hasGalaxyGenerator = PelleRifts.recursion.milestones[2].canBeApplied || GalaxyGenerator.spentGalaxies > 0;
+      this.hasGalaxyGenerator = PelleRifts.recursion.milestones[2].canBeApplied || GalaxyGenerator.spentGalaxies.gt(0);
+      this.hasEndgame = PlayerProgress.endgameUnlocked();
     },
     toggleBought() {
       Pelle.cel.showBought = !Pelle.cel.showBought;
@@ -53,7 +56,9 @@ export default {
       Modal.pelleEffects.show();
     },
     enterDoomModal() {
-      Modal.armageddon.show();
+      const confirms = player.options.confirmations;
+      if (confirms.doom) Modal.armageddon.show();
+      else Pelle.initializeRun();
     }
   }
 };
@@ -61,11 +66,11 @@ export default {
 
 <template>
   <div class="l-pelle-celestial-tab">
+    <CelestialQuoteHistory celestial="pelle" v-if="isDoomed || hasEndgame" />
     <div
       v-if="isDoomed"
       class="l-pelle-all-content-container"
     >
-      <CelestialQuoteHistory celestial="pelle" />
       <div class="button-container">
         <button
           class="o-pelle-button"

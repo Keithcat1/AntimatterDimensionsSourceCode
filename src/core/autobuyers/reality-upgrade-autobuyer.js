@@ -10,7 +10,8 @@ export class RealityUpgradeAutobuyerState extends AutobuyerState {
   }
 
   get isUnlocked() {
-    return Ra.unlocks.instantECAndRealityUpgradeAutobuyers.canBeApplied;
+    return (Ra.unlocks.instantECAndRealityUpgradeAutobuyers.canBeApplied || EndgameMilestone.startRa.isReached)
+      && !player.disablePostReality;
   }
 
   get hasUnlimitedBulk() {
@@ -19,7 +20,7 @@ export class RealityUpgradeAutobuyerState extends AutobuyerState {
 
   tick() {
     const upg = RealityUpgrade(this.id);
-    while (Currency.realityMachines.gte(upg.cost)) upg.purchase();
+    upg.bulkPurchase();
   }
 
   static get entryCount() { return 5; }

@@ -9,11 +9,12 @@ function formatInt(value) {
   return formatWithCommas(typeof value === "number" ? value.toFixed(0) : value.toNumber().toFixed(0));
 }
 
-function formatMachines(realPart, imagPart) {
+function formatMachines(realPart, imagPart, dualPart) {
   const parts = [];
   if (Decimal.neq(realPart, 0)) parts.push(format(realPart, 2));
   if (Decimal.neq(imagPart, 0)) parts.push(`${format(imagPart, 2, 2)}i`);
-  if (Decimal.eq(realPart, 0) && Decimal.eq(imagPart, 0)) return format(0);
+  if (Decimal.neq(dualPart, 0)) parts.push(`${format(dualPart, 2, 2)}j`);
+  if (Decimal.eq(realPart, 0) && Decimal.eq(imagPart, 0) && Decimal.eq(dualPart, 0)) return format(0);
   return parts.join(" + ");
 }
 
@@ -84,7 +85,7 @@ export const discordRichPresence = {
         return `${Laitela.possessiveName} Reality - ${dimStr}`;
       },
       activityToken: () => Laitela.isRunning,
-      resource: () => `${formatPercents(player.celestials.laitela.entropy, 2, 2)} Entropy`,
+      resource: () => `${formatPercents(new Decimal(player.celestials.laitela.entropy).toNumber(), 2, 2)} Entropy`,
     },
     {
       name: () => "Dilation",
@@ -176,11 +177,11 @@ export const discordRichPresence = {
     },
     {
       name: "Reality",
-      hasReached: () => player.realities > 0,
+      hasReached: () => player.realities.gt(0),
       mainResource: () => `${format(player.reality.realityMachines, 2)} RM`,
       resourceList: [
         () => quantify("Reality", player.realities, 0, 0, formatInt),
-        () => `Best Glyph Level: ${formatInt(player.records.bestReality.glyphLevel)}`
+        () => `Best Glyph Level: ${formatHybridLarge(player.records.bestReality.glyphLevel, 3)}`
       ]
     },
     {
@@ -189,7 +190,7 @@ export const discordRichPresence = {
       mainResource: () => `${format(player.reality.realityMachines, 2)} RM`,
       resourceList: [
         () => quantify("Reality", player.realities, 0, 0, formatInt),
-        () => `Best GL: ${formatInt(player.records.bestReality.glyphLevel)}`,
+        () => `Best GL: ${formatHybridLarge(player.records.bestReality.glyphLevel, 3)}`,
         () => `Poured: ${format(player.celestials.teresa.pouredAmount, 2)} RM`
       ]
     },
@@ -198,7 +199,7 @@ export const discordRichPresence = {
       hasReached: () => TeresaUnlocks.effarig.isUnlocked,
       mainResource: () => `${format(player.reality.realityMachines, 2)} RM`,
       resourceList: [
-        () => `Best GL: ${formatInt(player.records.bestReality.glyphLevel)}`,
+        () => `Best GL: ${formatHybridLarge(player.records.bestReality.glyphLevel, 3)}`,
         () => quantify("Relic Shard", player.celestials.effarig.relicShards, 2, 0, format)
       ]
     },
@@ -207,8 +208,8 @@ export const discordRichPresence = {
       hasReached: () => EffarigUnlock.eternity.isUnlocked,
       mainResource: () => `${format(player.reality.realityMachines, 2)} RM`,
       resourceList: [
-        () => `Best GL: ${formatInt(player.records.bestReality.glyphLevel)}`,
-        () => `Charged: ${format(TimeSpan.fromMilliseconds(player.celestials.enslaved.stored).totalYears, 2)} years`
+        () => `Best GL: ${formatHybridLarge(player.records.bestReality.glyphLevel, 3)}`,
+        () => `Charged: ${format(TimeSpan.fromMilliseconds(new Decimal(player.celestials.enslaved.stored)).totalYears, 2)} years`
       ],
     },
     {
@@ -216,7 +217,7 @@ export const discordRichPresence = {
       hasReached: () => Achievement(151).isUnlocked,
       mainResource: () => `${format(player.reality.realityMachines, 2)} RM`,
       resourceList: [
-        () => `Best GL: ${formatInt(player.records.bestReality.glyphLevel)}`,
+        () => `Best GL: ${formatHybridLarge(player.records.bestReality.glyphLevel, 3)}`,
         () => quantify("V-Achievement", player.celestials.v.runUnlocks.sum(), 0, 0, formatInt)],
     },
     {
@@ -224,7 +225,7 @@ export const discordRichPresence = {
       hasReached: () => VUnlocks.raUnlock.isUnlocked,
       mainResource: () => `${format(player.reality.realityMachines, 2)} RM`,
       resourceList: [
-        () => `Best GL: ${formatInt(player.records.bestReality.glyphLevel)}`,
+        () => `Best GL: ${formatHybridLarge(player.records.bestReality.glyphLevel, 3)}`,
         () => `Ra Levels: ${Ra.pets.all.map(p => formatInt(p.level)).join("/")}`],
     },
     {
@@ -234,7 +235,7 @@ export const discordRichPresence = {
       mainResource: () =>
         `${format(player.reality.realityMachines)} RM + ${format(player.reality.imaginaryMachines, 2)} iM`,
       resourceList: [
-        () => `Best GL: ${formatInt(player.records.bestReality.glyphLevel)}`,
+        () => `Best GL: ${formatHybridLarge(player.records.bestReality.glyphLevel, 3)}`,
         () => `Ra Levels: ${Ra.pets.all.map(p => formatInt(p.level)).join("/")}`
       ],
     },
@@ -244,7 +245,7 @@ export const discordRichPresence = {
       mainResource: () =>
         `${format(player.reality.realityMachines)} RM + ${format(player.reality.imaginaryMachines, 2)} iM`,
       resourceList: [
-        () => `Best GL: ${formatInt(player.records.bestReality.glyphLevel)}`,
+        () => `Best GL: ${formatHybridLarge(player.records.bestReality.glyphLevel, 3)}`,
         () => quantify("Singularity", player.celestials.laitela.singularities, 2, 0, format)],
     },
     {

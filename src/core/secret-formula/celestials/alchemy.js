@@ -1,5 +1,3 @@
-import { DC } from "../../constants";
-
 export const alchemyResources = {
   // T1 resources (Non-Effarig "base" resources)
   "power": {
@@ -11,8 +9,9 @@ export const alchemyResources = {
     tier: 1,
     uiOrder: 1,
     unlockedAt: 2,
-    description: "provides a power to Antimatter Dimensions",
-    formatEffect: value => `Antimatter Dimension multipliers ${formatPow(value, 4, 4)}`
+    description: () => `provides a power to ${player.universes.current === 2 ? "Matter" : "Antimatter"} Dimensions`,
+    formatEffect: value => `${player.universes.current === 2 ? "Matter" : "Antimatter"} Dimension multipliers ${formatPow(value, 4, 4)}`,
+    destroyed: () => !PelleAlchemyUpgrade.alchemyPower.isBought
   },
   "infinity": {
     id: ALCHEMY_RESOURCE.INFINITY,
@@ -24,7 +23,8 @@ export const alchemyResources = {
     uiOrder: 2,
     unlockedAt: 3,
     description: "provides a power to Infinity Dimensions",
-    formatEffect: value => `Infinity Dimension multipliers ${formatPow(value, 4, 4)}`
+    formatEffect: value => `Infinity Dimension multipliers ${formatPow(value, 4, 4)}`,
+    destroyed: () => !PelleAlchemyUpgrade.alchemyInfinity.isBought
   },
   "time": {
     id: ALCHEMY_RESOURCE.TIME,
@@ -36,7 +36,8 @@ export const alchemyResources = {
     uiOrder: 3,
     unlockedAt: 4,
     description: "provides a power to Time Dimensions",
-    formatEffect: value => `Time Dimension multipliers ${formatPow(value, 4, 4)}`
+    formatEffect: value => `Time Dimension multipliers ${formatPow(value, 4, 4)}`,
+    destroyed: () => !PelleAlchemyUpgrade.alchemyTime.isBought
   },
   "replication": {
     id: ALCHEMY_RESOURCE.REPLICATION,
@@ -48,7 +49,8 @@ export const alchemyResources = {
     uiOrder: 4,
     unlockedAt: 5,
     description: `increases Replication speed`,
-    formatEffect: value => `Replication speed is increased by ${formatX(value, 2, 2)}`
+    formatEffect: value => `Replication speed is increased by ${formatX(value, 2, 2)}`,
+    destroyed: () => !PelleAlchemyUpgrade.alchemyReplication.isBought
   },
   "dilation": {
     id: ALCHEMY_RESOURCE.DILATION,
@@ -60,7 +62,8 @@ export const alchemyResources = {
     uiOrder: 5,
     unlockedAt: 6,
     description: "increases Dilated Time production",
-    formatEffect: value => `Dilated Time production is increased by ${formatX(value, 2, 2)}`
+    formatEffect: value => `Dilated Time production is increased by ${formatX(value, 2, 2)}`,
+    destroyed: () => !PelleAlchemyUpgrade.alchemyDilation.isBought
   },
 
   // T2 resources (combinations of pairs of T1 resources)
@@ -85,7 +88,8 @@ export const alchemyResources = {
         resource: ALCHEMY_RESOURCE.REPLICATION,
         amount: 7
       }
-    ]
+    ],
+    destroyed: () => !PelleAlchemyUpgrade.alchemyCardinality.isBought
   },
   "eternity": {
     id: ALCHEMY_RESOURCE.ETERNITY,
@@ -107,7 +111,8 @@ export const alchemyResources = {
         resource: ALCHEMY_RESOURCE.INFINITY,
         amount: 4
       }
-    ]
+    ],
+    destroyed: () => !PelleAlchemyUpgrade.alchemyEternity.isBought
   },
   "dimensionality": {
     id: ALCHEMY_RESOURCE.DIMENSIONALITY,
@@ -129,7 +134,8 @@ export const alchemyResources = {
         resource: ALCHEMY_RESOURCE.INFINITY,
         amount: 5
       }
-    ]
+    ],
+    destroyed: () => !PelleAlchemyUpgrade.alchemyDimensionality.isBought
   },
   "inflation": {
     id: ALCHEMY_RESOURCE.INFLATION,
@@ -141,7 +147,7 @@ export const alchemyResources = {
     uiOrder: 5,
     unlockedAt: 11,
     description: "provides an additional power for very large multipliers",
-    formatEffect: value => `All Antimatter Dimension multipliers are ${formatPow(1.05, 2, 2)}
+    formatEffect: value => `All ${player.universes.current === 2 ? "Matter" : "Antimatter"} Dimension multipliers are ${formatPow(1.05, 2, 2)}
       if they are above ${format(value)} `,
     reagents: [
       {
@@ -152,7 +158,8 @@ export const alchemyResources = {
         resource: ALCHEMY_RESOURCE.DILATION,
         amount: 6
       }
-    ]
+    ],
+    destroyed: () => !PelleAlchemyUpgrade.alchemyInflation.isBought
   },
   "alternation": {
     id: ALCHEMY_RESOURCE.ALTERNATION,
@@ -175,7 +182,8 @@ export const alchemyResources = {
         resource: ALCHEMY_RESOURCE.DILATION,
         amount: 10
       }
-    ]
+    ],
+    destroyed: () => !PelleAlchemyUpgrade.alchemyAlternation.isBought
   },
 
   // T3 resources (Effarig and conbinations of T1/T2 with Effarig)
@@ -184,12 +192,13 @@ export const alchemyResources = {
     name: "Effarig",
     symbol: "Ϙ",
     isBaseResource: true,
-    effect: amount => Math.pow(10, amount / 1250),
+    effect: amount => Decimal.pow10(amount / 1250),
     tier: 1,
     uiOrder: 1.5,
     unlockedAt: 7,
     description: "increases Relic Shard gain",
-    formatEffect: value => `Relic Shard gain is multiplied ${formatX(value, 2, 2)}`
+    formatEffect: value => `Relic Shard gain is multiplied ${formatX(value, 2, 2)}`,
+    destroyed: () => !PelleAlchemyUpgrade.alchemyEffarig.isBought
   },
   "synergism": {
     id: ALCHEMY_RESOURCE.SYNERGISM,
@@ -221,7 +230,8 @@ export const alchemyResources = {
         resource: ALCHEMY_RESOURCE.INFINITY,
         amount: 14
       }
-    ]
+    ],
+    destroyed: () => !PelleAlchemyUpgrade.alchemySynergism.isBought
   },
   "momentum": {
     id: ALCHEMY_RESOURCE.MOMENTUM,
@@ -234,7 +244,7 @@ export const alchemyResources = {
     unlockedAt: 15,
     description: "provides a power to all Dimensions that permanently grows over time",
     formatEffect: value => `All Dimensions ${formatPow(Ra.momentumValue, 4, 4)}, increasing by
-      ${format(0.01 * Achievement(175).effectOrDefault(1), 3, 3)}
+      ${format(0.01 * Effects.product(Achievement(175), EndgameMastery(171), Achievement(222)), 3, 3)}
       per real-time hour after the resource is unlocked, up to a maximum of ${formatPow(value, 4, 4)}`,
     reagents: [
       {
@@ -249,7 +259,8 @@ export const alchemyResources = {
         resource: ALCHEMY_RESOURCE.TIME,
         amount: 20
       }
-    ]
+    ],
+    destroyed: () => !PelleAlchemyUpgrade.alchemyMomentum.isBought
   },
   "decoherence": {
     id: ALCHEMY_RESOURCE.DECOHERENCE,
@@ -272,7 +283,8 @@ export const alchemyResources = {
         resource: ALCHEMY_RESOURCE.ALTERNATION,
         amount: 8
       }
-    ]
+    ],
+    destroyed: () => !PelleAlchemyUpgrade.alchemyDecoherence.isBought
   },
 
   // T4 resources (resources which feed directly into the final resource)
@@ -296,7 +308,8 @@ export const alchemyResources = {
         resource: ALCHEMY_RESOURCE.SYNERGISM,
         amount: 3
       }
-    ]
+    ],
+    destroyed: () => !PelleAlchemyUpgrade.alchemyExponential.isBought
   },
   "force": {
     id: ALCHEMY_RESOURCE.FORCE,
@@ -307,8 +320,8 @@ export const alchemyResources = {
     tier: 4,
     uiOrder: 2,
     unlockedAt: 17,
-    description: "multiplies Antimatter Dimensions based on Reality Machines",
-    formatEffect: value => `Multiply Antimatter Dimensions by Reality Machines${formatPow(value, 2, 2)}`,
+    description: () => `multiplies ${player.universes.current === 2 ? "Matter" : "Antimatter"} Dimensions based on Reality Machines`,
+    formatEffect: value => `Multiply ${player.universes.current === 2 ? "Matter" : "Antimatter"} Dimensions by Reality Machines${formatPow(value, 2, 2)}`,
     reagents: [
       {
         resource: ALCHEMY_RESOURCE.DIMENSIONALITY,
@@ -318,7 +331,8 @@ export const alchemyResources = {
         resource: ALCHEMY_RESOURCE.MOMENTUM,
         amount: 8
       }
-    ]
+    ],
+    destroyed: () => !PelleAlchemyUpgrade.alchemyForce.isBought
   },
   "uncountability": {
     id: ALCHEMY_RESOURCE.UNCOUNTABILITY,
@@ -344,7 +358,8 @@ export const alchemyResources = {
         resource: ALCHEMY_RESOURCE.CARDINALITY,
         amount: 16
       }
-    ]
+    ],
+    destroyed: () => !PelleAlchemyUpgrade.alchemyUncountability.isBought
   },
   "boundless": {
     id: ALCHEMY_RESOURCE.BOUNDLESS,
@@ -366,7 +381,8 @@ export const alchemyResources = {
         resource: ALCHEMY_RESOURCE.INFLATION,
         amount: 18
       }
-    ]
+    ],
+    destroyed: () => !PelleAlchemyUpgrade.alchemyBoundless.isBought
   },
   "multiversal": {
     id: ALCHEMY_RESOURCE.MULTIVERSAL,
@@ -389,7 +405,8 @@ export const alchemyResources = {
         resource: ALCHEMY_RESOURCE.DECOHERENCE,
         amount: 3
       }
-    ]
+    ],
+    destroyed: () => !PelleAlchemyUpgrade.alchemyMultiversal.isBought
   },
   "unpredictability": {
     id: ALCHEMY_RESOURCE.UNPREDICTABILITY,
@@ -417,7 +434,8 @@ export const alchemyResources = {
         resource: ALCHEMY_RESOURCE.SYNERGISM,
         amount: 10
       }
-    ]
+    ],
+    destroyed: () => !PelleAlchemyUpgrade.alchemyUnpredictability.isBought
   },
 
   // T5 (Reality)
@@ -430,7 +448,7 @@ export const alchemyResources = {
     tier: 5,
     unlockedAt: 25,
     description: "can be consumed to create Reality Glyphs",
-    formatEffect: value => `Consume all Reality Resource to create a level ${formatInt(value)} Reality Glyph`,
+    formatEffect: value => `Consume all Reality Resource to create a level ${formatHybridLarge(value, 3)} Reality Glyph`,
     reagents: [
       {
         resource: ALCHEMY_RESOURCE.EXPONENTIAL,
@@ -456,6 +474,7 @@ export const alchemyResources = {
         resource: ALCHEMY_RESOURCE.UNPREDICTABILITY,
         amount: 1
       }
-    ]
+    ],
+    destroyed: () => !PelleAlchemyUpgrade.alchemyReality.isBought
   },
 };

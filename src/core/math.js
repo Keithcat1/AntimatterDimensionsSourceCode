@@ -1,7 +1,5 @@
 import { log as lngamma } from "gamma";
 
-import { DC } from "./constants";
-
 /* eslint-disable no-use-before-define */
 /* eslint-disable max-params */
 
@@ -15,6 +13,88 @@ Math.PI_2 = Math.PI * 2;
 /**
  * This is a file for general math utilities that can be used by many mechanics
  */
+
+/**
+ * @param {Decimal|Number} logD Variable used as the base of lograithmic functions minus 1 (i.e. log1.5(10) logD = 1.5 - 1 = 0.5)
+ * @returns {Decimal}
+*/
+window.decimalInfinitesimalLogarithmSolution = function decimalInfinitesimalLogarithmSolution(logD) {
+  /**
+   * Use this function to determine how many times 1 + logD is multiplied onto itself to get to 10.
+   * We use 1e-9 as the crossoff point here as that is close to the inverse of the 32-bit floating integer limit of 2147483647
+   * and leaves us around 7 OoMs of precision to play with.
+   * If the Decimal cannot be accurately computed within 9 digits of the Decimal value, we revert to the approximation method.
+   * At this point, the remaining margin of error after the given value of 1/x * ln(10) + ln(10)/2 is so small that it can't even
+   * be handled by our JavaScript library, therefore we switch to the provided function.
+   * The function uses no rounding, so round the answer off as you see fit.
+   * We can eventually add an extra variable for how much currency you actually have, but I feel this is good for now.
+   */
+  if (new Decimal(logD).gte(1e-9)) {
+    return Decimal.log(10, new Decimal(logD).add(1));
+  }
+  const goldenLog = Math.log(10);
+  const errorMargin = 0.5 * goldenLog;
+  const inversedInput = DC.D1.div(logD);
+  return inversedInput.times(goldenLog).add(errorMargin);
+};
+
+/**
+ * @param {Decimal|Number} a Variable before x^2 in ax^2 + bx + c = 0
+ * @param {Decimal|Number} a Variable before x in ax^2 + bx + c = 0
+ * @param {Decimal|Number} c Variable after x in ax^2 + bx + c = 0
+ * @param {Boolean} n Should the root be subtracted to -b?
+ * @returns {Decimal}
+*/
+window.decimalQuadraticSolution = function decimalQuadraticSolution(a, b, c, n = false) {
+  const divsr = a.times(2);
+  const nb = b.neg();
+  const lroot = b.pow(2);
+  const rroot = a.times(c).times(4);
+  const froot = lroot.sub(rroot).sqrt();
+  const top = n ? nb.sub(froot) : nb.add(froot);
+  return top.div(divsr);
+};
+
+/**
+ * @param {Decimal|Number} a Variable before x^3 in ax^3 + bx^2 + cx + d = 0
+ * @param {Decimal|Number} b Variable before x^2 in ax^3 + bx^2 + cx + d = 0
+ * @param {Decimal|Number} c Variable before x in ax^3 +  bx^2 + cx + d = 0
+ * @param {Decimal|Number} d Variable after x in ax^3 +  bx^2 + cx + d = 0
+ * @param {Boolean} n Should the square root subtract?
+ * @returns {Decimal}
+*/
+window.decimalCubicSolution = function decimalCubicSolution(a, b, c, d, n = false) {
+  const delta0 = b.pow(2).sub(a.times(3).times(c));
+  const delta1 = b.pow(3).times(2).sub(a.times(b).times(c).times(9)).add(a.pow(2).times(d).times(27));
+  const ne = Decimal.sqrt(delta1.pow(2).sub(delta0.pow(3).times(4))).mul(n ? -1 : 1);
+  const C = Decimal.cbrt(delta1.add(ne).div(2));
+  const x = DC.D1.div(a.times(3)).neg().times(b.add(C).add(delta0.div(C)));
+  return x;
+};
+
+/**
+ * @param {Decimal|Number} a Variable before x^3 in ax^3 + bx^2 + cx + d = 0
+ * @param {Decimal|Number} b Variable before x^2 in ax^3 + bx^2 + cx + d = 0
+ * @param {Decimal|Number} c Variable before x in ax^3 +  bx^2 + cx + d = 0
+ * @param {Decimal|Number} d Variable after x in ax^3 +  bx^2 + cx + d = 0
+ * @returns {Decimal}
+*/
+window.decimalCubicSolutionX = function decimalCubicSolutionX(a, b, c, d) {
+  const p = b.neg().div(a.times(3));
+  const q = Decimal.pow(p, 3).add((b.times(c).sub(a.times(d).times(3))).div(Decimal.pow(a, 2).times(6)));
+  const r = c.div(a.times(3));
+  const a1 = Decimal.pow(q, 2).add(Decimal.pow(r.sub(Decimal.pow(p, 2)), 3));
+  const na = a1.abs();
+  const sa = Decimal.sign(a1);
+  const b1 = q.add(Decimal.pow(na, 0.5).mul(sa));
+  const b2 = q.sub(Decimal.pow(na, 0.5).mul(sa));
+  const nb1 = b1.abs();
+  const sb1 = Decimal.sign(b1);
+  const nb2 = b2.abs();
+  const sb2 = Decimal.sign(b2);
+  const x = Decimal.pow(nb1, new Decimal(1 / 3)).mul(sb1).add(Decimal.pow(nb2, new Decimal(1 / 3)).mul(sb2)).add(p);
+  return x;
+};
 
 /**
  * @typedef {Object} bulkBuyBinarySearch_result
@@ -87,6 +167,7 @@ window.bulkBuyBinarySearch = function bulkBuyBinarySearch(money, costInfo, alrea
     const newCost = otherCost.plus(costFunction(alreadyBought + i - 1));
     if (newCost.eq(otherCost)) break;
     otherCost = newCost;
+    if (++count > 1000) break;
     if (++count > 1000) throw new Error("unexpected long loop (buggy cost function?)");
   }
   let totalCost = baseCost.plus(otherCost);
@@ -231,6 +312,23 @@ window.getCostWithLinearCostScaling = function getCostWithLinearCostScaling(
   return preScalingCost * postScalingCost;
 };
 
+//Since our old formula fails after some time
+window.decimalGetCostWithLinearCostScaling = function decimalGetCostWithLinearCostScaling(
+  amountOfPurchases, costScalingStart, initialCost, costMult, costMultGrowth
+) {
+  let decimalPurchaseCount = new Decimal(amountOfPurchases);
+  let decimalScalingStart = new Decimal(costScalingStart);
+  let decimalInitialCost = new Decimal(initialCost);
+  let decimalCostMult = new Decimal(costMult);
+  let decimalCostGrowth = new Decimal(costMultGrowth);
+  const preScalingPurchases = Decimal.max(0, Decimal.floor(Decimal.ln(decimalScalingStart.div(decimalInitialCost)).div(Decimal.ln(decimalCostMult))));
+  const preScalingCost = Decimal.ceil(Decimal.pow(decimalCostMult, Decimal.min(preScalingPurchases, decimalPurchaseCount)).times(decimalInitialCost));
+  const scaling = new LinearMultiplierScaling(costMult, costMultGrowth);
+  const postScalingCost = Decimal.exp(scaling.logTotalMultiplierAfterPurchases(
+    Decimal.max(0, decimalPurchaseCount.sub(preScalingPurchases)).toNumber()));
+  return preScalingCost.times(postScalingCost);
+};
+
 // Using the same arguments as getCostWithLinearCostScaling() above, do a binary search for the first purchase with a
 // cost of Infinity.
 window.findFirstInfiniteCostPurchase = function findFirstInfiniteCostPurchase(
@@ -279,11 +377,11 @@ window.LinearCostScaling = class LinearCostScaling {
   constructor(resourcesAvailable, initialCost, costMultiplier, maxPurchases = Number.MAX_SAFE_INTEGER, free = false) {
     if (free) {
       this._purchases = Math.clampMax(Math.floor(
-        resourcesAvailable.div(initialCost).log10() /
+        resourcesAvailable.div(initialCost).log10().toNumber() /
         Math.log10(costMultiplier) + 1), maxPurchases);
     } else {
       this._purchases = Math.clampMax(Math.floor(
-        resourcesAvailable.mul(costMultiplier - 1).div(initialCost).add(1).log10() /
+        resourcesAvailable.mul(costMultiplier - 1).div(initialCost).add(1).log10().toNumber() /
         Math.log10(costMultiplier)), maxPurchases);
     }
     this._totalCostMultiplier = Decimal.pow(costMultiplier, this._purchases);
@@ -291,6 +389,46 @@ window.LinearCostScaling = class LinearCostScaling {
       this._totalCost = initialCost.mul(Decimal.pow(costMultiplier, this._purchases - 1));
     } else {
       this._totalCost = initialCost.mul(Decimal.sub(1, this._totalCostMultiplier)).div(1 - costMultiplier);
+    }
+  }
+
+  get purchases() {
+    return this._purchases;
+  }
+
+  get totalCostMultiplier() {
+    return this._totalCostMultiplier;
+  }
+
+  get totalCost() {
+    return this._totalCost;
+  }
+};
+
+window.DecimalLinearCostScaling = class DecimalLinearCostScaling {
+  /**
+   * @param {Decimal} resourcesAvailable amount of available resources
+   * @param {Decimal} initialCost current cost
+   * @param {Number} costMultiplier current cost multiplier
+   * @param {Number} maxPurchases max amount of purchases
+   * @param {Boolean} free signifies if the purchase is free -> if we only need to consider the last cost
+   */
+  constructor(resourcesAvailable, initialCost, costMultiplier, maxPurchases = DC.BEMAX, free = false) {
+    costMultiplier = new Decimal(costMultiplier);
+    if (free) {
+      this._purchases = Decimal.clampMax(Decimal.floor(
+        resourcesAvailable.div(initialCost).log10().div(
+        Decimal.log10(costMultiplier)).add(1)), maxPurchases);
+    } else {
+      this._purchases = Decimal.clampMax(Decimal.floor(
+        resourcesAvailable.mul(costMultiplier.sub(1)).div(initialCost).add(1).log10().div(
+        Decimal.log10(costMultiplier))), maxPurchases);
+    }
+    this._totalCostMultiplier = Decimal.pow(costMultiplier, this._purchases);
+    if (free) {
+      this._totalCost = initialCost.mul(Decimal.pow(costMultiplier, this._purchases.sub(1)));
+    } else {
+      this._totalCost = initialCost.mul(Decimal.sub(1, this._totalCostMultiplier)).div(DC.D1.sub(costMultiplier));
     }
   }
 
@@ -341,17 +479,25 @@ window.ExponentialCostScaling = class ExponentialCostScaling {
     if (typeof this._baseIncrease !== "number") throw new Error("baseIncrease must be a number");
     this._costScale = param.costScale;
     if (typeof this._costScale !== "number") throw new Error("costScale must be a number");
-    this._logBaseCost = ExponentialCostScaling.log10(param.baseCost);
+    this._logBaseCost = new Decimal(ExponentialCostScaling.log10(param.baseCost));
     this._logBaseIncrease = ExponentialCostScaling.log10(param.baseIncrease);
     this._logCostScale = ExponentialCostScaling.log10(param.costScale);
+    this._logBaseIncreaseDecimal = new Decimal(ExponentialCostScaling.log10(param.baseIncrease));
+    this._logCostScaleDecimal = new Decimal(ExponentialCostScaling.log10(param.costScale));
     if (param.purchasesBeforeScaling !== undefined) {
-      this._purchasesBeforeScaling = param.purchasesBeforeScaling;
+      this._purchasesBeforeScaling = new Decimal(param.purchasesBeforeScaling);
     // eslint-disable-next-line no-negated-condition
     } else if (param.scalingCostThreshold !== undefined) {
-      this._purchasesBeforeScaling = Math.ceil(
-        (ExponentialCostScaling.log10(param.scalingCostThreshold) - this._logBaseCost) / this._logBaseIncrease);
+      this._purchasesBeforeScaling = Decimal.ceil(
+        (new Decimal(ExponentialCostScaling.log10(param.scalingCostThreshold)).sub(this._logBaseCost)).div(
+          this._logBaseIncrease));
     } else throw new Error("Must specify either scalingCostThreshold or purchasesBeforeScaling");
     this.updateCostScale();
+    this.log = {
+      _baseCost: new Decimal(Decimal.log10(param.baseCost)),
+      _baseIncrease: new Decimal(Math.log10(param.baseIncrease)),
+      _costScale: new Decimal(Math.log10(param.costScale)),
+    };
   }
 
   get costScale() {
@@ -368,9 +514,9 @@ window.ExponentialCostScaling = class ExponentialCostScaling {
   }
 
   updateCostScale() {
-    this._precalcDiscriminant = Math.pow((2 * this._logBaseIncrease + this._logCostScale), 2) -
-      8 * this._logCostScale * (this._purchasesBeforeScaling * this._logBaseIncrease + this._logBaseCost);
-    this._precalcCenter = -this._logBaseIncrease / this._logCostScale + this._purchasesBeforeScaling + 0.5;
+    this._precalcDiscriminant = Decimal.pow((2 * this._logBaseIncrease + this._logCostScale), 2).sub(
+      DC.D8.times(this._logCostScale).times(new Decimal(this._purchasesBeforeScaling).times(this._logBaseIncrease).add(this._logBaseCost)));
+    this._precalcCenter = new Decimal(this._logBaseIncrease).neg().div(this._logCostScale).add(this._purchasesBeforeScaling).add(0.5);
   }
 
   /**
@@ -380,11 +526,44 @@ window.ExponentialCostScaling = class ExponentialCostScaling {
   calculateCost(currentPurchases) {
     const logMult = this._logBaseIncrease;
     const logBase = this._logBaseCost;
-    const excess = currentPurchases - this._purchasesBeforeScaling;
+    const excess = currentPurchases - this._purchasesBeforeScaling.toNumber();
     const logCost = excess > 0
-      ? currentPurchases * logMult + logBase + 0.5 * excess * (excess + 1) * this._logCostScale
-      : currentPurchases * logMult + logBase;
+      ? new Decimal(currentPurchases).times(logMult).add(logBase).add(0.5 * excess * (excess + 1) * this._logCostScale)
+      : new Decimal(currentPurchases).times(logMult).add(logBase);
     return DC.E1.pow(logCost);
+  }
+
+  calculateCostDecimal(currentPurchases) {
+    const logMult = this._logBaseIncreaseDecimal;
+    const logBase = this._logBaseCost;
+    const excess = currentPurchases.sub(this._purchasesBeforeScaling);
+    const logCost = excess.gt(0)
+      ? new Decimal(currentPurchases).times(logMult).add(logBase).add(excess.times(excess.add(1)).times(this._logCostScale).div(2))
+      : new Decimal(currentPurchases).times(logMult).add(logBase);
+    return DC.E1.pow(logCost);
+  }
+
+  decimalCalculateCost(currentPurchases) {
+    // Define these here just cause theyre easier to type
+    const base = this.log._baseCost;
+    const inc = this.log._baseIncrease;
+    const scale = this.log._costScale;
+    const purchases = this._purchasesBeforeScaling;
+
+    // If it never becomes exponential cost, just return linear and stop
+    if (currentPurchases.lte(purchases)) {
+      return DC.E1.pow(base.add(inc.times(currentPurchases)));
+    }
+
+    // Calculate linear cost
+    const costBeforeExpo = base.add(inc.times(currentPurchases));
+    // How many exponential purchases?
+    const expoPurchases = currentPurchases.sub(purchases);
+    // eslint-disable-next-line max-len
+    // Since we times by scale X times per purchase past max, we can find the triangular number of expoPurchases and just mult that by scale
+    const scaleCostFinal = expoPurchases.pow(2).add(expoPurchases).div(2).times(scale);
+    // Add and pow10
+    return DC.E1.pow(costBeforeExpo.add(scaleCostFinal));
   }
 
   /**
@@ -403,32 +582,116 @@ window.ExponentialCostScaling = class ExponentialCostScaling {
     // so that we don't, for example, buy all of a set of 10 dimensions
     // when we can only afford 1.
     const money = rawMoney.div(numberPerSet);
-    const logMoney = money.log10();
+    const logMoney = money.clampMin(1).log10();
     const logMult = this._logBaseIncrease;
     const logBase = this._logBaseCost;
     // The 1 + is because the multiplier isn't applied to the first purchase
-    let newPurchases = Math.floor(1 + (logMoney - logBase) / logMult);
+    let newPurchases = Decimal.floor((logMoney.sub(logBase)).div(logMult).add(1)).toNumber();
     // We can use the linear method up to one purchase past the threshold, because the first purchase
     // past the threshold doesn't have cost scaling in it yet.
-    if (newPurchases > this._purchasesBeforeScaling) {
-      const discrim = this._precalcDiscriminant + 8 * this._logCostScale * logMoney;
-      if (discrim < 0) {
-        return null;
-      }
-      newPurchases = Math.floor(this._precalcCenter + Math.sqrt(discrim) / (2 * this._logCostScale));
+    if (newPurchases > this._purchasesBeforeScaling.toNumber()) {
+      const discrim = this._precalcDiscriminant.toNumber() + 8 * this._logCostScale * logMoney.toNumber();
+      if (discrim < 0) return null;
+      newPurchases = Math.floor(this._precalcCenter.toNumber() + Math.sqrt(discrim) / (2 * this._logCostScale));
     }
     if (newPurchases <= currentPurchases) return null;
     // There's a narrow edge case where the linear method returns > this._purchasesBeforeScaling + 1
     // but the quadratic method returns less than that. Having this be a separate check covers that
     // case:
     let logPrice;
-    if (newPurchases <= this._purchasesBeforeScaling + 1) {
-      logPrice = (newPurchases - 1) * logMult + logBase;
+    if (newPurchases <= this._purchasesBeforeScaling.toNumber() + 1) {
+      logPrice = new Decimal(newPurchases - 1).times(logMult).add(logBase).toNumber();
     } else {
-      const pExcess = newPurchases - this._purchasesBeforeScaling;
-      logPrice = (newPurchases - 1) * logMult + logBase + 0.5 * pExcess * (pExcess - 1) * this._logCostScale;
+      const pExcess = newPurchases - this._purchasesBeforeScaling.toNumber();
+      logPrice = new Decimal(newPurchases - 1).times(logMult).add(logBase).add(0.5 * pExcess * (pExcess - 1) * this._logCostScale).toNumber();
     }
     return { quantity: newPurchases - currentPurchases, logPrice: logPrice + Math.log10(numberPerSet) };
+  }
+
+  getMaxBoughtDecimal(currentPurchases, rawMoney, numberPerSet) {
+    // We need to divide money by the number of things we need to buy per set
+    // so that we don't, for example, buy all of a set of 10 dimensions
+    // when we can only afford 1.
+    const money = rawMoney.div(numberPerSet);
+    const logMoney = money.clampMin(1).log10();
+    const logMult = this._logBaseIncreaseDecimal;
+    const logBase = this._logBaseCost;
+    // The 1 + is because the multiplier isn't applied to the first purchase
+    let newPurchases = Decimal.floor((logMoney.sub(logBase)).div(logMult).add(1));
+    // We can use the linear method up to one purchase past the threshold, because the first purchase
+    // past the threshold doesn't have cost scaling in it yet.
+    if (newPurchases.gt(this._purchasesBeforeScaling)) {
+      const discrim = this._precalcDiscriminant.add(DC.D8.times(this._logCostScaleDecimal).times(logMoney));
+      if (discrim.lt(0)) return null;
+      newPurchases = Decimal.floor(this._precalcCenter.add(Decimal.sqrt(discrim).div(this._logCostScaleDecimal.times(2))));
+    }
+    if (newPurchases.lte(currentPurchases)) return null;
+    // There's a narrow edge case where the linear method returns > this._purchasesBeforeScaling + 1
+    // but the quadratic method returns less than that. Having this be a separate check covers that
+    // case:
+    let logPrice;
+    if (newPurchases.lte(this._purchasesBeforeScaling.add(1))) {
+      logPrice = newPurchases.sub(1).times(logMult).add(logBase);
+    } else {
+      const pExcess = newPurchases.sub(this._purchasesBeforeScaling);
+      logPrice = newPurchases.sub(1).times(logMult).add(logBase).add(pExcess.times(pExcess.sub(1)).times(this._logCostScaleDecimal).div(2));
+    }
+    return { quantity: newPurchases.sub(currentPurchases), logPrice: logPrice.add(Decimal.log10(new Decimal(numberPerSet))) };
+  }
+
+  decimalGetMaxBought(currentPurchases, currency, purchasesPerIncrease, roundDown = true) {
+    // Copypaste
+    const base = this.log._baseCost;
+    const inc = this.log._baseIncrease;
+    const scale = this.log._costScale;
+    const purchases = new Decimal(this._purchasesBeforeScaling);
+    const ppIlog = new Decimal(purchasesPerIncrease.log10());
+    let logMoney = new Decimal(currency.log10()).sub(ppIlog);
+    // A console.log(logMoney);
+    // First, is the currency before the cost of Exponential? If so we solve it here and return
+    if (logMoney.lte(base.add(inc.times(purchases.floor())))) {
+      let purchaseAmount = logMoney.sub(base).div(inc).add(1);
+      // A console.log(purchaseAmount);
+      // Round value DOWN
+      if (roundDown) purchaseAmount = purchaseAmount.floor();
+      // Return null if its less than the purchases we already have
+      if (purchaseAmount.lte(currentPurchases)) return null;
+      const cost = new Decimal(this.decimalCalculateCost(purchaseAmount).log10()).add(ppIlog);
+      purchaseAmount = purchaseAmount.sub(currentPurchases);
+      purchaseAmount = purchaseAmount.times(purchasesPerIncrease);
+      return { quantity: purchaseAmount,
+        logPrice: cost };
+      // We invert the calc after the floor to find the highest cost
+    }
+    
+    // Deduct the cost up to the linear limit
+    let purchaseAmount = purchases;
+    logMoney = logMoney.sub(base.add(inc.times(purchases)));
+
+    // Where does this equation come from?
+    // Well it comes from the fact that if we subtract all preScaling costs, the cost is equal to:
+    // 0.5s(p^2 + p) + ip (i = log(inc), s = log(scale), p = purchases)
+    // Solving for p there gives us a quadratic with -0.5s as a, (-0.5s - i) as b and cost as c
+    // Put that into the quadratic (-b - sqrt(b^2 - 4ac))/2a and you get purchases
+
+    logMoney = logMoney.sub(ppIlog);
+    const a = new Decimal(0).sub(scale).div(2);
+    const b = a.sub(inc);
+    const c = logMoney;
+
+    purchaseAmount = purchaseAmount.add(decimalQuadraticSolution(a, b, c, true));
+
+    // Technically this only buys up to the nearest set, but post exponential thats a minor flaw at most (and correct?)
+    if (roundDown) purchaseAmount = purchaseAmount.floor();
+
+    if (purchaseAmount.lte(currentPurchases)) return null;
+
+    const purchaseCost = new Decimal(this.decimalCalculateCost(purchaseAmount).log10()).add(ppIlog);
+    purchaseAmount = purchaseAmount.sub(currentPurchases);
+    if (roundDown) purchaseAmount = purchaseAmount.floor();
+
+    purchaseAmount = purchaseAmount.times(purchasesPerIncrease);
+    return { quantity: purchaseAmount, logPrice: purchaseCost };
   }
 
   /**
@@ -445,21 +708,21 @@ window.ExponentialCostScaling = class ExponentialCostScaling {
     // for example, that 10 AM buys 2/3 of a set of 10 first dimensions rather than
     // buying the whole set of 10, which at least feels more correct.
     const money = rawMoney.div(numberPerSet);
-    const logMoney = money.log10();
+    const logMoney = money.max(1).log10();
     const logMult = this._logBaseIncrease;
     const logBase = this._logBaseCost;
     // The 1 + is because the multiplier isn't applied to the first purchase
-    let contValue = 1 + (logMoney - logBase) / logMult;
+    let contValue = logMoney.sub(logBase).div(logMult).add(1);
     // We can use the linear method up to one purchase past the threshold, because the first purchase
     // past the threshold doesn't have cost scaling in it yet.
-    if (contValue > this._purchasesBeforeScaling) {
-      const discrim = this._precalcDiscriminant + 8 * this._logCostScale * logMoney;
-      if (discrim < 0) {
-        return 0;
+    if (contValue.gt(this._purchasesBeforeScaling)) {
+      const discrim = DC.D8.times(this._logCostScale).times(logMoney).add(this._precalcDiscriminant);
+      if (discrim.lt(0)) {
+        return DC.D0;
       }
-      contValue = this._precalcCenter + Math.sqrt(discrim) / (2 * this._logCostScale);
+      contValue = Decimal.sqrt(discrim).div(DC.D2.times(this._logCostScale)).add(this._precalcCenter);
     }
-    return Math.clampMin(contValue, 0);
+    return Decimal.clampMin(contValue, 0);
   }
 
   static log10(value) {
@@ -512,7 +775,8 @@ window.getHybridCostScaling = function getHybridCostScaling(
   const normalCost = getCostWithLinearCostScaling(amountOfPurchases, linCostScalingStart, linInitialCost,
     linCostMult, linCostMultGrowth);
   if (Number.isFinite(normalCost)) {
-    return new Decimal(normalCost);
+    return decimalGetCostWithLinearCostScaling(amountOfPurchases, linCostScalingStart, linInitialCost,
+      linCostMult, linCostMultGrowth);
   }
   const postInfinityAmount = amountOfPurchases - findFirstInfiniteCostPurchase(linCostScalingStart, linInitialCost,
     linCostMult, linCostMultGrowth);
@@ -523,6 +787,41 @@ window.getHybridCostScaling = function getHybridCostScaling(
     scalingCostThreshold: Number.MAX_VALUE
   });
   return costScale.calculateCost(postInfinityAmount);
+};
+
+// Calculate the inverse of the getHybridCostScaling() function. You have no idea how tedious this was.
+window.getInverseHybridCostScaling = function getInverseHybridCostScaling(
+  amountOfMoney, linCostScalingStart, linInitialCost, linCostMult, linCostMultGrowth,
+  expInitialCost, expCostMult, expCostMultGrowth
+) {
+  if (amountOfMoney.lt(linInitialCost)) return DC.D0;
+  let estimation = DC.D0;
+  const firstPurchOverScale = Decimal.floor(Decimal.log10(linCostScalingStart / linInitialCost).div(Decimal.log10(linCostMult))).add(1);
+  const firstCostOverScale = Decimal.pow(linCostMult, firstPurchOverScale.sub(1)).times(linInitialCost);
+  if (amountOfMoney.lt(firstCostOverScale)) {
+    const pastStart = amountOfMoney.div(linInitialCost);
+	  estimation = Decimal.floor(Decimal.log10(pastStart).div(Decimal.log10(linCostMult))).add(1);
+  }
+  if (amountOfMoney.gte(firstCostOverScale) && amountOfMoney.lt(DC.NUMMAX)) {
+	  const afterScale = new LinearMultiplierScaling(linCostMult, linCostMultGrowth).purchasesForLogTotalMultiplier(
+      Decimal.ln(amountOfMoney.div(firstCostOverScale)).toNumber());
+	  estimation = Decimal.floor(firstPurchOverScale.add(afterScale));
+  }
+  if (amountOfMoney.gte(DC.NUMMAX)) {
+  	const purchasesAtInfinity = Decimal.floor(new LinearMultiplierScaling(linCostMult, linCostMultGrowth).purchasesForLogTotalMultiplier(
+      Decimal.ln(DC.NUMMAX.div(firstCostOverScale)).toNumber()) + firstPurchOverScale.toNumber());
+  	if (amountOfMoney.lt(expInitialCost)) estimation = purchasesAtInfinity;
+  	const logMoneyAfterInfinity = Decimal.log10(amountOfMoney).sub(Decimal.log10(expInitialCost));
+  	const logScale = Decimal.log10(expCostMult);
+  	const logScaleGrowth = Decimal.log10(expCostMultGrowth);
+  	estimation = Decimal.floor(logScale.add(logScaleGrowth.div(2)).neg().add(Decimal.sqrt(Decimal.sqr(logScale.add(logScaleGrowth.div(2)))
+      .add(logScaleGrowth.times(logMoneyAfterInfinity).times(2)))).div(logScaleGrowth)).add(purchasesAtInfinity).add(1);
+  }
+  if (amountOfMoney.gte(getHybridCostScaling(estimation.toNumber(), linCostScalingStart, linInitialCost, linCostMult,
+    linCostMultGrowth, expInitialCost, expCostMult, expCostMultGrowth))) return estimation.add(1);
+  if (amountOfMoney.gte(getHybridCostScaling(estimation.sub(1).toNumber(), linCostScalingStart, linInitialCost, linCostMult,
+    linCostMultGrowth, expInitialCost, expCostMult, expCostMultGrowth))) return estimation;
+  return estimation.sub(1);
 };
 
 window.logFactorial = (function() {

@@ -1,5 +1,4 @@
 import { BitPurchasableMechanicState, RebuyableMechanicState } from "./game-mechanics";
-import { DC } from "./constants";
 
 class ImaginaryUpgradeState extends BitPurchasableMechanicState {
   constructor(config) {
@@ -60,7 +59,7 @@ class ImaginaryUpgradeState extends BitPurchasableMechanicState {
   // Note we don't actually show the modal if we already failed or unlocked it
   tryShowWarningModal(specialLockText) {
     if (this.isPossible && !this.isAvailableForPurchase) {
-      Modal.upgradeLock.show({ upgrade: this, isImaginary: true, specialLockText });
+      Modal.upgradeLock.show({ upgrade: this, isImaginary: true, isDual: false, isEndgame: false, specialLockText });
     }
   }
 
@@ -77,7 +76,11 @@ class ImaginaryUpgradeState extends BitPurchasableMechanicState {
   }
 
   get pelleDisabled() {
-    return Pelle.isDoomed && this.config.isDisabledInDoomed;
+    return Pelle.isDoomed && this.isDisabledInDoomed;
+  }
+
+  get isDisabledInDoomed() {
+    return this.config.isDisabledInDoomed ? this.config.isDisabledInDoomed() : false;
   }
 
   tryUnlock() {
@@ -103,11 +106,14 @@ class ImaginaryUpgradeState extends BitPurchasableMechanicState {
     }
     if (this.id === 22) {
       for (const key of Object.keys(player.reality.glyphs.sac)) {
-        player.reality.glyphs.sac[key] = ImaginaryUpgrade(22).effectValue;
+        player.reality.glyphs.sac[key] = player.reality.glyphs.sac[key].add(ImaginaryUpgrade(22).effectValue);
       }
     }
     if (this.id === 25) {
       TabNotification.pelleUnlock.tryTrigger();
+    }
+    if (this.id === 30) {
+      TabNotification.alphaUnlock.tryTrigger();
     }
   }
 }
@@ -126,7 +132,11 @@ class RebuyableImaginaryUpgradeState extends RebuyableMechanicState {
   }
 
   get pelleDisabled() {
-    return Pelle.isDoomed;
+    return Pelle.isDoomed && this.isDisabledInDoomed;
+  }
+
+  get isDisabledInDoomed() {
+    return this.config.isDisabledInDoomed ? this.config.isDisabledInDoomed() : false;
   }
 
   set boughtAmount(value) {
@@ -137,6 +147,31 @@ class RebuyableImaginaryUpgradeState extends RebuyableMechanicState {
     if (this.id === 7) {
       GameCache.staticGlyphWeights.invalidate();
     }
+  }
+
+  bulkPurchase() {
+    if (!this.isAffordable) return false;
+    this.boughtAmount += getInverseHybridCostScaling(
+      Currency.imaginaryMachines.value,
+      1e15,
+      this.config.initialCost,
+      this.config.costMult,
+      this.config.costMult / 2,
+      DC.E309,
+      1e3,
+      this.config.costMult
+    ).sub(player.reality.imaginaryRebuyables[this.id]).toNumber();
+    Currency.imaginaryMachines.subtract(getHybridCostScaling(
+      player.reality.imaginaryRebuyables[this.id] - 1,
+      1e15,
+      this.config.initialCost,
+      this.config.costMult,
+      this.config.costMult / 2,
+      DC.E309,
+      1e3,
+      this.config.costMult
+    ));
+    return true;
   }
 }
 

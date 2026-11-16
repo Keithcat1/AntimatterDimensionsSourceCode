@@ -5,9 +5,11 @@ export default {
     return {
       type: GALAXY_TYPE.NORMAL,
       galaxies: {
-        normal: 0,
-        replicanti: 0,
-        dilation: 0
+        normal: new Decimal(),
+        replicanti: new Decimal(),
+        dilation: new Decimal(),
+        free: new Decimal(),
+        unstable: new Decimal()
       },
       requirement: {
         tier: 1,
@@ -24,6 +26,7 @@ export default {
         remote: null,
       },
       hasTutorial: false,
+      isFlipped: false
     };
   },
   computed: {
@@ -34,27 +37,41 @@ export default {
     buttonText() {
       if (this.lockText !== null) return this.lockText;
       const reset = [];
-      if (!Achievement(111).isUnlocked) reset.push("Dimensions");
-      if (!Achievement(143).isUnlocked) reset.push("Dimension Boosts");
+      if (!Achievement(111).isUnlocked ||
+        (player.disablePostReality && !(Alpha.isRunning && Alpha.currentStage >= 12) &&
+        !(LHC.voidRunning && NullUpgrade.limerick1.isBought) &&
+        !SlabdrillUnlocks.eternityChallengeTen.isUnlocked)) reset.push("Dimensions");
+      if (!Achievement(143).isUnlocked ||
+        (player.disablePostReality && !(Alpha.isRunning && Alpha.currentStage >= 20) &&
+        !(LHC.voidRunning && NullUpgrade.limerick2.isBought))) reset.push("Dimension Boosts");
       return reset.length === 0
         ? `Increase the power of Tickspeed upgrades`
         : `Reset your ${makeEnumeration(reset)} to increase the power of Tickspeed upgrades`;
     },
     sumText() {
-      const parts = [Math.max(this.galaxies.normal, 0)];
-      if (this.galaxies.replicanti > 0) parts.push(this.galaxies.replicanti);
-      if (this.galaxies.dilation > 0) parts.push(this.galaxies.dilation);
-      const sum = parts.map(this.formatGalaxies).join(" + ");
+      const parts = [Decimal.max(this.galaxies.normal, GalacticPowers.galacticAscension.isUnlocked ? 1 : 0)];
+      if (this.galaxies.replicanti.gt(0)) parts.push(this.galaxies.replicanti);
+      if (this.galaxies.dilation.gt(0)) parts.push(this.galaxies.dilation);
+      if (this.galaxies.free.gt(0)) parts.push(this.galaxies.free);
+      let sum;
+      if (GalacticPowers.galacticAscension.isUnlocked) sum = parts.map(this.formatGalaxies).join(" × ");
+      if (!GalacticPowers.galacticAscension.isUnlocked) sum = parts.map(this.formatGalaxies).join(" + ");
+      let all;
       if (parts.length >= 2) {
-        return `${sum} = ${this.formatGalaxies(parts.sum())}`;
+        if (GalacticPowers.galacticAscension.isUnlocked) {
+          all = ` = ${this.formatGalaxies(parts.reduce(Decimal.prodReducer).div(this.galaxies.unstable))}`;
+        }
+        else all = ` = ${this.formatGalaxies(parts.decimalSum().div(this.galaxies.unstable))}`;
       }
-      return sum;
+      else all = "";
+      const instability = this.galaxies.unstable.gt(1) ? ` / ${this.formatGalaxies(this.galaxies.unstable)}` : "";
+      return `${sum}<span style="color: red">${instability}</span>${all}`;
     },
     typeName() {
       switch (this.type) {
-        case GALAXY_TYPE.NORMAL: return "Antimatter Galaxies";
-        case GALAXY_TYPE.DISTANT: return "Distant Antimatter Galaxies";
-        case GALAXY_TYPE.REMOTE: return "Remote Antimatter Galaxies";
+        case GALAXY_TYPE.NORMAL: return `${this.isFlipped ? "Matter" : "Antimatter"} Galaxies`;
+        case GALAXY_TYPE.DISTANT: return `Distant ${this.isFlipped ? "Matter" : "Antimatter"} Galaxies`;
+        case GALAXY_TYPE.REMOTE: return `Remote ${this.isFlipped ? "Matter" : "Antimatter"} Galaxies`;
       }
       return undefined;
     },
@@ -64,7 +81,7 @@ export default {
     costScalingText() {
       switch (this.type) {
         case GALAXY_TYPE.DISTANT:
-          return `Each Galaxy is more expensive past ${quantifyInt("Galaxy", this.distantStart)}`;
+          return `Each Galaxy is more expensive past ${quantifyHybridLarge("Galaxy", this.distantStart)}`;
         case GALAXY_TYPE.REMOTE: {
           const scalings = [
             { type: "distant", function: "quadratic", amount: this.distantStart },
@@ -89,9 +106,11 @@ export default {
   methods: {
     update() {
       this.type = Galaxy.type;
-      this.galaxies.normal = player.galaxies + GalaxyGenerator.galaxies;
-      this.galaxies.replicanti = Replicanti.galaxies.total;
-      this.galaxies.dilation = player.dilation.totalTachyonGalaxies;
+      this.galaxies.normal.copyFrom(player.galaxies.add(GalaxyGenerator.galaxies));
+      this.galaxies.replicanti.copyFrom(Replicanti.galaxies.total);
+      this.galaxies.dilation.copyFrom(player.dilation.totalTachyonGalaxies);
+      this.galaxies.free.copyFrom(GalacticPower.freeGalaxies);
+      this.galaxies.unstable.copyFrom(galacticInstability());
       const requirement = Galaxy.requirement;
       this.requirement.amount = requirement.amount;
       this.requirement.tier = requirement.tier;
@@ -108,13 +127,14 @@ export default {
         };
       }
       this.hasTutorial = Tutorial.isActive(TUTORIAL_STATE.GALAXY);
+      this.isFlipped = player.universes.current === 2;
     },
     buyGalaxy(bulk) {
       if (!this.canBeBought) return;
       manualRequestGalaxyReset(this.canBulkBuy && bulk);
     },
     formatGalaxies(num) {
-      return num > 1e8 ? format(num, 2) : formatInt(num);
+      return new Decimal(num).gt(1e8) ? format(num, 2) : formatInt(num);
     },
   }
 };
@@ -122,8 +142,8 @@ export default {
 
 <template>
   <div class="reset-container galaxy">
-    <h4>{{ typeName }} ({{ sumText }})</h4>
-    <span>Requires: {{ formatInt(requirement.amount) }} {{ dimName }} Antimatter D</span>
+    <h4>{{ typeName }} (<span v-html="sumText" />)</h4>
+    <span>Requires: {{ formatHybridLarge(requirement.amount, 3) }} {{ dimName }} {{ isFlipped ? "Matter" : "Antimatter" }} D</span>
     <span v-if="hasIncreasedScaling">{{ costScalingText }}</span>
     <button
       :class="classObject"

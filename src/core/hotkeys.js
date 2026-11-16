@@ -23,7 +23,7 @@ import { srAnnounce } from "./extensions";
 // for the other modifier keys (#3093).
 
 // Free keys:
-// i, j, k, l, n, o, p, q, v, w, x
+// i, j, k, l, p, q, w, x
 
 
 export const shortcuts = [
@@ -37,19 +37,19 @@ export const shortcuts = [
     name: "Buy one Tickspeed",
     keys: ["shift", "t"],
     type: "bindRepeatableHotkey",
-    function: () => buyTickSpeed(),
+    function: () => player.options.simpleHotkeysCelestialMode ? buyCelestialTickSpeed() : buyTickSpeed(),
     visible: true
   }, {
     name: "Buy max Tickspeed",
     keys: ["t"],
     type: "bindRepeatableHotkey",
-    function: () => buyMaxTickSpeed(),
+    function: () => player.options.simpleHotkeysCelestialMode ? buyMaxCelestialTickSpeed() : buyMaxTickSpeed(),
     visible: true
   }, {
     name: "Max all",
     keys: ["m"],
     type: "bindRepeatableHotkey",
-    function: () => maxAll(),
+    function: () => player.options.simpleHotkeysCelestialMode ? CelestialDimensions.buyMax() : maxAll(),
     visible: true
   }, {
     name: "Dimensional Sacrifice",
@@ -61,31 +61,31 @@ export const shortcuts = [
     name: "Dimension Boost",
     keys: ["d"],
     type: "bindRepeatableHotkey",
-    function: () => manualRequestDimensionBoost(true),
+    function: () => player.options.simpleHotkeysCelestialMode ? manualRequestCelestialDimensionBoost(true) : manualRequestDimensionBoost(true),
     visible: true
   }, {
     name: "Single Dimension Boost",
     keys: ["shift", "d"],
     type: "bindRepeatableHotkey",
-    function: () => manualRequestDimensionBoost(false),
+    function: () => player.options.simpleHotkeysCelestialMode ? manualRequestCelestialDimensionBoost(false) : manualRequestDimensionBoost(false),
     visible: false
   }, {
-    name: "Antimatter Galaxy",
+    name: `${player.universes.current === 2 ? "Matter" : "Antimatter"} Galaxy`,
     keys: ["g"],
     type: "bindRepeatableHotkey",
-    function: () => manualRequestGalaxyReset(true),
+    function: () => player.options.simpleHotkeysCelestialMode ? manualRequestCelestialGalaxyReset(true) : manualRequestGalaxyReset(true),
     visible: true
   }, {
-    name: "Single Antimatter Galaxy",
+    name: `Single ${player.universes.current === 2 ? "Matter" : "Antimatter"} Galaxy`,
     keys: ["shift", "g"],
     type: "bindRepeatableHotkey",
-    function: () => manualRequestGalaxyReset(false),
+    function: () => player.options.simpleHotkeysCelestialMode ? manualRequestCelestialGalaxyReset(false) : manualRequestGalaxyReset(false),
     visible: false
   }, {
     name: "Big Crunch",
     keys: ["c"],
     type: "bindRepeatableHotkey",
-    function: () => manualBigCrunchResetRequest(),
+    function: () => player.options.simpleHotkeysCelestialMode ? manualCelestialCrunchResetRequest() : manualBigCrunchResetRequest(),
     visible: true
   }, {
     name: "Replicanti Galaxy",
@@ -95,13 +95,13 @@ export const shortcuts = [
       replicantiGalaxyRequest();
       setHoldingR(true);
     },
-    visible: () => Replicanti.areUnlocked || PlayerProgress.eternityUnlocked()
+    visible: () => Replicanti.areUnlocked || PlayerProgress.eternityUnlocked() || PlayerProgress.endgameUnlocked()
   }, {
     name: "Eternity",
     keys: ["e"],
     type: "bindRepeatableHotkey",
-    function: () => eternityResetRequest(),
-    visible: () => PlayerProgress.eternityUnlocked() || Player.canEternity
+    function: () => player.options.simpleHotkeysCelestialMode ? celestialEternityResetRequest() : eternityResetRequest(),
+    visible: () => PlayerProgress.eternityUnlocked() || Player.canEternity || PlayerProgress.endgameUnlocked()
   }, {
     name: "Toggle Time Study respec",
     keys: ["shift", "e"],
@@ -110,19 +110,22 @@ export const shortcuts = [
       player.respec = !player.respec;
       GameUI.notify.info(`Time Study respec is now ${player.respec ? "active" : "inactive"}`);
     },
-    visible: () => PlayerProgress.eternityUnlocked()
+    visible: () => PlayerProgress.eternityUnlocked() || PlayerProgress.endgameUnlocked()
   }, {
     name: "Enter/Exit Dilation",
     keys: ["l"],
     type: "bindRepeatableHotkey",
     function: () => startDilatedEternityRequest(),
-    visible: () => PlayerProgress.realityUnlocked() || PlayerProgress.dilationUnlocked()
+    visible: () => PlayerProgress.realityUnlocked() || PlayerProgress.dilationUnlocked() || PlayerProgress.endgameUnlocked()
   }, {
     name: "Reality",
     keys: ["y"],
     type: "bindRepeatableHotkey",
-    function: () => requestManualReality(),
-    visible: () => PlayerProgress.realityUnlocked() || isRealityAvailable()
+    function: () => {
+      if (Slabdrill.isCursed) return;
+      requestManualReality();
+    },
+    visible: () => PlayerProgress.realityUnlocked() || isRealityAvailable() || PlayerProgress.endgameUnlocked()
   }, {
     name: "Toggle Glyph unequip",
     keys: ["shift", "y"],
@@ -131,49 +134,49 @@ export const shortcuts = [
       player.reality.respec = !player.reality.respec;
       GameUI.notify.info(`Glyph respec is now ${player.reality.respec ? "active" : "inactive"}`);
     },
-    visible: () => PlayerProgress.realityUnlocked()
+    visible: () => PlayerProgress.realityUnlocked() || PlayerProgress.endgameUnlocked()
   }, {
     name: "Start/Pause Automator",
     keys: ["u"],
     type: "bindHotkey",
     function: () => keyboardAutomatorToggle(),
-    visible: () => Player.automatorUnlocked
+    visible: () => Player.automatorUnlocked || PlayerProgress.endgameUnlocked()
   }, {
     name: "Restart Automator",
     keys: ["shift", "u"],
     type: "bindHotkey",
     function: () => keyboardAutomatorRestart(),
-    visible: () => Player.automatorUnlocked
+    visible: () => Player.automatorUnlocked || PlayerProgress.endgameUnlocked()
   }, {
     name: "Undo Edit (Automator)",
     keys: ["mod", "z"],
     type: "bind",
     function: () => AutomatorData.undoScriptEdit(),
-    visible: () => Player.automatorUnlocked
+    visible: () => Player.automatorUnlocked || PlayerProgress.endgameUnlocked()
   }, {
     name: "Redo Edit (Automator)",
     keys: ["mod", "y"],
     type: "bind",
     function: () => AutomatorData.redoScriptEdit(),
-    visible: () => Player.automatorUnlocked
+    visible: () => Player.automatorUnlocked || PlayerProgress.endgameUnlocked()
   }, {
     name: "Toggle Black Hole",
     keys: ["b"],
     type: "bindHotkey",
     function: () => BlackHoles.togglePause(),
-    visible: () => PlayerProgress.realityUnlocked()
+    visible: () => PlayerProgress.realityUnlocked() || PlayerProgress.endgameUnlocked()
   }, {
     name: "Toggle Continuum",
     keys: ["alt", "a"],
     type: "bindHotkey",
     function: () => keyboardToggleContinuum(),
-    visible: () => Laitela.continuumUnlocked
+    visible: () => Laitela.continuumUnlocked || PlayerProgress.endgameUnlocked()
   }, {
     name: "Armageddon",
     keys: ["z"],
     type: "bindRepeatableHotkey",
     function: () => armageddonRequest(),
-    visible: () => Pelle.isDoomed
+    visible: () => Pelle.isDoomed || PlayerProgress.endgameUnlocked()
   }, {
     name: "Toggle Glyph unequip (Pelle)",
     keys: ["shift", "z"],
@@ -183,7 +186,81 @@ export const shortcuts = [
       player.reality.respec = !player.reality.respec;
       GameUI.notify.info(`Glyph respec is now ${player.reality.respec ? "active" : "inactive"}`);
     },
-    visible: () => Pelle.isDoomed
+    visible: () => Pelle.isDoomed || PlayerProgress.endgameUnlocked()
+  }, {
+    name: "Doom Reality",
+    keys: ["alt", "z"],
+    type: "bindHotkey",
+    function: () => {
+      if (!PlayerProgress.endgameUnlocked() || !Pelle.isUnlocked) return;
+      Pelle.initializeRun();
+    },
+    visible: () => PlayerProgress.endgameUnlocked()
+  }, {
+    name: "Endgame",
+    keys: ["n"],
+    type: "bindRepeatableHotkey",
+    function: () => {
+      if (!PlayerProgress.endgameUnlocked()) return;
+      Endgame.hotkeyReset();
+    },
+    visible: () => PlayerProgress.endgameUnlocked()
+  }, {
+    name: "Reset Endgame",
+    keys: ["alt", "n"],
+    type: "bindHotkey",
+    function: () => {
+      if (!PlayerProgress.endgameUnlocked()) return;
+      Endgame.resetNoReward();
+    },
+    visible: () => PlayerProgress.endgameUnlocked()
+  }, {
+    name: "Toggle Endgame Mastery respec",
+    keys: ["shift", "n"],
+    type: "bindHotkey",
+    function: () => {
+      player.endgame.respec = !player.endgame.respec;
+      GameUI.notify.info(`Endgame Mastery respec is now ${player.endgame.respec ? "active" : "inactive"}`);
+    },
+    visible: () => PlayerProgress.endgameUnlocked()
+  }, {
+    name: "Toggle Celestial Hotkeys",
+    keys: ["shift", "c"],
+    type: "bindHotkey",
+    function: () => {
+      if (!Alpha.isDestroyedForDisplay) return;
+      player.options.simpleHotkeysCelestialMode = !player.options.simpleHotkeysCelestialMode;
+      GameUI.notify.info(`Simple Hotkey Celestial commands are now ${player.options.simpleHotkeysCelestialMode ? "active" : "inactive"}`);
+    },
+    visible: () => Alpha.isDestroyedForDisplay
+  }, {
+    name: "Condense",
+    keys: ["o"],
+    type: "bindRepeatableHotkey",
+    function: () => {
+      if (!PlayerProgress.condenseUnlocked()) return;
+      resetForDivineStars();
+    },
+    visible: () => PlayerProgress.condenseUnlocked()
+  }, {
+    name: "Supernova",
+    keys: ["v"],
+    type: "bindRepeatableHotkey",
+    function: () => {
+      if (!PlayerProgress.supernovaUnlocked()) return;
+      supernovaResetRequest();
+    },
+    visible: () => PlayerProgress.supernovaUnlocked()
+  }, {
+    name: "Toggle Glyph unequip (Slabdrill)",
+    keys: ["shift", "r"],
+    type: "bindHotkey",
+    function: () => {
+      if (!Slabdrill.isCursed) return;
+      player.reality.respec = !player.reality.respec;
+      GameUI.notify.info(`Glyph respec is now ${player.reality.respec ? "active" : "inactive"}`);
+    },
+    visible: () => Slabdrill.isCursed || Slabdrill.isDestroyed
   }, {
     name: "Save game",
     keys: ["mod", "s"],
@@ -446,6 +523,10 @@ function keyboardToggleContinuum() {
   if (!Laitela.continuumUnlocked) return;
   if (ImaginaryUpgrade(21).isLockingMechanics && player.auto.disableContinuum) {
     ImaginaryUpgrade(21).tryShowWarningModal();
+    return;
+  }
+  if (DualityUpgrade(21).isLockingMechanics && player.auto.disableContinuum) {
+    DualityUpgrade(21).tryShowWarningModal();
     return;
   }
   // This is a toggle despite the lack of !, because player.auto.disableContinuum

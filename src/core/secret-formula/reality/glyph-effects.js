@@ -1,5 +1,3 @@
-import { DC } from "../../constants";
-
 export const GlyphCombiner = Object.freeze({
   /**
    * @param {number[]} x
@@ -24,6 +22,11 @@ export const GlyphCombiner = Object.freeze({
    * @param {Decimal[]} x
    * @returns {Decimal}
    */
+  addDecimal: x => x.reduce(Decimal.sumReducer, DC.D0),
+  /**
+   * @param {Decimal[]} x
+   * @returns {Decimal}
+   */
   multiplyDecimal: x => x.reduce(Decimal.prodReducer, DC.D1)
 });
 
@@ -36,7 +39,10 @@ export const glyphEffects = {
     singleDesc: "Time Dimension power +{value}",
     totalDesc: "Time Dimension multipliers ^{value}",
     shortDesc: "TD power +{value}",
-    effect: (level, strength) => 1.01 + Math.pow(level, 0.32) * Math.pow(strength, 0.45) / 75,
+    effect: (level, strength) => Slabdrill.isCursed ? Decimal.pow(level, 0.2).times(Decimal.pow(strength, 0.5)).div(100).add(1).toNumber()
+      : (EffarigUnlock.endgame.canBeApplied
+      ? Decimal.pow(level, 0.4).times(Math.pow(strength, 1.2)).div(50).add(1).toNumber()
+      : Decimal.pow(level, 0.32).times(Math.pow(strength, 0.45)).div(75).add(1.01).toNumber()),
     formatEffect: x => format(x, 3, 3),
     formatSingleEffect: x => format(x - 1, 3, 3),
     combine: GlyphCombiner.addExponents,
@@ -51,11 +57,14 @@ export const glyphEffects = {
     totalDesc: "Game runs ×{value} faster",
     genericDesc: "Game speed multiplier",
     shortDesc: "Game speed ×{value}",
-    effect: (level, strength) => (GlyphAlteration.isEmpowered("time")
-      ? 1 + Math.pow(level, 0.35)
-      : 1 + Math.pow(level, 0.3) * Math.pow(strength, 0.65) / 20),
+    effect: (level, strength) => Slabdrill.isCursed ? Decimal.pow(level, 0.5).times(strength).add(1)
+      : (EffarigUnlock.endgame.canBeApplied
+      ? Decimal.pow(level, strength).add(1)
+      : (GlyphAlteration.isEmpowered("time")
+         ? Decimal.pow(level, 0.35).add(1)
+         : Decimal.pow(level, 0.3).times(Decimal.pow(strength, 0.65)).div(20).add(1))),
     formatEffect: x => format(x, 3, 3),
-    combine: GlyphCombiner.multiply,
+    combine: GlyphCombiner.multiplyDecimal,
     alteredColor: () => GlyphAlteration.getEmpowermentColor("time"),
     alterationType: ALTERATION_TYPE.EMPOWER,
     enabledInDoomed: true,
@@ -69,12 +78,16 @@ export const glyphEffects = {
     totalDesc: "Eternity gain ×{value}",
     genericDesc: "Eternity gain multiplier",
     shortDesc: "Eternities ×{value}",
-    effect: (level, strength) => Math.pow((strength + 3) * level, 0.9) *
-      Math.pow(3, GlyphAlteration.sacrificeBoost("time")),
+    effect: (level, strength) => Slabdrill.isCursed ? Decimal.pow(level.times(strength), 0.3).add(1)
+      : (EffarigUnlock.endgame.canBeApplied
+      ? Decimal.pow10(Decimal.pow(level, 0.25).times(strength).times(GlyphAlteration.sacrificeBoost("time")))
+      : Decimal.pow(new Decimal(strength + 3).times(level), 0.9).times(
+        Decimal.pow(3, GlyphAlteration.sacrificeBoost("time")))),
     formatEffect: x => format(x, 2, 2),
-    combine: GlyphCombiner.multiply,
+    combine: GlyphCombiner.multiplyDecimal,
     alteredColor: () => GlyphAlteration.getBoostColor("time"),
-    alterationType: ALTERATION_TYPE.BOOST
+    alterationType: ALTERATION_TYPE.BOOST,
+    enabledInDoomed: () => PelleDestructionUpgrade.destroyedGlyphEffects.canBeApplied
   },
   timeEP: {
     id: "timeEP",
@@ -93,13 +106,19 @@ export const glyphEffects = {
     shortDesc: () => (GlyphAlteration.isAdded("time")
       ? "EP ×{value} and ^{value2}"
       : "EP ×{value}"),
-    effect: (level, strength) => Math.pow(level * strength, 3) * 100,
+    effect: (level, strength) => Slabdrill.isCursed ? DC.D2.pow(Decimal.pow(level, 0.5).times(strength))
+      : (EffarigUnlock.endgame.canBeApplied
+      ? Decimal.pow10(Decimal.pow(level, strength + 1).times(100))
+      : Decimal.clampMin(Decimal.pow(level.times(strength), 3).times(100), 1)),
     formatEffect: x => format(x, 2, 3),
-    combine: GlyphCombiner.multiply,
-    conversion: x => 1 + Math.log10(x) / 1000,
+    combine: GlyphCombiner.multiplyDecimal,
+    conversion: x => (EffarigUnlock.endgame.canBeApplied
+      ? 1 + Decimal.log10(x).add(1).log10().toNumber() / 100
+      : 1 + Decimal.log10(x).toNumber() / 1000),
     formatSecondaryEffect: x => format(x, 4, 4),
     alteredColor: () => GlyphAlteration.getAdditionColor("time"),
-    alterationType: ALTERATION_TYPE.ADDITION
+    alterationType: ALTERATION_TYPE.ADDITION,
+    enabledInDoomed: () => PelleDestructionUpgrade.destroyedGlyphEffects.canBeApplied
   },
   dilationDT: {
     id: "dilationDT",
@@ -109,13 +128,17 @@ export const glyphEffects = {
     singleDesc: "Multiply Dilated Time gain by {value}",
     totalDesc: "Dilated Time gain ×{value}",
     shortDesc: "DT ×{value}",
-    effect: (level, strength) => (GlyphAlteration.isEmpowered("dilation")
-      ? DC.D1_005.pow(level).times(15)
-      : Decimal.pow(level * strength, 1.5).times(2)),
+    effect: (level, strength) => Slabdrill.isCursed ? Decimal.pow(level, 0.1).times(Decimal.pow(strength, 0.5)).add(1)
+      : (EffarigUnlock.endgame.canBeApplied
+      ? Decimal.pow10(level.times(strength).div(150))
+      : (GlyphAlteration.isEmpowered("dilation")
+         ? DC.D1_005.pow(level).times(15)
+         : Decimal.pow(level.times(strength), 1.5).times(2))),
     formatEffect: x => format(x, 2, 1),
     combine: GlyphCombiner.multiplyDecimal,
     alteredColor: () => GlyphAlteration.getEmpowermentColor("dilation"),
-    alterationType: ALTERATION_TYPE.EMPOWER
+    alterationType: ALTERATION_TYPE.EMPOWER,
+    enabledInDoomed: () => PelleDestructionUpgrade.destroyedGlyphEffects.canBeApplied
   },
   dilationgalaxyThreshold: {
     id: "dilationgalaxyThreshold",
@@ -125,15 +148,21 @@ export const glyphEffects = {
     singleDesc: "Tachyon Galaxy threshold multiplier ×{value}",
     genericDesc: "Tachyon Galaxy cost multiplier",
     shortDesc: "TG threshold ×{value}",
-    effect: (level, strength) => 1 - Math.pow(level, 0.17) * Math.pow(strength, 0.35) / 100 -
-      GlyphAlteration.sacrificeBoost("dilation") / 50,
+    effect: (level, strength) => Slabdrill.isCursed ? DC.D1.div(Decimal.pow(level, 0.03).times(Decimal.pow(strength, 0.25))).toNumber()
+      : (EffarigUnlock.endgame.canBeApplied
+      ? Decimal.max(DC.D1.sub(Decimal.pow(level, 0.4).times(strength).div(100)).sub(GlyphAlteration.sacrificeBoost("dilation") / 40), 0.1)
+        .div(Decimal.max(1, Decimal.abs((DC.D1.sub(Decimal.pow(level, 0.4).times(strength).div(100)).sub(
+        GlyphAlteration.sacrificeBoost("dilation") / 40)).sub(1.1)))).toNumber()
+      : Decimal.max(DC.D1.sub(Decimal.pow(level, 0.17).times(Math.pow(strength, 0.35)).div(100)).sub(
+        GlyphAlteration.sacrificeBoost("dilation") / 50), 0.1).div(Decimal.max(1, Decimal.abs((DC.D1.sub(Decimal.pow(level, 0.17).times(
+        Math.pow(strength, 0.35)).div(100)).sub(GlyphAlteration.sacrificeBoost("dilation") / 50)).sub(1.1)))).toNumber()),
     formatEffect: x => format(x, 3, 3),
     alteredColor: () => GlyphAlteration.getBoostColor("dilation"),
     alterationType: ALTERATION_TYPE.BOOST,
     combine: effects => {
       const prod = effects.reduce(Number.prodReducer, 1);
       return prod < 0.4
-        ? { value: 0.4 - Math.pow(0.4 - prod, 1.7), capped: true }
+        ? { value: Math.max(0.4 - Math.pow(0.4 - prod, 1.7), 0.1) / Math.max(1, Math.abs(Math.log(prod)) / 2), capped: true }
         : { value: prod, capped: false };
     },
     enabledInDoomed: true,
@@ -156,25 +185,34 @@ export const glyphEffects = {
     shortDesc: () => (GlyphAlteration.isAdded("dilation")
       ? "{value} TT/hr and TTgen ×{value2}"
       : "{value} TT/hr"),
-    effect: (level, strength) => Math.pow(level * strength, 0.5) / 10000,
+    effect: (level, strength) => Slabdrill.isCursed ? Decimal.pow(level, 0.25).times(strength).div(10000)
+      : (EffarigUnlock.endgame.canBeApplied
+      ? Decimal.pow(level.times(strength), 0.6).div(1000)
+      : Decimal.pow(level.times(strength), 0.5).div(10000)),
     /** @type {function(number): string} */
-    formatEffect: x => format(3600 * x, 2, 2),
-    combine: GlyphCombiner.add,
-    conversion: x => Math.clampMin(Math.pow(10000 * x, 1.6), 1),
+    formatEffect: x => format(x.times(3600), 2, 2),
+    combine: GlyphCombiner.addDecimal,
+    conversion: x => (EffarigUnlock.endgame.canBeApplied
+      ? Decimal.clampMin(Decimal.pow10(x.times(10000)), 1)
+      : Decimal.clampMin(Decimal.pow(x.times(10000), 1.6), 1)),
     formatSecondaryEffect: x => format(x, 2, 2),
     alteredColor: () => GlyphAlteration.getAdditionColor("dilation"),
-    alterationType: ALTERATION_TYPE.ADDITION
+    alterationType: ALTERATION_TYPE.ADDITION,
+    enabledInDoomed: () => PelleDestructionUpgrade.destroyedGlyphEffects.canBeApplied
   },
   dilationpow: {
     id: "dilationpow",
     bitmaskIndex: 7,
     isGenerated: true,
     glyphTypes: ["dilation"],
-    singleDesc: "Antimatter Dimension power +{value} while Dilated",
-    totalDesc: "Antimatter Dimension multipliers ^{value} while Dilated",
-    genericDesc: "Antimatter Dimensions ^x while Dilated",
-    shortDesc: "Dilated AD power +{value}",
-    effect: (level, strength) => 1.1 + Math.pow(level, 0.7) * Math.pow(strength, 0.7) / 25,
+    singleDesc: () => `${player.universes.current === 2 ? "Matter" : "Antimatter"} Dimension power +{value} while Dilated`,
+    totalDesc: () => `${player.universes.current === 2 ? "Matter" : "Antimatter"} Dimension multipliers ^{value} while Dilated`,
+    genericDesc: () => `${player.universes.current === 2 ? "Matter" : "Antimatter"} Dimensions ^x while Dilated`,
+    shortDesc: () => `Dilated ${player.universes.current === 2 ? "MD" : "AD"} power +{value}`,
+    effect: (level, strength) => Slabdrill.isCursed ? Decimal.pow(level, 0.05).times(Decimal.pow(strength, 0.3)).toNumber()
+      : (EffarigUnlock.endgame.canBeApplied
+      ? level.times(strength).add(1).toNumber()
+      : Decimal.pow(level, 0.7).times(Math.pow(strength, 0.7)).div(25).add(1.1).toNumber()),
     formatEffect: x => format(x, 2, 2),
     formatSingleEffect: x => format(x - 1, 2, 2),
     combine: GlyphCombiner.addExponents,
@@ -189,13 +227,17 @@ export const glyphEffects = {
     totalDesc: "Replication speed ×{value}",
     genericDesc: "Replication speed multiplier",
     shortDesc: "Replication speed ×{value}",
-    effect: (level, strength) => (GlyphAlteration.isEmpowered("replication")
-      ? DC.D1_007.pow(level).times(10)
-      : Decimal.times(level, strength).times(3)),
+    effect: (level, strength) => Slabdrill.isCursed ? Decimal.pow(level, 0.4).times(strength)
+      : (EffarigUnlock.endgame.canBeApplied
+      ? Decimal.pow10(level.times(strength).div(100))
+      : (GlyphAlteration.isEmpowered("replication")
+         ? DC.D1_007.pow(level).times(10)
+         : Decimal.times(level, strength).times(3))),
     formatEffect: x => format(x, 2, 1),
     combine: GlyphCombiner.multiplyDecimal,
     alteredColor: () => GlyphAlteration.getEmpowermentColor("replication"),
-    alterationType: ALTERATION_TYPE.EMPOWER
+    alterationType: ALTERATION_TYPE.EMPOWER,
+    enabledInDoomed: () => PelleDestructionUpgrade.destroyedGlyphEffects.canBeApplied
   },
   replicationpow: {
     id: "replicationpow",
@@ -205,8 +247,10 @@ export const glyphEffects = {
     singleDesc: "Replicanti multiplier power +{value}",
     totalDesc: "Replicanti multiplier ^{value}",
     shortDesc: "Replicanti mult. power +{value}",
-    effect: (level, strength) => 1.1 + Math.pow(level, 0.5) * strength / 25 +
-      GlyphAlteration.sacrificeBoost("replication") * 3,
+    effect: (level, strength) => Slabdrill.isCursed ? Decimal.pow(level, 0.1).times(Decimal.pow(strength, 0.5)).toNumber()
+      : (EffarigUnlock.endgame.canBeApplied
+      ? level.times(Math.pow(strength, 2)).times(GlyphAlteration.sacrificeBoost("replication")).add(1).toNumber()
+      : Decimal.pow(level, 0.5).times(strength).div(25).add(GlyphAlteration.sacrificeBoost("replication") * 3).add(1.1).toNumber()),
     formatEffect: x => format(x, 2, 2),
     formatSingleEffect: x => format(x - 1, 2, 2),
     combine: GlyphCombiner.addExponents,
@@ -231,15 +275,18 @@ export const glyphEffects = {
     shortDesc: () => (GlyphAlteration.isAdded("replication")
       ? `×DT and repl. by +{value} per ${format(DC.E10000)} replicanti`
       : `×DT by +{value} per ${format(DC.E10000)} replicanti`),
-    effect: (level, strength) => 0.0003 * Math.pow(level, 0.3) * Math.pow(strength, 0.65),
-    formatEffect: x => format(10000 * x, 2, 2),
-    formatSingleEffect: x => format(10000 * x, 2, 2),
+    effect: (level, strength) => Slabdrill.isCursed ? Decimal.pow(level, 0.06).times(Decimal.pow(strength, 0.2))
+      : (EffarigUnlock.endgame.canBeApplied
+      ? Decimal.pow(level, strength).times(0.0005)
+      : Decimal.pow(level, 0.3).times(Decimal.pow(strength, 0.65)).times(0.0003)),
+    formatEffect: x => format(x.times(10000), 2, 2),
+    formatSingleEffect: x => format(x.times(10000), 2, 2),
     // It's bad to stack this one additively (N glyphs acts as a DT mult of N) or multiplicatively (the raw number is
     // less than 1), so instead we do a multiplicative stacking relative to the "base" effect of a level 1, 0% glyph.
     // We also introduce a 3x mult per glyph after the first, so that stacking level 1, 0% glyphs still has an effect.
     // This is still just a flat DT mult when stacking multiple glyphs, but at least it's bigger than 2 or 3.
     combine: effects => ({
-      value: effects.length === 0 ? 0 : effects.reduce(Number.prodReducer, Math.pow(0.0001, 1 - effects.length)),
+      value: effects.length === 0 ? DC.D0 : effects.reduce(Decimal.prodReducer, Decimal.pow(0.0001, 1 - effects.length)),
       capped: false
     }),
     conversion: x => x,
@@ -247,6 +294,7 @@ export const glyphEffects = {
     formatSingleSecondaryEffect: x => format(x, 5, 5),
     alteredColor: () => GlyphAlteration.getAdditionColor("replication"),
     alterationType: ALTERATION_TYPE.ADDITION,
+    enabledInDoomed: () => PelleDestructionUpgrade.destroyedGlyphEffects.canBeApplied
   },
   replicationglyphlevel: {
     id: "replicationglyphlevel",
@@ -259,7 +307,10 @@ export const glyphEffects = {
       ➜ ^(${format(0.4, 1, 1)} + {value})`,
     genericDesc: "Replicanti factor for Glyph level",
     shortDesc: "Replicanti pow. for level +{value}",
-    effect: (level, strength) => Math.pow(Math.pow(level, 0.25) * Math.pow(strength, 0.4), 0.5) / 50,
+    effect: (level, strength) => Slabdrill.isCursed ? Decimal.pow(level, 0.1).times(Decimal.pow(strength, 0.5)).div(1000).toNumber()
+      : (EffarigUnlock.endgame.canBeApplied
+      ? Decimal.pow(Decimal.pow(level, 0.3).times(strength), 0.5).div(40).toNumber()
+      : Decimal.pow(Decimal.pow(level, 0.25).times(Math.pow(strength, 0.4)), 0.5).div(50).toNumber()),
     formatEffect: x => format(x, 3, 3),
     combine: effects => {
       let sum = effects.reduce(Number.sumReducer, 0);
@@ -278,8 +329,13 @@ export const glyphEffects = {
     singleDesc: "Infinity Dimension power +{value}",
     totalDesc: "Infinity Dimension multipliers ^{value}",
     shortDesc: "ID power +{value}",
-    effect: (level, strength) => 1.007 + Math.pow(level, 0.21) * Math.pow(strength, 0.4) / 75 +
-      GlyphAlteration.sacrificeBoost("infinity") / 50,
+    effect: (level, strength) => Slabdrill.isCursed ? Decimal.pow(level, 0.15).times(Decimal.pow(strength, 0.4)).div(100).add(1).toNumber()
+      : (EffarigUnlock.endgame.canBeApplied
+      ? Decimal.pow(level, 0.3).times(strength).div(50).add(Math.min(GlyphAlteration.sacrificeBoost("infinity") / 50, 2.5)).add(
+        Math.pow(Math.max(Math.log10(GlyphAlteration.sacrificeBoost("infinity")) - Math.log10(125), 0) + 1, 2.5) - 1).add(1).toNumber()
+      : Decimal.pow(level, 0.21).times(Math.pow(strength, 0.4)).div(75).add(
+        Math.min(GlyphAlteration.sacrificeBoost("infinity") / 50, 2.5)).add(
+        Math.pow(Math.max(Math.log10(GlyphAlteration.sacrificeBoost("infinity")) - Math.log10(125), 0) + 1, 2) - 1).add(1.007).toNumber()),
     formatEffect: x => format(x, 3, 3),
     formatSingleEffect: x => format(x - 1, 3, 3),
     combine: GlyphCombiner.addExponents,
@@ -298,7 +354,10 @@ export const glyphEffects = {
       ➜ ^(${formatInt(7)} + {value})`,
     genericDesc: "Infinity Power conversion rate",
     shortDesc: "Infinity Power conversion +{value}",
-    effect: (level, strength) => Math.pow(level, 0.2) * Math.pow(strength, 0.4) * 0.04,
+    effect: (level, strength) => Slabdrill.isCursed ? Decimal.pow(level, 0.2).times(Decimal.pow(strength, 0.75)).div(10).toNumber()
+      : (EffarigUnlock.endgame.canBeApplied
+      ? Decimal.pow(level, 0.25).times(strength).times(0.05).toNumber()
+      : Decimal.pow(level, 0.2).times(Math.pow(strength, 0.4)).times(0.04).toNumber()),
     formatEffect: x => format(x, 2, 2),
     combine: GlyphCombiner.add,
     enabledInDoomed: true,
@@ -320,15 +379,23 @@ export const glyphEffects = {
     shortDesc: () => (GlyphAlteration.isAdded("infinity")
       ? "IP ×{value} and ^{value2}"
       : "IP ×{value}"),
-    effect: (level, strength) => Math.pow(level * (strength + 1), 6) * 10000,
+    effect: (level, strength) => Slabdrill.isCursed ? DC.D2.pow(level.times(Decimal.pow(strength, 3)))
+      : (EffarigUnlock.endgame.canBeApplied
+      ? Decimal.pow10(Decimal.pow(level, strength + 1).times(10000))
+      : Decimal.clampMin(Decimal.pow(level.times(strength + 1), 6).times(10000), 1)),
     formatEffect: x => format(x, 2, 3),
-    combine: GlyphCombiner.multiply,
-    // eslint-disable-next-line no-negated-condition
-    softcap: value => ((Effarig.eternityCap !== undefined) ? Math.min(value, Effarig.eternityCap.toNumber()) : value),
-    conversion: x => 1 + Math.log10(x) / 1800,
+    combine: effects => {
+      let sum = effects.reduce(Decimal.prodReducer, DC.D1);
+      return { value: sum, capped: false };
+    },
+    softcap: value => ((Effarig.eternityCap !== undefined) ? Decimal.min(value, Effarig.eternityCap) : value),
+    conversion: x => (EffarigUnlock.endgame.canBeApplied
+      ? 1 + Decimal.log10(x).add(1).log10().toNumber() / 150
+      : 1 + Decimal.log10(x).toNumber() / 1800),
     formatSecondaryEffect: x => format(x, 4, 4),
     alteredColor: () => GlyphAlteration.getAdditionColor("infinity"),
-    alterationType: ALTERATION_TYPE.ADDITION
+    alterationType: ALTERATION_TYPE.ADDITION,
+    enabledInDoomed: () => PelleDestructionUpgrade.destroyedGlyphEffects.canBeApplied
   },
   infinityinfmult: {
     id: "infinityinfmult",
@@ -339,13 +406,17 @@ export const glyphEffects = {
     totalDesc: "Infinity gain ×{value}",
     genericDesc: "Infinity gain multiplier",
     shortDesc: "Infinities ×{value}",
-    effect: (level, strength) => (GlyphAlteration.isEmpowered("infinity")
-      ? DC.D1_02.pow(level)
-      : Decimal.pow(level * strength, 1.5).times(2)),
+    effect: (level, strength) => Slabdrill.isCursed ? Decimal.pow(level.times(strength), 0.6).add(1)
+      : (EffarigUnlock.endgame.canBeApplied
+      ? Decimal.pow10(level.times(strength))
+      : (GlyphAlteration.isEmpowered("infinity")
+         ? DC.D1_02.pow(level)
+         : Decimal.pow(level.times(strength), 1.5).times(2))),
     formatEffect: x => format(x, 2, 1),
     combine: GlyphCombiner.multiplyDecimal,
     alteredColor: () => GlyphAlteration.getEmpowermentColor("infinity"),
-    alterationType: ALTERATION_TYPE.EMPOWER
+    alterationType: ALTERATION_TYPE.EMPOWER,
+    enabledInDoomed: () => PelleDestructionUpgrade.destroyedGlyphEffects.canBeApplied
   },
   powerpow: {
     id: "powerpow",
@@ -353,22 +424,25 @@ export const glyphEffects = {
     isGenerated: true,
     glyphTypes: ["power"],
     singleDesc: () => (GlyphAlteration.isAdded("power")
-      ? "Antimatter Dimension power +{value}\n[and Antimatter Galaxy cost ×]{value2}"
-      : "Antimatter Dimension power +{value}"),
+      ? `${player.universes.current === 2 ? "Matter" : "Antimatter"} Dimension power +{value}\n[and ${player.universes.current === 2 ? "Matter" : "Antimatter"} Galaxy cost ×]{value2}`
+      : `${player.universes.current === 2 ? "Matter" : "Antimatter"} Dimension power +{value}`),
     totalDesc: () => (GlyphAlteration.isAdded("power")
-      ? "Antimatter Dimension multipliers ^{value} and Antimatter Galaxy cost ×{value2}"
-      : "Antimatter Dimension multipliers ^{value}"),
+      ? `${player.universes.current === 2 ? "Matter" : "Antimatter"} Dimension multipliers ^{value} and ${player.universes.current === 2 ? "Matter" : "Antimatter"} Galaxy cost ×{value2}`
+      : `${player.universes.current === 2 ? "Matter" : "Antimatter"} Dimension multipliers ^{value}`),
     genericDesc: () => (GlyphAlteration.isAdded("power")
-      ? "Antimatter Dimensions multipliers ^x and Antimatter Galaxy cost multiplier"
-      : "Antimatter Dimension multipliers ^x"),
+      ? `${player.universes.current === 2 ? "Matter" : "Antimatter"} Dimensions multipliers ^x and ${player.universes.current === 2 ? "Matter" : "Antimatter"} Galaxy cost multiplier`
+      : `${player.universes.current === 2 ? "Matter" : "Antimatter"} Dimension multipliers ^x`),
     shortDesc: () => (GlyphAlteration.isAdded("power")
-      ? "AD power +{value} and AG cost ×{value2}"
-      : "AD power +{value}"),
-    effect: (level, strength) => 1.015 + Math.pow(level, 0.2) * Math.pow(strength, 0.4) / 75,
+      ? `${player.universes.current === 2 ? "MD" : "AD"} power +{value} and ${player.universes.current === 2 ? "MG" : "AG"} cost ×{value2}`
+      : `${player.universes.current === 2 ? "MD" : "AD"} power +{value}`),
+    effect: (level, strength) => Slabdrill.isCursed ? Decimal.pow(level, 0.1).times(Decimal.pow(strength, 0.3)).div(100).add(1).toNumber()
+      : (EffarigUnlock.endgame.canBeApplied
+      ? Decimal.pow(level, 0.25).times(strength).div(50).add(1).toNumber()
+      : Decimal.pow(level, 0.2).times(Math.pow(strength, 0.4)).div(75).add(1.015).toNumber()),
     formatEffect: x => format(x, 3, 3),
     formatSingleEffect: x => format(x - 1, 3, 3),
     combine: GlyphCombiner.addExponents,
-    conversion: x => 2 / (x + 1),
+    conversion: x => (EffarigUnlock.endgame.canBeApplied ? 1 / x : 2 / (x + 1)),
     formatSecondaryEffect: x => format(x, 3, 3),
     alteredColor: () => GlyphAlteration.getAdditionColor("power"),
     alterationType: ALTERATION_TYPE.ADDITION,
@@ -379,11 +453,15 @@ export const glyphEffects = {
     bitmaskIndex: 17,
     isGenerated: true,
     glyphTypes: ["power"],
-    singleDesc: "Antimatter Dimension multipliers ×{value}",
-    shortDesc: "AD ×{value}",
-    effect: (level, strength) => (GlyphAlteration.isEmpowered("power")
-      ? DC.D11111.pow(level * 220)
-      : Decimal.pow(level * strength * 10, level * strength * 10)),
+    singleDesc: () => `${player.universes.current === 2 ? "Matter" : "Antimatter"} Dimension multipliers ×{value}`,
+    genericDesc: () => `Multiplier to ${player.universes.current === 2 ? "Matter" : "Antimatter"} Dimension multipliers`,
+    shortDesc: () => `${player.universes.current === 2 ? "MD" : "AD"} ×{value}`,
+    effect: (level, strength) => Slabdrill.isCursed ? Decimal.pow10(Decimal.pow(level, 1.25).times(Decimal.pow(strength, 5)))
+      : (EffarigUnlock.endgame.canBeApplied
+      ? Decimal.pow10(Decimal.pow(level, strength).times(9e15))
+      : (GlyphAlteration.isEmpowered("power")
+         ? DC.D11111.pow(level.times(220))
+         : Decimal.pow(level.times(strength).times(10), level.times(strength).times(10)))),
     formatEffect: x => formatPostBreak(x, 2, 0),
     combine: GlyphCombiner.multiplyDecimal,
     alteredColor: () => GlyphAlteration.getEmpowermentColor("power"),
@@ -398,10 +476,13 @@ export const glyphEffects = {
     singleDesc: "Dimension Boost multiplier ×{value}",
     genericDesc: "Dimension Boost multiplier",
     shortDesc: "Dimboost mult. ×{value}",
-    effect: (level, strength) => Math.pow(level * strength, 0.5) *
-      Math.pow(1 + GlyphAlteration.sacrificeBoost("power"), 3),
+    effect: (level, strength) => Slabdrill.isCursed ? Decimal.pow(level, 0.15).times(Decimal.pow(strength, 0.6))
+      : (EffarigUnlock.endgame.canBeApplied
+      ? Decimal.pow10(Decimal.pow(level, 0.5).times(strength).times(GlyphAlteration.sacrificeBoost("power")))
+      : Decimal.clampMin(Decimal.pow(level.times(strength), 0.5).times(
+        Decimal.pow(1 + GlyphAlteration.sacrificeBoost("power"), 3)), 1)),
     formatEffect: x => format(x, 2, 2),
-    combine: GlyphCombiner.multiply,
+    combine: GlyphCombiner.multiplyDecimal,
     alteredColor: () => GlyphAlteration.getBoostColor("power"),
     alterationType: ALTERATION_TYPE.BOOST,
     enabledInDoomed: true,
@@ -411,11 +492,14 @@ export const glyphEffects = {
     bitmaskIndex: 19,
     isGenerated: true,
     glyphTypes: ["power"],
-    singleDesc: () => `Increase the bonus from buying ${formatInt(10)} Antimatter Dimensions by {value}`,
+    singleDesc: () => `Increase the bonus from buying ${formatInt(10)} ${player.universes.current === 2 ? "Matter" : "Antimatter"} Dimensions by {value}`,
     totalDesc: () => `Multiplier from "Buy ${formatInt(10)}" ×{value}`,
     genericDesc: () => `"Buy ${formatInt(10)}" bonus increase`,
-    shortDesc: () => `AD "Buy ${formatInt(10)}" mult. ×{value}`,
-    effect: (level, strength) => 1 + level * strength / 12,
+    shortDesc: () => `${player.universes.current === 2 ? "MD" : "AD"} "Buy ${formatInt(10)}" mult. ×{value}`,
+    effect: (level, strength) => Slabdrill.isCursed ? Decimal.pow(level, 0.3).times(Decimal.pow(strength, 1.5)).toNumber()
+      : (EffarigUnlock.endgame.canBeApplied
+      ? Decimal.pow(level, strength).add(1).toNumber()
+      : level.times(strength).div(12).add(1).toNumber()),
     formatEffect: x => format(x, 2, 2),
     combine: GlyphCombiner.addExponents,
     enabledInDoomed: true,
@@ -428,13 +512,16 @@ export const glyphEffects = {
     singleDesc: "Reality Machine multiplier ×{value}",
     genericDesc: "Reality Machine multiplier",
     shortDesc: "RM ×{value}",
-    effect: (level, strength) => (GlyphAlteration.isEmpowered("effarig")
-      ? Math.pow(level, 1.5)
-      : Math.pow(level, 0.6) * strength),
+    effect: (level, strength) => EffarigUnlock.endgame.canBeApplied
+      ? Decimal.pow10(Decimal.pow(level, 0.6).times(strength))
+      : (GlyphAlteration.isEmpowered("effarig")
+         ? Decimal.pow(level, 1.5)
+         : Decimal.pow(level, 0.6).times(strength)),
     formatEffect: x => format(x, 2, 2),
-    combine: GlyphCombiner.multiply,
+    combine: GlyphCombiner.multiplyDecimal,
     alteredColor: () => GlyphAlteration.getEmpowermentColor("effarig"),
-    alterationType: ALTERATION_TYPE.EMPOWER
+    alterationType: ALTERATION_TYPE.EMPOWER,
+    enabledInDoomed: () => !Pelle.isGlyphTypeDisabled("effarig")
   },
   effarigglyph: {
     id: "effarigglyph",
@@ -444,9 +531,12 @@ export const glyphEffects = {
     singleDesc: "Glyph Instability starting level +{value}",
     genericDesc: "Glyph Instability delay",
     shortDesc: "Instability delay +{value}",
-    effect: (level, strength) => Math.floor(10 * Math.pow(level * strength, 0.5)),
+    effect: (level, strength) => (EffarigUnlock.endgame.canBeApplied
+      ? Decimal.floor(Decimal.pow(level.times(strength), 0.6).times(10)).toNumber()
+      : Decimal.floor(Decimal.pow(level.times(strength), 0.5).times(10)).toNumber()),
     formatEffect: x => formatInt(x),
     combine: GlyphCombiner.add,
+    enabledInDoomed: () => !Pelle.isGlyphTypeDisabled("effarig")
   },
   effarigblackhole: {
     id: "effarigblackhole",
@@ -457,10 +547,13 @@ export const glyphEffects = {
     totalDesc: "Game speed ^{value}",
     genericDesc: "Game speed ^x",
     shortDesc: "Game speed power +{value}",
-    effect: (level, strength) => 1 + Math.pow(level, 0.25) * Math.pow(strength, 0.4) / 75,
+    effect: (level, strength) => (EffarigUnlock.endgame.canBeApplied
+      ? Decimal.pow(level, 0.27).times(Math.pow(strength, 0.45)).div(72).add(1).toNumber()
+      : Decimal.pow(level, 0.25).times(Math.pow(strength, 0.4)).div(75).add(1).toNumber()),
     formatEffect: x => format(x, 3, 3),
     formatSingleEffect: x => format(x - 1, 3, 3),
     combine: GlyphCombiner.addExponents,
+    enabledInDoomed: () => !Pelle.isGlyphTypeDisabled("effarig")
   },
   effarigachievement: {
     id: "effarigachievement",
@@ -471,13 +564,16 @@ export const glyphEffects = {
     totalDesc: "Achievement multiplier ^{value}",
     genericDesc: "Achievement multiplier ^x",
     shortDesc: "Achievement mult. power +{value}",
-    effect: (level, strength) => 1 + Math.pow(level, 0.4) * Math.pow(strength, 0.6) / 60 +
-      GlyphAlteration.sacrificeBoost("effarig") / 10,
+    effect: (level, strength) => (EffarigUnlock.endgame.canBeApplied
+      ? Decimal.pow(level, 0.5).times(strength).div(50).add(GlyphAlteration.sacrificeBoost("effarig") / 8).add(1).toNumber()
+      : Decimal.pow(level, 0.4).times(Math.pow(strength, 0.6)).div(60).add(
+        GlyphAlteration.sacrificeBoost("effarig") / 10).add(1).toNumber()),
     formatEffect: x => format(x, 3, 3),
     formatSingleEffect: x => format(x - 1, 3, 3),
     combine: GlyphCombiner.addExponents,
     alteredColor: () => GlyphAlteration.getBoostColor("effarig"),
-    alterationType: ALTERATION_TYPE.BOOST
+    alterationType: ALTERATION_TYPE.BOOST,
+    enabledInDoomed: () => !Pelle.isGlyphTypeDisabled("effarig")
   },
   effarigforgotten: {
     id: "effarigforgotten",
@@ -496,13 +592,16 @@ export const glyphEffects = {
     shortDesc: () => (GlyphAlteration.isAdded("effarig")
       ? `Buy ${formatInt(10)} mult. ^{value}, Dimboost mult. ^{value2}`
       : `Buy ${formatInt(10)} mult. ^{value}`),
-    effect: (level, strength) => 1 + 2 * Math.pow(level, 0.25) * Math.pow(strength, 0.4),
+    effect: (level, strength) => (EffarigUnlock.endgame.canBeApplied
+      ? Decimal.pow(level, 0.5).times(strength).times(2).add(1).toNumber()
+      : Decimal.pow(level, 0.25).times(Math.pow(strength, 0.4)).times(2).add(1).toNumber()),
     formatEffect: x => format(x, 2, 2),
     combine: GlyphCombiner.multiply,
-    conversion: x => Math.pow(x, 0.4),
+    conversion: x => (EffarigUnlock.endgame.canBeApplied ? Math.pow(x, 0.5) : Math.pow(x, 0.4)),
     formatSecondaryEffect: x => format(x, 2, 2),
     alteredColor: () => GlyphAlteration.getAdditionColor("effarig"),
-    alterationType: ALTERATION_TYPE.ADDITION
+    alterationType: ALTERATION_TYPE.ADDITION,
+    enabledInDoomed: () => !Pelle.isGlyphTypeDisabled("effarig")
   },
   effarigdimensions: {
     id: "effarigdimensions",
@@ -513,22 +612,28 @@ export const glyphEffects = {
     totalDesc: "All Dimension multipliers ^{value}",
     genericDesc: "All Dimension multipliers ^x",
     shortDesc: "All Dimension power +{value}",
-    effect: (level, strength) => 1 + Math.pow(level, 0.25) * Math.pow(strength, 0.4) / 500,
+    effect: (level, strength) => (EffarigUnlock.endgame.canBeApplied
+      ? Decimal.pow(level, 0.3).times(Math.pow(strength, 0.75)).div(400).add(1).toNumber()
+      : Decimal.pow(level, 0.25).times(Math.pow(strength, 0.4)).div(500).add(1).toNumber()),
     formatEffect: x => format(x, 3, 3),
     formatSingleEffect: x => format(x - 1, 3, 3),
     combine: GlyphCombiner.addExponents,
+    enabledInDoomed: () => !Pelle.isGlyphTypeDisabled("effarig")
   },
   effarigantimatter: {
     id: "effarigantimatter",
     bitmaskIndex: 26,
     isGenerated: true,
     glyphTypes: ["effarig"],
-    singleDesc: () => `Antimatter production:\n${formatInt(10)}^x ➜ ${formatInt(10)}^(x^{value})`,
-    genericDesc: "Antimatter production exponent power",
-    shortDesc: "AM production exponent ^{value}",
-    effect: (level, strength) => 1 + Math.pow(level, 0.25) * Math.pow(strength, 0.4) / 5000,
+    singleDesc: () => `${player.universes.current === 2 ? "Matter" : "Antimatter"} production:\n${formatInt(10)}^x ➜ ${formatInt(10)}^(x^{value})`,
+    genericDesc: () => `${player.universes.current === 2 ? "Matter" : "Antimatter"} production exponent power`,
+    shortDesc: () => `${player.universes.current === 2 ? "M" : "AM"} production exponent ^{value}`,
+    effect: (level, strength) => (EffarigUnlock.endgame.canBeApplied
+      ? Decimal.pow(level, 0.26).times(Math.pow(strength, 0.45)).div(4800).add(1).toNumber()
+      : Decimal.pow(level, 0.25).times(Math.pow(strength, 0.4)).div(5000).add(1).toNumber()),
     formatEffect: x => format(x, 4, 4),
     combine: GlyphCombiner.multiply,
+    enabledInDoomed: () => !Pelle.isGlyphTypeDisabled("effarig")
   },
   timeshardpow: {
     id: "timeshardpow",
@@ -540,7 +645,9 @@ export const glyphEffects = {
     totalDesc: "Time Shard gain ^{value}",
     genericDesc: "Time Shards ^x",
     shortDesc: "Time Shard power +{value}",
-    effect: (level, strength) => 1 + (strength / 3.5) * Math.pow(level, 0.35) / 400,
+    effect: (level, strength) => (EffarigUnlock.endgame.canBeApplied
+      ? Decimal.pow(level, 0.4).times(strength).div(1000).add(1).toNumber()
+      : Decimal.pow(level, 0.35).times(strength / 3.5).div(400).add(1).toNumber()),
     formatEffect: x => format(x, 3, 3),
     formatSingleEffect: x => format(x - 1, 3, 3),
     combine: GlyphCombiner.addExponents,
@@ -555,9 +662,10 @@ export const glyphEffects = {
     totalDesc: "All Galaxy strength -{value}",
     shortDesc: "Galaxy Strength -{value}",
     // Multiplies by 0.768 per glyph
-    effect: level => Math.pow(level, -0.03),
+    effect: level => Decimal.pow(level, -0.03).toNumber(),
     formatEffect: x => formatPercents(1 - x, 2),
     combine: GlyphCombiner.multiply,
+    enabledInDoomed: () => !Pelle.isGlyphTypeDisabled("cursed"),
   },
   curseddimensions: {
     id: "curseddimensions",
@@ -567,9 +675,10 @@ export const glyphEffects = {
     singleDesc: "All Dimension multipliers ^{value}",
     shortDesc: "All Dimensions ^{value}",
     // Multiplies by 0.734 per glyph
-    effect: level => Math.pow(level, -0.035),
+    effect: level => Decimal.pow(level, -0.035).toNumber(),
     formatEffect: x => format(x, 3, 3),
     combine: GlyphCombiner.multiply,
+    enabledInDoomed: () => !Pelle.isGlyphTypeDisabled("cursed"),
   },
   cursedtickspeed: {
     id: "cursedtickspeed",
@@ -580,9 +689,10 @@ export const glyphEffects = {
     totalDesc: "The threshold for Tickspeed Upgrades from Time Dimensions is increased by ×{value}",
     shortDesc: "TD Tickspeed threshold ×{value}",
     // Additive 3.82 per glyph
-    effect: level => Math.clampMin(Math.log10(level), 1),
+    effect: level => Decimal.clampMin(Decimal.log10(level), 1).toNumber(),
     formatEffect: x => format(x, 3, 3),
     combine: GlyphCombiner.add,
+    enabledInDoomed: () => !Pelle.isGlyphTypeDisabled("cursed"),
   },
   cursedEP: {
     id: "cursedEP",
@@ -593,9 +703,10 @@ export const glyphEffects = {
     totalDesc: "Eternity Point gain / {value}",
     shortDesc: "EP / {value}",
     // Divides e666.6 per glyph
-    effect: level => Decimal.pow10(-level / 10),
+    effect: level => Decimal.pow10(level.neg().div(10)),
     formatEffect: x => format(x.reciprocal()),
     combine: GlyphCombiner.multiplyDecimal,
+    enabledInDoomed: () => !Pelle.isGlyphTypeDisabled("cursed"),
   },
   realityglyphlevel: {
     id: "realityglyphlevel",
@@ -605,9 +716,12 @@ export const glyphEffects = {
     singleDesc: "Increase the effective level of equipped basic Glyphs by {value}",
     totalDesc: "Equipped basic Glyph level +{value}",
     shortDesc: "Basic Glyph Level +{value}",
-    effect: level => Math.floor(Math.sqrt(level * 90)),
+    effect: (level, strength) => (EffarigUnlock.endgame.canBeApplied
+      ? Decimal.floor(level.div(15).times(strength / 3.5)).toNumber()
+      : Decimal.floor(Decimal.sqrt(level.times(90).times(strength / 3.5))).toNumber()),
     formatEffect: x => formatInt(x),
     combine: GlyphCombiner.add,
+    enabledInDoomed: () => false // Disabled by function getAdjustedGlyphLevel(...)
   },
   realitygalaxies: {
     id: "realitygalaxies",
@@ -617,9 +731,12 @@ export const glyphEffects = {
     singleDesc: "All Galaxies are {value} stronger",
     totalDesc: "All Galaxy strength +{value}",
     shortDesc: "Galaxy Strength +{value}",
-    effect: level => 1 + Math.pow(level / 100000, 0.5),
+    effect: (level, strength) => (EffarigUnlock.endgame.canBeApplied
+      ? Decimal.pow(level.div(50000).times(strength / 3.5), 0.6).add(1).toNumber()
+      : Decimal.pow(level.div(100000).times(strength / 3.5), 0.5).add(1).toNumber()),
     formatEffect: x => formatPercents(x - 1, 2),
     combine: GlyphCombiner.multiply,
+    enabledInDoomed: () => !Pelle.isGlyphTypeDisabled("reality")
   },
   realityrow1pow: {
     id: "realityrow1pow",
@@ -629,9 +746,12 @@ export const glyphEffects = {
     singleDesc: "Multiplier from Reality Upgrade Amplifiers ^{value}",
     totalDesc: "Reality Upgrade Amplifier multiplier ^{value}",
     shortDesc: "Amplifier Multiplier ^{value}",
-    effect: level => 1 + level / 125000,
+    effect: (level, strength) => (EffarigUnlock.endgame.canBeApplied
+      ? Decimal.pow(level.div(100000).times(strength / 3.5), 1.5).add(1).toNumber()
+      : level.div(125000).times(strength / 3.5).add(1).toNumber()),
     formatEffect: x => format(x, 3, 3),
     combine: GlyphCombiner.addExponents,
+    enabledInDoomed: () => !Pelle.isGlyphTypeDisabled("reality")
   },
   realityDTglyph: {
     id: "realityDTglyph",
@@ -645,9 +765,17 @@ export const glyphEffects = {
     genericDesc: "Dilated Time factor for Glyph level",
     shortDesc: "DT pow. for level +{value}",
     // You can only get this effect on level 25000 reality glyphs anyway, might as well make it look nice
-    effect: () => 0.1,
+    // Disregard my man Hevi's above comment we pushing this shit
+    effect: (level, strength) => (EffarigUnlock.endgame.canBeApplied
+      ? Decimal.clampMax(Decimal.pow(level.div(25000).times(strength / 3.5), 0.6).div(10), 1.5).times(
+        Decimal.clampMin(Decimal.log10(Decimal.max(Decimal.pow(level.div(25000).times(
+        strength / 3.5), 0.6).div(10).sub(0.5), 1)).add(1), 1)).toNumber()
+      : Decimal.clampMax(Decimal.pow(level.div(25000).times(strength / 3.5), 0.5).div(10), 1.5).times(
+        Decimal.clampMin(Decimal.log10(Decimal.max(Decimal.pow(level.div(25000).times(
+        strength / 3.5), 0.5).div(10).sub(0.5), 1)).add(1), 1)).toNumber()),
     formatEffect: x => format(x, 2, 2),
     combine: GlyphCombiner.add,
+    enabledInDoomed: () => !Pelle.isGlyphTypeDisabled("reality")
   },
   companiondescription: {
     id: "companiondescription",

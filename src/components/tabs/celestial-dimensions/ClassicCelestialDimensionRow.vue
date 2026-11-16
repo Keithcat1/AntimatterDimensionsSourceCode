@@ -22,15 +22,17 @@ export default {
       isUnlocked: false,
       canUnlock: false,
       multiplier: new Decimal(0),
-      baseAmount: 0,
+      baseAmount: new Decimal(0),
       amount: new Decimal(0),
-      purchases: 0,
+      purchases: new Decimal(0),
       rateOfChange: new Decimal(0),
       cost: new Decimal(0),
       isAvailableForPurchase: false,
       isCapped: false,
       capCP: new Decimal(0),
       hardcap: CelestialDimensions.HARDCAP_PURCHASES,
+      isAutobuyerUnlocked: false,
+      isAutobuyerOn: false
     };
   },
   computed: {
@@ -60,14 +62,19 @@ export default {
     },
     capTooltip() {
       if (this.isCapped) return `Cap reached at ${format(this.capCP)} CP`;
-      return `Purchased ${quantifyInt("time", this.purchases)}`;
+      return `Purchased ${quantifyHybridLarge("time", this.purchases)}`;
     },
     showRow() {
       return this.isUnlocked || this.canUnlock || this.amount.gt(0) ||
         this.hasPrevTier;
     },
     showCostTitle() {
-      return this.cost.exponent < 1e5;
+      return this.cost.log10().lt(1e5);
+    }
+  },
+  watch: {
+    isAutobuyerOn(newValue) {
+      Autobuyer.celestialDimension(this.tier).isActive = newValue;
     }
   },
   methods: {
@@ -78,17 +85,17 @@ export default {
       this.isUnlocked = dimension.isUnlocked;
       this.canUnlock = dimension.canUnlock;
       this.multiplier.copyFrom(dimension.multiplier);
-      this.baseAmount = dimension.baseAmount;
-      this.purchases = dimension.purchases;
+      this.baseAmount.copyFrom(dimension.baseAmount);
+      this.purchases.copyFrom(dimension.purchases);
       this.amount.copyFrom(dimension.amount);
       this.rateOfChange.copyFrom(dimension.rateOfChange);
       this.cost.copyFrom(dimension.cost);
       this.isAvailableForPurchase = dimension.isAvailableForPurchase;
       this.isCapped = dimension.isCapped;
-      if (this.isCapped) {
-        this.capCP.copyFrom(dimension.hardcapCPAmount);
-        this.hardcap = dimension.purchaseCap;
-      }
+      this.capCP.copyFrom(dimension.hardcapCPAmount);
+      this.hardcap.copyFrom(dimension.purchaseCap);
+      this.isAutobuyerUnlocked = Autobuyer.celestialDimension(tier).isUnlocked;
+      this.isAutobuyerOn = Autobuyer.celestialDimension(tier).isActive;
     },
     buySingleCelestialDimension() {
       CelestialDimension(this.tier).buySingle();
@@ -125,7 +132,14 @@ export default {
           {{ capTooltip }}
         </div>
       </PrimaryButton>
+      <PrimaryToggleButton
+        v-if="isAutobuyerUnlocked"
+        v-model="isAutobuyerOn"
+        class="o-primary-btn--cd-auto"
+        label="Auto:"
+      />
       <PrimaryButton
+        v-else
         :enabled="isAvailableForPurchase && isUnlocked"
         class="o-primary-btn--cd-auto"
         @click="buyMaxCelestialDimension"

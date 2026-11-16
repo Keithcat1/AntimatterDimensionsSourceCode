@@ -16,11 +16,13 @@ export default {
       isAvailable: false,
       hasNotification: false,
       isCurrentSubtab: false,
-      tabName: ""
+      tabName: "",
+      universe: 0
     };
   },
   computed: {
     classObject() {
+      let unUIC = this.universesUIClass;
       return {
         "o-tab-btn": true,
         "o-tab-btn--secondary": true,
@@ -28,12 +30,19 @@ export default {
         "o-tab-btn--infinity": this.parentName === "Infinity",
         "o-tab-btn--eternity": this.parentName === "Eternity",
         "o-tab-btn--reality": this.parentName === "Reality",
-        "o-tab-btn--celestial": this.parentName === "Celestials"
+        "o-tab-btn--celestial": this.parentName === "Celestials",
+        "o-tab-btn--endgame": this.parentName === "Endgame",
+        "o-tab-btn--cd-expansion": this.parentName === "CD Expansion",
+        "o-tab-btn--divinity": this.parentName === "Divinity",
+        "o-tab-btn--universes": this.parentName === "Universes" && this.universe === 0,
+        "o-tab-btn--universes__transient": this.parentName === "Universes" && this.universe === 1,
+        "o-tab-btn--universes__tangible": this.parentName === "Universes" && this.universe === 2
       };
     },
   },
   methods: {
     update() {
+      this.universe = player.universes.current;
       this.isAvailable = this.subtab.isAvailable;
       this.hasNotification = this.subtab.hasNotification;
       this.isCurrentSubtab = this.subtab.isOpen && Theme.currentName() !== "S9";

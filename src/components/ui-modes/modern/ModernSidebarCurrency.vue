@@ -185,4 +185,59 @@ export default {
 .o-sidebar-currency--celestials {
   color: var(--color-celestials);
 }
+
+.o-sidebar-currency--power {
+  animation: a-galactic-power-amount-cycle 12s infinite;
+}
+
+.o-sidebar-currency--ethereal {
+  color: #0000ff;
+}
+
+.o-sidebar-currency--celestial-infinity {
+  background: linear-gradient(var(--color-infinity), var(--color-celestials));
+  background-clip: text;
+
+  -webkit-text-fill-color: transparent;
+}
+
+.o-sidebar-currency--celestial-eternity {
+  background: linear-gradient(var(--color-eternity), var(--color-celestials));
+  background-clip: text;
+
+  -webkit-text-fill-color: transparent;
+}
+
+.o-sidebar-currency--condense {
+  background: linear-gradient(red, yellow, cyan);
+  background-clip: text;
+
+  -webkit-text-fill-color: transparent;
+}
+
+.o-sidebar-currency--supernova {
+  background: linear-gradient(cyan, blue, indigo, purple);
+  background-clip: text;
+
+  -webkit-text-fill-color: transparent;
+}
+
+.o-sidebar-currency--slabdrill {
+  color: var(--color-slabdrill--base);
+}
+
+.o-sidebar-currency--ephemeral {
+  animation: a-ephemeral-cycle 10s infinite;
+}
+
+@keyframes a-ephemeral-cycle {
+  0% { color: #ffe0a0; }
+  33% { color: white; }
+  67% { color: #a0e0ff; }
+  100% { color: #ffe0a0; }
+}
+
+.o-sidebar-currency--compression {
+  color: #64ddad;
+}
 </style>

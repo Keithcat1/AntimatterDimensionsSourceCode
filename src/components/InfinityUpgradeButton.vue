@@ -73,8 +73,8 @@ export default {
       // seems more likely to be read).
       const upgrade = this.upgrade;
       this.isBought = upgrade.isBought || upgrade.isCapped;
-      this.chargePossible = Ra.unlocks.chargedInfinityUpgrades.canBeApplied &&
-        upgrade.hasChargeEffect && !Pelle.isDoomed;
+      this.chargePossible = (Ra.unlocks.chargedInfinityUpgrades.canBeApplied && !player.disablePostReality) &&
+        upgrade.hasChargeEffect && (!Pelle.isDoomed || PelleCelestialUpgrade.raTeresa2.canBeApplied);
       this.canBeBought = upgrade.canBeBought;
       this.canBeCharged = upgrade.canCharge;
       this.isCharged = upgrade.isCharged;
@@ -92,10 +92,10 @@ export default {
       if (!this.isDisabled && this.isImprovedByTS31) this.ts31Effect = Decimal.pow(upgrade.config.effect(), 100);
       if (upgrade.id !== "challengeMult") return;
       this.showWorstChallenge = upgrade.effectValue !== upgrade.cap &&
-        player.challenge.normal.bestTimes.sum() < Number.MAX_VALUE;
+        player.challenge.normal.bestTimes.reduce(Decimal.sumReducer).lt(DC.BEMAX) && !upgrade.isCharged && !this.showChargedEffect;
       const worstChallengeTime = GameCache.worstChallengeTime.value;
-      const worstChallengeIndex = 2 + player.challenge.normal.bestTimes.indexOf(worstChallengeTime);
-      this.worstChallengeString = `(Challenge ${worstChallengeIndex}: ${timeDisplayShort(worstChallengeTime)})`;
+      const worstChallengeIndex = 2 + player.challenge.normal.bestTimes.decimalIndexOf(worstChallengeTime);
+      this.worstChallengeString = `(Challenge ${worstChallengeIndex}: ${timeDisplayShort(new Decimal(worstChallengeTime))})`;
     }
   }
 };

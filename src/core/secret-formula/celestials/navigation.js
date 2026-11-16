@@ -1,8 +1,7 @@
-import { DC } from "../../constants";
 import wordShift from "../../word-shift";
 
 export function emphasizeEnd(fraction) {
-  return Math.pow(fraction, 10);
+  return Decimal.pow(fraction, 10).toNumber();
 }
 
 export function vUnlockProgress(index) {
@@ -121,7 +120,13 @@ const Positions = Object.freeze({
   pelleRecursion: pelleStarPosition(3, 150),
   pelleParadox: pelleStarPosition(4, 150),
 
-  alphaUnlock: new Vector(1100, 350),
+  alphaUnlock: new Vector(950, 800),
+  celestialBreak: new Vector(720, 850),
+  celestialEternity: new Vector(600, 750),
+  slabdrillUnlock: new Vector(450, 900),
+
+  destroyerUnlock: new Vector(340, 1030),
+  
 
   pelleGalaxyGen: pelleStarPosition(0, 0),
 });
@@ -229,7 +234,7 @@ export const celestialNavigation = {
   "teresa-reality-unlock": {
     visible: () => true,
     complete: () => (TeresaUnlocks.run.canBeApplied
-      ? 1 : Decimal.pLog10(Teresa.pouredAmount) / Math.log10(TeresaUnlocks.run.price)),
+      ? 1 : Decimal.pLog10(Teresa.pouredAmount.add(1)).div(Math.log10(TeresaUnlocks.run.price)).toNumber()),
     node: {
       completeClass: "c-celestial-nav__test-complete",
       incompleteClass: "c-celestial-nav__test-incomplete",
@@ -289,7 +294,7 @@ export const celestialNavigation = {
   "teresa-pp-shop": {
     visible: () => true,
     complete: () => (TeresaUnlocks.shop.canBeApplied
-      ? 1 : Decimal.pLog10(Teresa.pouredAmount) / Math.log10(TeresaUnlocks.shop.price)),
+      ? 1 : Decimal.pLog10(Teresa.pouredAmount.add(1)).div(Math.log10(TeresaUnlocks.shop.price)).toNumber()),
     node: {
       clickAction: () => Tab.celestials.teresa.show(true),
       completeClass: "c-celestial-nav__test-complete",
@@ -325,7 +330,7 @@ export const celestialNavigation = {
   "effarig-shop": {
     visible: () => true,
     complete: () => (TeresaUnlocks.effarig.canBeApplied
-      ? 1 : Decimal.pLog10(Teresa.pouredAmount) / Math.log10(TeresaUnlocks.effarig.price)),
+      ? 1 : Decimal.pLog10(Teresa.pouredAmount.add(1)).div(Math.log10(TeresaUnlocks.effarig.price)).toNumber()),
     node: {
       clickAction: () => Tab.celestials.effarig.show(true),
       completeClass: "c-celestial-nav__effarig",
@@ -361,8 +366,8 @@ export const celestialNavigation = {
     // If the upgrade to unlock the reality isn't yet bought, clamp the progress at 99.9%,
     // even if the player has enough relic shards to buy it.
     complete: () => (EffarigUnlock.run.isUnlocked
-      ? 1 : Math.clampMax(0.999, Decimal.pLog10(Currency.relicShards.value) /
-        Math.log10(EffarigUnlock.run.cost))),
+      ? 1 : Decimal.clampMax(0.999, Decimal.pLog10(Currency.relicShards.value.add(1)).div(
+        Math.log10(EffarigUnlock.run.cost))).toNumber()),
     node: {
       clickAction: () => Tab.celestials.effarig.show(true),
       completeClass: "c-celestial-nav__effarig",
@@ -399,7 +404,7 @@ export const celestialNavigation = {
       if (EffarigUnlock.infinity.isUnlocked) return 1;
       if (!Effarig.isRunning) return 0;
 
-      return Currency.antimatter.value.pLog10() / Decimal.NUMBER_MAX_VALUE.log10();
+      return Currency.antimatter.value.add(1).pLog10().div(DC.NUMMAX.log10()).toNumber();
     },
     node: {
       clickAction: () => Tab.celestials.effarig.show(true),
@@ -418,7 +423,7 @@ export const celestialNavigation = {
           return [
             "Effarig's Infinity",
             `Reach ${format(am, 2)} / ${format(Number.MAX_VALUE, 2)}`,
-            "Antimatter inside Effarig's Reality."
+            `${player.universes.current === 2 ? "Matter" : "Antimatter"} inside Effarig's Reality.`
           ];
         },
         angle: 0,
@@ -440,7 +445,7 @@ export const celestialNavigation = {
       if (EffarigUnlock.eternity.isUnlocked) return 1;
       if (!Effarig.isRunning) return 0;
 
-      return Currency.infinityPoints.value.pLog10() / Decimal.NUMBER_MAX_VALUE.log10();
+      return Currency.infinityPoints.value.add(1).pLog10().div(DC.NUMMAX.log10()).toNumber();
     },
     node: {
       clickAction: () => Tab.celestials.effarig.show(true),
@@ -489,7 +494,7 @@ export const celestialNavigation = {
       if (EffarigUnlock.reality.isUnlocked) return 1;
       if (!Effarig.isRunning) return 0;
 
-      return Currency.eternityPoints.value.pLog10() / 4000;
+      return Currency.eternityPoints.value.add(1).pLog10().div(4000).toNumber();
     },
     node: {
       clickAction: () => Tab.celestials.effarig.show(true),
@@ -568,7 +573,8 @@ export const celestialNavigation = {
   },
   "enslaved-unlock-glyph-level": {
     visible: () => EffarigUnlock.eternity.isUnlocked,
-    complete: () => player.records.bestReality.glyphLevel / 5000,
+    complete: () => (EndgameUpgrade(6).isBought ? player.records.bestEndgame.glyphLevel :
+      player.records.bestReality.glyphLevel).div(5000).toNumber(),
     drawOrder: -1,
     node: {
       clickAction: () => Tab.celestials.enslaved.show(true),
@@ -588,7 +594,8 @@ export const celestialNavigation = {
           const goal = 5000;
           return [
             "Break a chain",
-            `Reach Glyph level ${formatInt(Math.min(player.records.bestReality.glyphLevel, goal))}/${formatInt(goal)}`
+            `Reach Glyph level ${formatInt(Decimal.min((EndgameUpgrade(6).isBought ? player.records.bestEndgame.glyphLevel :
+              player.records.bestReality.glyphLevel), goal).toNumber())}/${formatInt(goal)}`
           ];
         },
         angle: -45,
@@ -656,7 +663,7 @@ export const celestialNavigation = {
       if (Enslaved.isCompleted) return 1;
       if (!Enslaved.isRunning) return 0;
 
-      return Currency.eternityPoints.value.pLog10() / 4000;
+      return Currency.eternityPoints.value.add(1).pLog10().div(4000).toNumber();
     },
     node: {
       clickAction: () => Tab.celestials.enslaved.show(true),
@@ -700,7 +707,7 @@ export const celestialNavigation = {
       if (Achievement(151).isUnlocked) return 1;
       if (!player.requirementChecks.infinity.noAD8) return 0;
 
-      return player.galaxies / 800;
+      return player.galaxies.div(800).toNumber();
     },
     drawOrder: -1,
     node: {
@@ -721,8 +728,9 @@ export const celestialNavigation = {
           const galaxies = player.requirementChecks.infinity.noAD8 ? player.galaxies : 0;
           return [
             "V's unlock Achievement",
-            `Reach ${formatInt(galaxies)} / ${formatInt(goal)} Antimatter Galaxies without buying`,
-            "8th Antimatter Dimensions in your current Infinity"
+            `Reach ${formatInt(galaxies)} / ${formatInt(goal)} ${player.universes.current === 2 ? "Matter" : "Antimatter"}
+              Galaxies without buying`,
+            `8th ${player.universes.current === 2 ? "Matter" : "Antimatter"} Dimensions in your current Infinity`
           ];
         },
         angle: 135,
@@ -1430,9 +1438,9 @@ export const celestialNavigation = {
       if (DarkMatterDimension(1).unlockUpgrade.canBeBought || Laitela.isUnlocked) return 1;
       if (MachineHandler.isIMUnlocked) {
         if (player.requirementChecks.reality.maxID1.neq(0)) return 0.5;
-        return 0.5 + 0.5 * Math.clampMax(0.999, player.antimatter.exponent / 1.5e12);
+        return 0.5 + 0.5 * Math.clampMax(0.999, player.antimatter.add(1).log10().toNumber() / 1.5e12);
       }
-      return Math.clampMax(0.5, Currency.realityMachines.value.pLog10() / MachineHandler.baseRMCap.exponent);
+      return Decimal.clampMax(0.5, Currency.realityMachines.value.add(1).pLog10().div(MachineHandler.baseRMCap.log10())).toNumber();
     },
     drawOrder: -1,
     node: {
@@ -1555,7 +1563,7 @@ export const celestialNavigation = {
     visible: () => Laitela.isUnlocked,
     complete: () => (Currency.singularities.gte(1)
       ? 1
-      : Math.clampMax(0.999, Currency.darkEnergy.value / Singularity.cap)),
+      : Decimal.clampMax(0.999, Currency.darkEnergy.value.div(Singularity.cap)).toNumber()),
     node: {
       clickAction: () => Tab.celestials.laitela.show(true),
       incompleteClass: "c-celestial-nav__test-incomplete",
@@ -1596,7 +1604,7 @@ export const celestialNavigation = {
       if (upgrade.canBeBought || upgrade.isBought) return 1;
       if (upgrade.isAvailableForPurchase) return upgrade.currency.value / upgrade.cost;
       if (!player.auto.singularity.isActive) return 0.5;
-      return Math.clampMax(0.999, Singularity.singularitiesGained / 20);
+      return Decimal.clampMax(0.999, Singularity.singularitiesGained.div(20)).toNumber();
     },
     node: {
       clickAction: () => Tab.celestials.laitela.show(true),
@@ -1635,7 +1643,7 @@ export const celestialNavigation = {
           return [
             dmdText,
             `Automatically Condense ${format(20)} Singularities at once`,
-            `${format(Math.clampMax(Singularity.singularitiesGained, 20))} / ${format(20)}`
+            `${format(Decimal.clampMax(Singularity.singularitiesGained, 20).toNumber())} / ${format(20)}`
           ];
         },
         angle: 15,
@@ -1668,7 +1676,7 @@ export const celestialNavigation = {
       const upgrade = DarkMatterDimension(4).unlockUpgrade;
       if (upgrade.canBeBought || upgrade.isBought) return 1;
       if (upgrade.isAvailableForPurchase) return upgrade.currency.value / upgrade.cost;
-      return (Replicanti.galaxies.total + player.galaxies + player.dilation.totalTachyonGalaxies) / 80000;
+      return actualBaseGalaxiesWithoutGeneration().div(80000).toNumber();
     },
     node: {
       clickAction: () => Tab.celestials.laitela.show(true),
@@ -1698,11 +1706,11 @@ export const celestialNavigation = {
             / ${format(upgrade.cost, 1)}`
           ];
 
-          const allGalaxies = Replicanti.galaxies.total + player.galaxies + player.dilation.totalTachyonGalaxies;
+          const allGalaxies = actualBaseGalaxiesWithoutGeneration();
           return [
             dmdText,
             `Have ${format(80000)} total Galaxies`,
-            `${format(Math.clampMax(allGalaxies, 80000))} / ${format(80000)}`
+            `${format(Decimal.clampMax(allGalaxies, 80000))} / ${format(80000)}`
           ];
         },
         angle: 225,
@@ -1724,9 +1732,9 @@ export const celestialNavigation = {
     complete: () => {
       const upgrade = ImaginaryUpgrade(19);
       if (upgrade.canBeBought || upgrade.isBought) return 1;
-      if (upgrade.isAvailableForPurchase) return Currency.imaginaryMachines.value / upgrade.cost;
+      if (upgrade.isAvailableForPurchase) return Currency.imaginaryMachines.value.div(upgrade.cost);
       return upgrade.isPossible
-        ? Tickspeed.continuumValue / 3850000
+        ? Tickspeed.continuumValue.div(3850000).toNumber()
         : 0;
     },
     node: {
@@ -1758,7 +1766,7 @@ export const celestialNavigation = {
   },
   "laitela-destabilization": {
     visible: () => DarkMatterDimension(4).isUnlocked && ImaginaryUpgrade(19).isBought,
-    complete: () => Laitela.difficultyTier / 8,
+    complete: () => Laitela.hadronizes >= 1 ? 1 : Laitela.difficultyTier / 8,
     node: {
       clickAction: () => Tab.celestials.laitela.show(true),
       incompleteClass: "c-celestial-nav__test-incomplete",
@@ -1806,11 +1814,11 @@ export const celestialNavigation = {
     ]
   },
   "pelle-unlock": {
-    visible: () => Laitela.difficultyTier > 4,
+    visible: () => Laitela.difficultyTier > 4 || Laitela.hadronizes >= 1,
     complete: () => {
       if (Pelle.isUnlocked) return 1;
-      const imCost = Math.clampMax(emphasizeEnd(Math.log10(Currency.imaginaryMachines.value) / Math.log10(1.6e15)), 1);
-      let laitelaProgress = Laitela.isRunning ? Math.min(Currency.eternityPoints.value.log10() / 4000, 0.99) : 0;
+      const imCost = Math.clampMax(emphasizeEnd(Decimal.log10(Currency.imaginaryMachines.value.add(1)).div(Math.log10(1.6e15)).toNumber()), 1);
+      let laitelaProgress = Laitela.isRunning ? Decimal.min(Currency.eternityPoints.value.add(1).log10().div(4000), 0.99).toNumber() : 0;
       if (Laitela.difficultyTier !== 8 || Glyphs.activeWithoutCompanion.length > 1) laitelaProgress = 0;
       else if (ImaginaryUpgrade(25).isAvailableForPurchase) laitelaProgress = 1;
       return (imCost + laitelaProgress) / 2;
@@ -1864,7 +1872,7 @@ export const celestialNavigation = {
       if (Pelle.isDoomed) return 1;
       const achievements = Achievements.prePelleRows.countWhere(r => r.every(a => a.isUnlocked)) /
         Achievements.prePelleRows.length;
-      const alchemy = AlchemyResources.all.countWhere(r => r.capped) / AlchemyResources.all.length;
+      const alchemy = AlchemyResources.all.countWhere(r => r.amount >= 25000) / AlchemyResources.all.length;
       return (emphasizeEnd(achievements) + emphasizeEnd(alchemy)) / 2;
     },
     node: {
@@ -1883,7 +1891,7 @@ export const celestialNavigation = {
           if (complete >= 1) return Pelle.isDoomed ? "Doomed Reality" : "Doom your Reality";
           const achievements = [Achievements.prePelleRows.countWhere(r => r.every(a => a.isUnlocked)),
             Achievements.prePelleRows.length];
-          const alchemy = [AlchemyResources.all.countWhere(r => r.capped), AlchemyResources.all.length];
+          const alchemy = [AlchemyResources.all.countWhere(r => r.amount >= 25000), AlchemyResources.all.length];
           return [
             `Complete ${formatInt(achievements[0])} / ${formatInt(achievements[1])} rows of Achievements`,
             `Fill ${formatInt(alchemy[0])} / ${formatInt(alchemy[1])} Alchemy Resources`,
@@ -1908,15 +1916,24 @@ export const celestialNavigation = {
   "alpha-unlock": {
     visible: () => PlayerProgress.endgameUnlocked(),
     complete: () => {
-      if (ImaginaryUpgrade(30).isAvailableForPurchase) return 1;
-      const imCost = Math.clampMax(emphasizeEnd(Math.log10(Currency.imaginaryMachines.value) / Math.log10(Number.MAX_VALUE)), 1);
+      if (ImaginaryUpgrade(30).isBought) return 1;
+      if (ImaginaryUpgrade(30).isAvailableForPurchase) return 0.999;
+      const imCost = Decimal.clampMax(Decimal.log10(Currency.imaginaryMachines.value.add(1)).div(Math.log10(Number.MAX_VALUE)), 1).toNumber();
+      const nerfsLeft = (PelleAchievementUpgrade.all.filter(u => u.canBeApplied).length +
+        PelleDestructionUpgrade.all.filter(u => u.canBeApplied).length + PelleRealityUpgrade.all.filter(u => u.canBeApplied).length +
+        PelleImaginaryUpgrade.all.filter(u => u.canBeApplied).length + PelleCelestialUpgrade.all.filter(u => u.canBeApplied).length +
+        PellePerkUpgrade.all.filter(u => u.canBeApplied).length + PelleAchievementUpgrade.all.filter(u => u.canBeApplied).length) /
+        (PelleAchievementUpgrade.all.length + PelleDestructionUpgrade.all.length + PelleRealityUpgrade.all.length +
+        PelleImaginaryUpgrade.all.length + PelleCelestialUpgrade.all.length + PellePerkUpgrade.all.length +
+        PelleAlchemyUpgrade.all.length);
+      const strikesLeft = PelleStrikeUpgrade.all.filter(u => u.canBeApplied).length / PelleStrikeUpgrade.all.length;
       if (MachineHandler.isIMUnlocked) {
-        return 0.5 + 0.5 * Math.clampMax(0.999, imCost);
+        return 0.25 + (0.25 * Math.clampMax(0.249, imCost)) + (0.25 * nerfsLeft) + (0.25 * strikesLeft);
       }
-      return Math.clampMax(0.5, Currency.realityMachines.value.pLog10() / MachineHandler.baseRMCap.exponent);
+      return Decimal.clampMax(0.25, Currency.realityMachines.value.add(1).pLog10().div(MachineHandler.baseRMCap.log10())).toNumber();
     },
     node: {
-      clickAction: () => Tab.endgame.show(true),
+      clickAction: () => Tab.celestials.alpha.show(true),
       incompleteClass: "c-celestial-nav__test-incomplete",
       symbol: "α",
       symbolOffset: "1.6",
@@ -1930,15 +1947,34 @@ export const celestialNavigation = {
         text: complete => {
           if (complete === 1) {
             return [
+              "Alpha's Reality"
+            ];
+          }
+          if (complete === 0.999) {
+            return [
               "Unlock Alpha",
               "The Celestial of Darkness"
             ];
           }
-          let pelleString = `${format(Currency.imaginaryMachines.value)} / ${format(Number.MAX_VALUE)} iM`;
-          if (!Pelle.isDoomed || Currency.antimatter.value.log10() < 9e115) {
+          let pelleString = "Pelle's Doomed Reality is still intact";
+          let progressString = "Disable more nerfs/Strikes to continue";
+          if (!Achievement(204).isUnlocked && !ImaginaryUpgrade(30).isAvailableForPurchase) {
+            const remainingNerfs = (PelleAchievementUpgrade.all.length + PelleDestructionUpgrade.all.length +
+              PelleRealityUpgrade.all.length + PelleImaginaryUpgrade.all.length + PelleCelestialUpgrade.all.length +
+              PellePerkUpgrade.all.length + PelleAlchemyUpgrade.all.length) - (PelleAchievementUpgrade.all.filter(u => u.canBeApplied).length +
+              PelleDestructionUpgrade.all.filter(u => u.canBeApplied).length + PelleRealityUpgrade.all.filter(u => u.canBeApplied).length +
+              PelleImaginaryUpgrade.all.filter(u => u.canBeApplied).length + PelleCelestialUpgrade.all.filter(u => u.canBeApplied).length +
+              PellePerkUpgrade.all.filter(u => u.canBeApplied).length + PelleAlchemyUpgrade.all.filter(u => u.canBeApplied).length);
             pelleString = "Pelle's Doomed Reality is still intact";
+            progressString = `${formatInt(remainingNerfs)} nerfs remain`;
+          } else if (Achievement(204).isUnlocked && !ImaginaryUpgrade(30).isAvailableForPurchase) {
+            const hexString = ["starting to break", "breaking apart", "visibly breaking", "almost broken", "on the verge of breaking"];
+            const remainingStrikes = PelleStrikeUpgrade.all.length - PelleStrikeUpgrade.all.filter(u => u.canBeApplied).length;
+            pelleString = "Pelle's Doomed Reality is " + hexString[5 - remainingStrikes];
+            progressString = `${formatInt(remainingStrikes)} Strikes remain intact`;
           } else if (ImaginaryUpgrade(30).isAvailableForPurchase) {
             pelleString = "Pelle's Doomed Reality has been destroyed";
+            progressString = "All Pelle Strikes have been destroyed";
           }
           if (!MachineHandler.isIMUnlocked) {
             const realityMachines = Currency.realityMachines.value;
@@ -1953,12 +1989,13 @@ export const celestialNavigation = {
             "Unlock ???",
             "The Celestial of ???",
             `${format(Currency.imaginaryMachines.value, 2)} / ${format(Number.MAX_VALUE, 2)} iM`,
-            pelleString
+            pelleString,
+            progressString
           ];
         },
-        angle: 165,
-        diagonal: 60,
-        horizontal: 16,
+        angle: 210,
+        diagonal: 120,
+        horizontal: 36,
       },
     },
     connector: {
@@ -1969,6 +2006,248 @@ export const celestialNavigation = {
       completeWidth: 6,
       incompleteWidth: 4,
     },
+  },
+  "cd-expansion": {
+    visible: () => Alpha.isUnlocked,
+    complete: () => {
+      if (Alpha.isDestroyedForDisplay) return 1;
+      return player.celestials.alpha.stage / 28;
+    },
+    node: {
+      clickAction: () => Tab.cdexpansion.subtabs[0].show(true),
+      completeClass: "c-celestial-nav__alpha",
+      incompleteClass: "c-celestial-nav__test-incomplete",
+      position: Positions.alphaUnlock,
+      ring: {
+        rMajor: 127,
+        rMinor: 115,
+      },
+      legend: {
+        text: complete => {
+          if (complete >= 1) return "Celestial Dimension Expansion";
+          if (complete === 0) return "Unlock Alpha's Reality";
+          const layer = player.celestials.alpha.stage;
+          return [
+            "Expand your Celestial Dimensions",
+            `Beat ${formatInt(layer)} / ${formatInt(28)}`,
+            "Layers of Alpha's Reality."
+          ];
+        },
+        angle: 105,
+        diagonal: 120,
+        horizontal: 16,
+      },
+      bgDrawOrder: CELESTIAL_NAV_DRAW_ORDER.NODE_BG + 750,
+    },
+    connector: (function() {
+      const pathStart = 0.5 * Math.PI;
+      const pathEnd = pathStart + 6 * Math.PI;
+      const path = LogarithmicSpiral.fromPolarEndpoints(Positions.alphaUnlock,
+        pathStart, 16, pathEnd, 120);
+      return {
+        pathStart,
+        pathEnd,
+        path,
+        pathPadStart: 0,
+        pathPadEnd: 0,
+        fill: "#00ff00",
+      };
+    }()),
+  },
+  "cd-break": {
+    visible: () => Alpha.isDestroyedForDisplay,
+    complete: () => {
+      if (player.endgame.celDimExpansion.isBroken || PlayerProgress.celestialEternityUnlocked()) return 1;
+      if (player.endgame.celDimExpansion.isBreakUnlocked) return 0.999;
+      return Decimal.clampMax(0.5, Currency.celestialInfinityPoints.value.div(20000)).add(
+        Decimal.clampMax(0.499, CelestialInfinityUpgrade.all.countWhere(u => u.isBought) / 18)).toNumber();
+    },
+    node: {
+      clickAction: () => Tab.cdexpansion.subtabs[1].show(true),
+      completeClass: "c-celestial-nav__celestials",
+      incompleteClass: "c-celestial-nav__test-incomplete",
+      position: Positions.celestialBreak,
+      ring: {
+        rMajor: 20,
+      },
+      legend: {
+        text: complete => {
+          if (complete >= 1) return "Celestial Breaking of Infinity";
+          const cip = Decimal.clampMax(Currency.celestialInfinityPoints.value, 10000);
+          const cost = 10000;
+          return [
+            "Celestial Breaking of Infinity",
+            `Reach ${formatInt(cip)} / ${formatInt(cost)} Celestial Points of Infinity`
+          ];
+        },
+        angle: 120,
+        diagonal: 80,
+        horizontal: 16,
+      },
+    },
+    connector: {
+      pathStart: 0,
+      pathEnd: 1,
+      path: LinearPath.connectCircles(Positions.alphaUnlock, 120 - 1, Positions.celestialBreak, 20 - 1),
+      fill: "url(#gradAlphaCelBreak)",
+    }
+  },
+  "cd-eternity": {
+    visible: () => player.endgame.celDimExpansion.isBroken || PlayerProgress.celestialEternityUnlocked(),
+    complete: () => {
+      if (PlayerProgress.celestialEternityUnlocked()) return 1;
+      return Decimal.clampMax(0.999, Currency.celestialInfinityPoints.value.add(1).log10().div(Decimal.log10(DC.NUMMAX))).toNumber();
+    },
+    node: {
+      clickAction: () => Tab.cdexpansion.subtabs[2].show(true),
+      completeClass: "c-celestial-nav__celestialEternity",
+      incompleteClass: "c-celestial-nav__test-incomplete",
+      position: Positions.celestialEternity,
+      ring: {
+        rMajor: 20,
+      },
+      legend: {
+        text: complete => {
+          if (complete >= 1) return "Celestial Eternity";
+          const cip = Decimal.clampMax(Currency.celestialInfinityPoints.value, DC.NUMMAX);
+          const cost = DC.NUMMAX;
+          return [
+            "Celestial Eternity",
+            `Reach ${format(cip, 2)} / ${format(cost, 2)} Celestial Points of Infinity`
+          ];
+        },
+        angle: 285,
+        diagonal: 60,
+        horizontal: 16,
+      },
+    },
+    connector: {
+      pathStart: 0,
+      pathEnd: 1,
+      path: LinearPath.connectCircles(Positions.celestialBreak, 20 - 1, Positions.celestialEternity, 20 - 1),
+      fill: "url(#gradCelBreakCelEternity)",
+    }
+  },
+  "slab-unlock": {
+    visible: () => PlayerProgress.celestialEternityUnlocked(),
+    complete: () => {
+      if (Slabdrill.isCursed || Slabdrill.isDestroyed) return 1;
+      if (CelestialEternityPlusUpgrade.oldStoneSlabAndSteelDrill.isBought) return 0.999;
+      return Decimal.clampMax(0.998, Currency.celestialEternityPoints.value.add(1).pLog10().div(4000)).toNumber();
+    },
+    node: {
+      clickAction: () => (Slabdrill.isCursed || Slabdrill.isDestroyed)
+        ? Tab.celestials.slabdrill.show(true) : Tab.cdexpansion.subtabs[3].show(true),
+      incompleteClass: "c-celestial-nav__test-incomplete",
+      symbol: "⁹δ",
+      symbolOffset: "1.6",
+      fill: "#952ba8",
+      position: Positions.slabdrillUnlock,
+      ring: {
+        rMajor: 20,
+      },
+      forceLegend: () => CelestialEternityPlusUpgrade.oldStoneSlabAndSteelDrill.isBought,
+      legend: {
+        text: complete => {
+          if (complete === 1) {
+            return [
+              "Cursed Reality"
+            ];
+          }
+          if (player.celestials.slabdrill.isWarping && complete === 0.999) {
+            return [
+              "Curse Your Reality"
+            ];
+          }
+          if (!player.celestials.slabdrill.isWarping && complete === 0.999) {
+            return [
+              "Enter Pelle's Domain"
+            ];
+          }
+          if (!CelestialEternityPlusUpgrade.oldStoneSlabAndSteelDrill.isBought) {
+            const cep = Currency.celestialEternityPoints.value;
+            const entryFee = DC.E4000;
+            return [
+              "Pelle's Domain",
+              "You have not yet paid the entry fee",
+              `${format(cep)} / ${format(entryFee)}`
+            ];
+          }
+        },
+        angle: 210,
+        diagonal: 200,
+        horizontal: 40,
+      },
+    },
+    connector: {
+      pathStart: 0,
+      pathEnd: 1,
+      path: new LinearPath(Positions.celestialEternity, Positions.slabdrillUnlock),
+      fill: "url(#gradCelEternitySlabdrill)",
+      completeWidth: 6,
+      incompleteWidth: 4,
+    },
+  },
+  "slab-progress": {
+    visible: () => Slabdrill.isCursed || Slabdrill.isDestroyed,
+    complete: () => {
+      if (Achievement(261).isUnlocked) return 1;
+      if (Slabdrill.isDestroyed) return 0.999;
+      return Decimal.clampMax(0.999, player.antimatter.max(1).log10().div(DC.NUMMAX.log10()).div(5).min(0.2).add(
+        player.infinityPoints.max(1).log10().div(DC.NUMMAX.log10()).div(10/3).min(0.3)).add(
+        player.eternityPoints.max(1).log10().div(4000).div(2.5).min(0.4)).add(
+        player.records.totalRealityAntimatter.max(1).log10().max(1).log10().div(DC.NUMMAX.log10()).div(10).min(0.1))).toNumber();
+    },
+    node: {
+      clickAction: () => Tab.dimensions.antimatter.show(true),
+      incompleteClass: "c-celestial-nav__test-incomplete",
+      symbol: "♆",
+      symbolOffset: "1.6",
+      fill: "#00bcd4",
+      position: Positions.destroyerUnlock,
+      ring: {
+        rMajor: 24,
+      },
+      forceLegend: () => Slabdrill.isDestroyed,
+      legend: {
+        text: complete => {
+          if (complete >= 1) return `${player.username}`;
+          if (complete === 0.999) return "Become a Celestial";
+          const layer = player.celestials.slabdrill.stage;
+          const antimatter = player.antimatter;
+          if (layer >= 11) {
+            return [
+              "Unlock ???",
+              `Reach ${format(antimatter)} / ${format(DC.ENUMMAX)}`,
+              "antimatter inside the Cursed Reality."
+            ];
+          }
+          return [
+            "Unlock ???",
+            `Reach Strike ${formatInt(layer)} / ${formatInt(11)}`,
+            "inside the Cursed Reality."
+          ];
+        },
+        angle: 240,
+        diagonal: 100,
+        horizontal: 20,
+      },
+      bgDrawOrder: CELESTIAL_NAV_DRAW_ORDER.NODE_BG + 750,
+    },
+    connector: (function() {
+      const pathStart = 0.375 * Math.PI;
+      const pathEnd = pathStart + 2.25 * Math.PI;
+      const path = LogarithmicSpiral.fromPolarEndpoints(new Vector(430, 850),
+        pathStart, 50, pathEnd, 200);
+      return {
+        pathStart,
+        pathEnd,
+        path,
+        pathPadStart: 0,
+        pathPadEnd: 0,
+        fill: "#952ba8",
+      };
+    }()),
   },
   // All the fill elements are generated outside of here as a loop, and then unpacked here with the spread operator
   ...riftFillElements,
@@ -2013,11 +2292,11 @@ export const celestialNavigation = {
     visible: () => Pelle.hasGalaxyGenerator,
     complete: () => {
       const riftCaps = PelleRifts.all.map(r => r.config.galaxyGeneratorThreshold);
-      const brokenRifts = riftCaps.countWhere(n => GalaxyGenerator.generatedGalaxies >= n);
+      const brokenRifts = riftCaps.countWhere(n => GalaxyGenerator.generatedGalaxies.gte(n));
       if (brokenRifts === 5) return 1;
-      const prevRift = riftCaps.filter(n => GalaxyGenerator.generatedGalaxies >= n).max();
-      const nextRift = riftCaps.filter(n => GalaxyGenerator.generatedGalaxies < n).min();
-      const currRiftProp = Math.sqrt((GalaxyGenerator.generatedGalaxies - prevRift) / (nextRift - prevRift));
+      const prevRift = riftCaps.filter(n => GalaxyGenerator.generatedGalaxies.gte(n)).max();
+      const nextRift = riftCaps.filter(n => GalaxyGenerator.generatedGalaxies.ln(n)).min();
+      const currRiftProp = Decimal.sqrt((GalaxyGenerator.generatedGalaxies.sub(prevRift)).div(nextRift - prevRift)).toNumber();
       return (brokenRifts + currRiftProp) / 5;
     },
     connector: (function() {
@@ -2039,7 +2318,7 @@ export const celestialNavigation = {
   // The path BG is invisible, but we want to make sure it extends far enough that it expands out "forever"
   "pelle-galaxy-generator-infinite": {
     visible: () => Pelle.hasGalaxyGenerator && !Number.isFinite(GalaxyGenerator.generationCap),
-    complete: () => Math.clamp((GalaxyGenerator.generatedGalaxies - 1e10) / 2e11, 1e-6, 1),
+    complete: () => Decimal.clamp((GalaxyGenerator.generatedGalaxies.sub(1e10)).div(2e11), 1e-6, 1).toNumber(),
     connector: (function() {
       const pathStart = 0.5 * Math.PI;
       const pathEnd = pathStart + 10 * Math.PI;

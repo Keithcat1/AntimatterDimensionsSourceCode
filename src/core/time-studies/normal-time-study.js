@@ -1,17 +1,23 @@
 import { TimeStudyState } from "./time-studies";
 
-export const NormalTimeStudies = {};
-
-NormalTimeStudies.pathList = [
-  { path: TIME_STUDY_PATH.ANTIMATTER_DIM, studies: [71, 81, 91, 101], name: "Antimatter Dims" },
-  { path: TIME_STUDY_PATH.INFINITY_DIM, studies: [72, 82, 92, 102], name: "Infinity Dims" },
-  { path: TIME_STUDY_PATH.TIME_DIM, studies: [73, 83, 93, 103], name: "Time Dims" },
-  { path: TIME_STUDY_PATH.ACTIVE, studies: [121, 131, 141], name: "Active" },
-  { path: TIME_STUDY_PATH.PASSIVE, studies: [122, 132, 142], name: "Passive" },
-  { path: TIME_STUDY_PATH.IDLE, studies: [123, 133, 143], name: "Idle" },
-  { path: TIME_STUDY_PATH.LIGHT, studies: [221, 223, 225, 227, 231, 233], name: "Light" },
-  { path: TIME_STUDY_PATH.DARK, studies: [222, 224, 226, 228, 232, 234], name: "Dark" }
-];
+export const NormalTimeStudies = {
+  get pathList() {
+    let pathArr = [];
+    if (player.universes.current === 2) {
+      pathArr.push({ path: TIME_STUDY_PATH.ANTIMATTER_DIM, studies: [71, 81, 91, 101], name: "Matter Dims" });
+    } else {
+      pathArr.push({ path: TIME_STUDY_PATH.ANTIMATTER_DIM, studies: [71, 81, 91, 101], name: "Antimatter Dims" });
+    }
+    pathArr.push({ path: TIME_STUDY_PATH.INFINITY_DIM, studies: [72, 82, 92, 102], name: "Infinity Dims" });
+    pathArr.push({ path: TIME_STUDY_PATH.TIME_DIM, studies: [73, 83, 93, 103], name: "Time Dims" });
+    pathArr.push({ path: TIME_STUDY_PATH.ACTIVE, studies: [121, 131, 141], name: "Active" });
+    pathArr.push({ path: TIME_STUDY_PATH.PASSIVE, studies: [122, 132, 142], name: "Passive" });
+    pathArr.push({ path: TIME_STUDY_PATH.IDLE, studies: [123, 133, 143], name: "Idle" });
+    pathArr.push({ path: TIME_STUDY_PATH.LIGHT, studies: [221, 223, 225, 227, 231, 233], name: "Light" });
+    pathArr.push({ path: TIME_STUDY_PATH.DARK, studies: [222, 224, 226, 228, 232, 234], name: "Dark" });
+    return pathArr;
+  }
+};
 
 NormalTimeStudies.paths = NormalTimeStudies.pathList.mapToObject(e => e.path, e => e.studies);
 
@@ -64,10 +70,11 @@ export class NormalTimeStudyState extends TimeStudyState {
   // This checks for and forbids buying studies due to being part of a set which can't normally be bought
   // together (eg. active/passive/idle and light/dark) unless the player has the requisite ST.
   checkSetRequirement() {
-    return this.costsST() ? !Pelle.isDisabled("V") && (V.availableST >= this.STCost) : true;
+    return this.costsST() ? (!Pelle.isDisabled("V") || PelleDestructionUpgrade.spaceTheorems.canBeApplied) && (V.availableST >= this.STCost) : true;
   }
 
   get canBeBought() {
+    if (Alpha.isRunning && Alpha.currentStage < 18) return this.id <= 180 && this.checkRequirement() && this.checkSetRequirement();
     return this.checkRequirement() && this.checkSetRequirement();
   }
 
@@ -82,15 +89,38 @@ export class NormalTimeStudyState extends TimeStudyState {
       if (!auto) ImaginaryUpgrade(19).tryShowWarningModal();
       return false;
     }
+    if (DualityUpgrade(19).isLockingMechanics) {
+      if (!auto) DualityUpgrade(19).tryShowWarningModal();
+      return false;
+    }
     if (this.costsST()) player.celestials.v.STSpent += this.STCost;
     player.timestudy.studies.push(this.id);
     player.requirementChecks.reality.maxStudies = Math.clampMin(player.requirementChecks.reality.maxStudies,
+      player.timestudy.studies.length);
+    player.requirementChecks.endgame.maxStudies = Math.clampMin(player.requirementChecks.endgame.maxStudies,
       player.timestudy.studies.length);
     if (this.id > 300) player.requirementChecks.reality.noTriads = false;
     Currency.timeTheorems.subtract(this.cost);
     GameCache.timeStudies.invalidate();
     TimeStudyTree.commitToGameState([TimeStudy(this.id)]);
     if (this.id === 181 && Pelle.isDoomed) Achievement(186).unlock();
+    if (this.id === 61 && Alpha.isRunning && Alpha.currentStage === 12) {
+      Alpha.advanceLayer();
+      Alpha.quotes.improveEP.show();
+    }
+    if (this.id === 181 && Alpha.isRunning && Alpha.currentStage === 18) {
+      Alpha.advanceLayer();
+      Alpha.quotes.passiveIPGen.show();
+    }
+    if (this.id === 192 && Alpha.isRunning && Alpha.currentStage === 20) {
+      Alpha.advanceLayer();
+      Alpha.quotes.uncapReplicanti.show();
+    }
+    if (this.id === 181 && Slabdrill.isCursed && Slabdrill.currentStage === 7) {
+      Slabdrill.advanceLayer();
+      Glyphs.refreshActive();
+      Slabdrill.quotes.timeStudy181.show();
+    }
     return true;
   }
 

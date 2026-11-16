@@ -1,6 +1,4 @@
 <script>
-import { DC } from "@/core/constants";
-
 import TypeSacrifice from "./TypeSacrifice";
 
 export default {
@@ -14,23 +12,25 @@ export default {
       hasDragover: false,
       hasAlteration: false,
       hideAlteration: false,
-      maxSacrifice: 0,
-      teresaMult: 0,
+      maxSacrifice: new Decimal(0),
+      teresaMult: new Decimal(0),
       lastMachinesTeresa: new Decimal(0),
     };
   },
   computed: {
     types: () => GLYPH_TYPES.filter(type => type !== "cursed" && type !== "companion"),
     lastMachines() {
-      return this.lastMachinesTeresa.lt(DC.E10000)
-        ? `${quantify("Reality Machine", this.lastMachinesTeresa, 2)}`
-        : `${quantify("Imaginary Machine", this.lastMachinesTeresa.dividedBy(DC.E10000), 2)}`;
+      return this.lastMachinesTeresa.gte(DC.E20000)
+        ? `${quantify("Dual Machine", this.lastMachinesTeresa.dividedBy(DC.E20000), 2)}`
+        : (this.lastMachinesTeresa.lt(DC.E10000)
+          ? `${quantify("Reality Machine", this.lastMachinesTeresa, 2)}`
+          : `${quantify("Imaginary Machine", this.lastMachinesTeresa.dividedBy(DC.E10000), 2)}`);
     },
     dropDownIconClass() {
       return this.hideAlteration ? "far fa-plus-square" : "far fa-minus-square";
     },
     isDoomed() {
-      return Pelle.isDoomed;
+      return (Pelle.isDisabled("glyphsac") && !PelleRealityUpgrade.scourToEmpower.canBeApplied);
     },
     addThreshold() {
       return GlyphAlteration.additionThreshold;
@@ -63,10 +63,10 @@ export default {
   methods: {
     update() {
       this.anySacrifices = GameCache.logTotalGlyphSacrifice !== 0;
-      this.hasAlteration = Ra.unlocks.alteredGlyphs.canBeApplied;
+      this.hasAlteration = Ra.unlocks.alteredGlyphs.canBeApplied && !player.disablePostReality;
       this.hideAlteration = player.options.hideAlterationEffects;
-      this.maxSacrifice = GlyphSacrificeHandler.maxSacrificeForEffects;
-      this.teresaMult = Teresa.runRewardMultiplier;
+      this.maxSacrifice.copyFrom(GlyphSacrificeHandler.maxSacrificeForEffects);
+      this.teresaMult.copyFrom(Teresa.runRewardMultiplier);
       this.lastMachinesTeresa.copyFrom(player.celestials.teresa.lastRepeatedMachines);
     },
     dragover(event) {
@@ -160,7 +160,7 @@ export default {
       Glyph Sacrifice Boosts:
     </div>
     <div v-if="anySacrifices && !isDoomed">
-      <div v-if="teresaMult > 1">
+      <div v-if="teresaMult.gt(1)">
         Glyph sacrifice values are multiplied by {{ formatX(teresaMult, 2, 2) }};
         Teresa was last done at {{ lastMachines }}.
         <span v-if="hasSeenRealityGlyph">

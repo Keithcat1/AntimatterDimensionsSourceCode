@@ -6,10 +6,11 @@ export class GalaxyAutobuyerState extends UpgradeableAutobuyerState {
   }
 
   get name() {
-    return `Antimatter Galaxy`;
+    return `${player.universes.current === 2 ? "Matter" : "Antimatter"} Galaxy`;
   }
 
   get isUnlocked() {
+    if (LHC.voidRunning && NullUpgrade.limerick5.isBought) return true;
     if (Pelle.isDisabled("galaxyAutobuyer")) return false;
     return this.canBeUpgraded;
   }
@@ -52,7 +53,7 @@ export class GalaxyAutobuyerState extends UpgradeableAutobuyerState {
 
   get interval() {
     return this.isBuyMaxUnlocked
-      ? TimeSpan.fromSeconds(this.buyMaxInterval).totalMilliseconds
+      ? TimeSpan.fromSeconds(new Decimal(this.buyMaxInterval)).totalMilliseconds.toNumber()
       : super.interval;
   }
 
@@ -66,7 +67,7 @@ export class GalaxyAutobuyerState extends UpgradeableAutobuyerState {
 
   tick() {
     super.tick();
-    const limit = this.limitGalaxies ? this.maxGalaxies : Number.MAX_VALUE;
+    const limit = this.limitGalaxies ? new Decimal(this.maxGalaxies) : DC.BEMAX;
     requestGalaxyReset(this.isBuyMaxUnlocked, limit);
   }
 }

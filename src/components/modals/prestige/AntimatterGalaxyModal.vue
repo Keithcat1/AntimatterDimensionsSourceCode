@@ -14,23 +14,27 @@ export default {
   },
   data() {
     return {
-      newGalaxies: 0,
+      newGalaxies: new Decimal(0),
       keepAntimatter: false,
       perkANRBought: false,
-      keepDimBoost: false
+      keepDimBoost: false,
+      isFlipped: false
     };
   },
   computed: {
     topLabel() {
+      if (this.bulk && this.isFlipped) return `You are about to purchase ${quantifyInt("Matter Galaxy", this.newGalaxies)}`;
       if (this.bulk) return `You are about to purchase ${quantifyInt("Antimatter Galaxy", this.newGalaxies)}`;
-      return `You are about to purchase an Antimatter Galaxy`;
+      return `You are about to purchase ${this.isFlipped ? "a Matter" : "an Antimatter"} Galaxy`;
     },
     message() {
       const resetResouces = [];
       if (Pelle.isDoomed) resetResouces.push("Antimatter", "Antimatter Dimensions", "Tickspeed");
-      if (!this.perkANRBought) resetResouces.push("Antimatter Dimensions", "Tickspeed");
+      if (!this.perkANRBought && this.isFlipped) resetResouces.push("Antimatter Dimensions", "Tickspeed");
+      if (!this.perkANRBought && !this.isFlipped) resetResouces.push("Matter Dimensions", "Tickspeed");
       if (!this.keepDimBoost) resetResouces.push("Dimension Boosts");
-      if (!this.keepAntimatter && !this.perkANRBought) resetResouces.push("Antimatter");
+      if (!this.keepAntimatter && !this.perkANRBought && this.isFlipped) resetResouces.push("Matter");
+      if (!this.keepAntimatter && !this.perkANRBought && !this.isFlipped) resetResouces.push("Antimatter");
       const resetList = makeEnumeration(resetResouces);
       let tickspeedFixed = "";
       if (InfinityChallenge(3).isRunning) {
@@ -45,9 +49,11 @@ export default {
         ? `This will reset nothing, and ${tickspeedInfo}`
         : `This will reset your ${resetList}. However, ${tickspeedInfo}`;
 
+      if (this.bulk && this.isFlipped) return `Are you sure you want to purchase
+        ${quantifyInt("Matter Galaxy", this.newGalaxies)}? ${message}`;
       if (this.bulk) return `Are you sure you want to purchase
-      ${quantifyInt("Antimatter Galaxy", this.newGalaxies)}? ${message}`;
-      return `Are you sure you want to purchase an Antimatter Galaxy? ${message}`;
+        ${quantifyInt("Antimatter Galaxy", this.newGalaxies)}? ${message}`;
+      return `Are you sure you want to purchase ${this.isFlipped ? "a Matter" : "an Antimatter"} Galaxy? ${message}`;
     }
   },
   created() {
@@ -59,18 +65,19 @@ export default {
       if (this.bulk) {
         const req = Galaxy.requirement;
         const dim = AntimatterDimension(req.tier);
-        const bulk = bulkBuyBinarySearch(dim.totalAmount, {
-          costFunction: x => Galaxy.requirementAt(x).amount,
-          cumulative: false,
-        }, player.galaxies);
+        const bulk = Galaxy.buyableGalaxies(Decimal.round(dim.totalAmount.toNumber())).gt(player.galaxies);
         if (bulk) {
-          this.newGalaxies = Galaxy.buyableGalaxies(Math.round(dim.totalAmount.toNumber())) - player.galaxies;
+          this.newGalaxies = Galaxy.buyableGalaxies(Decimal.round(dim.totalAmount.toNumber())).sub(player.galaxies);
         }
       }
-      this.keepAntimatter = Achievement(111).isUnlocked;
-      this.perkANRBought = Perk.antimatterNoReset.canBeApplied;
-      this.keepDimBoost = (Achievement(143).isUnlocked && !Pelle.isDoomed) ||
-        PelleUpgrade.galaxyNoResetDimboost.canBeApplied;
+      this.keepAntimatter = Achievement(111).isUnlocked && (!player.disablePostReality || (Alpha.isRunning && Alpha.currentStage >= 12) ||
+        (LHC.voidRunning && NullUpgrade.limerick1.isBought) || SlabdrillUnlocks.eternityChallengeTen.isUnlocked);
+      this.perkANRBought = (Perk.antimatterNoReset.canBeApplied &&
+        (!player.disablePostReality || (LHC.voidRunning && player.endgame.largeHadronCollider.void.nullified)));
+      this.keepDimBoost = ((Achievement(143).isUnlocked && (!Pelle.isDoomed || PelleAchievementUpgrade.achievement143.canBeApplied)) ||
+        PelleUpgrade.galaxyNoResetDimboost.canBeApplied) && (!player.disablePostReality || (Alpha.isRunning && Alpha.currentStage >= 20) ||
+        (LHC.voidRunning && NullUpgrade.limerick2.isBought));
+      this.isFlipped = player.universes.current === 2;
     },
     handleYesClick() {
       requestGalaxyReset(this.bulk);

@@ -25,10 +25,10 @@ export const eternityMilestones = {
   autoEP: {
     eternities: 6,
     reward: () => {
-      const EPmin = getOfflineEPGain(TimeSpan.fromMinutes(1).totalMilliseconds);
-      const em200 = getEternitiedMilestoneReward(TimeSpan.fromHours(1).totalMilliseconds,
+      const EPmin = getOfflineEPGain(TimeSpan.fromMinutes(new Decimal(1)).totalMilliseconds);
+      const em200 = getEternitiedMilestoneReward(TimeSpan.fromHours(new Decimal(1)).totalMilliseconds,
         EternityMilestone.autoEternities.isReached).gt(0);
-      const em1000 = getInfinitiedMilestoneReward(TimeSpan.fromHours(1).totalMilliseconds,
+      const em1000 = getInfinitiedMilestoneReward(TimeSpan.fromHours(new Decimal(1)).totalMilliseconds,
         EternityMilestone.autoInfinities.isReached).gt(0);
       if (!player.options.offlineProgress) return `This milestone would give offline EP generation, but offline progress
         is currently disabled`;
@@ -55,7 +55,7 @@ export const eternityMilestones = {
   },
   autobuyMaxGalaxies: {
     eternities: 9,
-    reward: "Unlock the buy max Antimatter Galaxies Autobuyer mode"
+    reward: () => `Unlock the buy max ${player.universes.current === 2 ? "Matter" : "Antimatter"} Galaxies Autobuyer mode`
   },
   unlockReplicanti: {
     eternities: 10,
@@ -117,12 +117,12 @@ export const eternityMilestones = {
   },
   unlockAllND: {
     eternities: 30,
-    reward: "Start with all Antimatter Dimensions available for purchase"
+    reward: () => `Start with all ${player.universes.current === 2 ? "Matter" : "Antimatter"} Dimensions available for purchase`
   },
   replicantiNoReset: {
     eternities: 40,
-    reward: `Replicanti Galaxies no longer reset Antimatter, Antimatter Dimensions,
-      Tickspeed, Dimensional Sacrifice, or Dimension Boosts`,
+    reward: () => `Replicanti Galaxies no longer reset ${player.universes.current === 2 ? "Matter" : "Antimatter"},
+      ${player.universes.current === 2 ? "Matter" : "Antimatter"} Dimensions, Tickspeed, Dimensional Sacrifice, or Dimension Boosts`,
     pelleUseless: true
   },
   autobuyerReplicantiChance: {
@@ -152,7 +152,7 @@ export const eternityMilestones = {
     reward: () => {
       if (!player.options.offlineProgress) return `This milestone would generate eternities offline, but offline
         progress is currently disabled`;
-      const eternities = getEternitiedMilestoneReward(TimeSpan.fromHours(1).totalMilliseconds,
+      const eternities = getEternitiedMilestoneReward(TimeSpan.fromHours(new Decimal(1)).totalMilliseconds,
         player.eternities.gte(200));
       // As far as I can tell, using templates here as Codefactor wants would lead to nested templates,
       // which seems messy to say the least.
@@ -172,7 +172,7 @@ export const eternityMilestones = {
     reward: () => {
       if (!player.options.offlineProgress) return `This milestone would generate infinities offline, but offline
         progress is currently disabled`;
-      const infinities = getInfinitiedMilestoneReward(TimeSpan.fromHours(1).totalMilliseconds,
+      const infinities = getInfinitiedMilestoneReward(TimeSpan.fromHours(new Decimal(1)).totalMilliseconds,
         player.eternities.gte(1000));
       // eslint-disable-next-line prefer-template
       return `While offline, gain Infinities equal to ${formatPercents(0.5)}

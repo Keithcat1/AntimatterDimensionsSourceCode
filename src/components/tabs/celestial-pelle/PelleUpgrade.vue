@@ -33,8 +33,8 @@ export default {
       canBuy: false,
       isBought: false,
       purchases: 0,
-      currentTimeEstimate: new Decimal(0),
-      projectedTimeEstimate: new Decimal(0),
+      currentTimeEstimate: "Calculating...",
+      projectedTimeEstimate: "Calculating...",
       isCapped: false,
       hovering: false,
       hasRemnants: false,
@@ -65,7 +65,7 @@ export default {
       return !(this.canBuy ||
         this.isBought ||
         this.isCapped ||
-        (this.galaxyGenerator && this.config.currencyLabel !== "Galaxy")
+        (this.galaxyGenerator && !(this.config.currencyLabel === "Galaxy" || this.config.currencyLabel === "Reality Shard"))
       );
     },
     shouldEstimateImprovement() {
@@ -85,23 +85,38 @@ export default {
       this.isBought = this.upgrade.isBought;
       this.isCapped = this.upgrade.isCapped;
       this.purchases = player.celestials.pelle.rebuyables[this.upgrade.config.id];
-      this.currentTimeEstimate = TimeSpan
-        .fromSeconds(this.secondsUntilCost(this.galaxyGenerator ? GalaxyGenerator.gainPerSecond
-          : Pelle.realityShardGainPerSecond).toNumber())
-        .toTimeEstimate();
-      this.projectedTimeEstimate = TimeSpan
-        .fromSeconds(this.secondsUntilCost(Pelle.nextRealityShardGain).toNumber())
-        .toTimeEstimate();
-      this.hasRemnants = Pelle.cel.remnants > 0;
+      if (this.hasTimeEstimate && (this.hovering || this.shouldEstimateImprovement)) {
+        this.currentTimeEstimate = TimeSpan
+          .fromSeconds((this.galaxyGenerator && this.config.currencyLabel === "Galaxy")
+            ? GalaxyGenerator.gainPerSecondDisplay(this.upgrade.cost)
+            : this.secondsUntilRSCost(Pelle.realityShardGainPerSecond))
+          .toTimeEstimate();
+        this.projectedTimeEstimate = TimeSpan
+          .fromSeconds(this.secondsUntilRSCost(Pelle.nextRealityShardGain))
+          .toTimeEstimate();
+      }
+      this.hasRemnants = Pelle.cel.remnants.gt(0);
       this.galaxyCap = GalaxyGenerator.generationCap;
       const genDB = GameDatabase.celestials.pelle.galaxyGeneratorUpgrades;
       this.notAffordable = (this.config === genDB.additive || this.config === genDB.multiplicative) &&
-        (Decimal.gt(this.upgrade.cost, this.galaxyCap - GalaxyGenerator.generatedGalaxies + player.galaxies));
+        (Decimal.gt(this.upgrade.cost, new Decimal(this.galaxyCap).sub(GalaxyGenerator.generatedGalaxies).add(player.galaxies).add(GalaxyGenerator.galaxies)));
     },
-    secondsUntilCost(rate) {
-      const value = this.galaxyGenerator ? player.galaxies + GalaxyGenerator.galaxies : Currency.realityShards.value;
+    secondsUntilRSCost(rate) {
+      const value = Currency.realityShards.value;
       return Decimal.sub(this.upgrade.cost, value).div(rate);
     },
+    attemptPurchase() {
+      if (this.upgrade === GalaxyGeneratorUpgrades.RSMult && (EndgameUpgrade(6).isLockingMechanics || EndgameUpgrade(14).isLockingMechanics)) {
+        if (EndgameUpgrade(6).isLockingMechanics) {
+          EndgameUpgrade(6).tryShowWarningModal();
+        }
+        if (EndgameUpgrade(14).isLockingMechanics) {
+          EndgameUpgrade(14).tryShowWarningModal();
+        }
+      } else {
+        !this.faded && this.upgrade.purchase();
+      }
+    }
   }
 };
 </script>
@@ -115,7 +130,7 @@ export default {
       'c-pelle-upgrade--faded': faded,
       'c-pelle-upgrade--galaxyGenerator': galaxyGenerator
     }"
-    @click="!faded && upgrade.purchase()"
+    @click="attemptPurchase"
     @mouseover="hovering = true"
     @mouseleave="hovering = false"
   >

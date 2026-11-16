@@ -20,21 +20,22 @@ export default {
       isEnslavedRunning: false,
       isAnyAutobuyerUnlocked: false,
       conversionRate: 0,
-      nextDimCapIncrease: 0,
+      nextDimCapIncrease: new Decimal(0),
       tesseractCost: new Decimal(0),
-      totalDimCap: 0,
+      totalDimCap: new Decimal(0),
       canBuyTesseract: false,
       enslavedCompleted: false,
       boughtTesseracts: 0,
       extraTesseracts: 0,
       creditsClosed: false,
       showLockedDimCostNote: true,
+      isFlipped: false
     };
   },
   computed: {
     tesseractCountString() {
       const extra = this.extraTesseracts > 0 ? ` + ${format(this.extraTesseracts, 2, 2)}` : "";
-      return `${formatInt(this.boughtTesseracts)}${extra}`;
+      return `${formatHybridSmall(this.boughtTesseracts, 3)}${extra}`;
     },
   },
   methods: {
@@ -44,7 +45,7 @@ export default {
       this.infinityPower.copyFrom(Currency.infinityPower);
       this.conversionRate = InfinityDimensions.powerConversionRate;
       if (this.isEC9Running) {
-        this.dimMultiplier.copyFrom(Decimal.pow(Math.max(this.infinityPower.log2(), 1), 4).max(1));
+        this.dimMultiplier.copyFrom(Decimal.pow(Decimal.max(this.infinityPower.add(1).log2(), 1), 4).max(1));
       } else {
         this.dimMultiplier.copyFrom(this.infinityPower.pow(this.conversionRate).max(1));
       }
@@ -56,14 +57,15 @@ export default {
       }
       this.isEnslavedRunning = Enslaved.isRunning;
       this.isAnyAutobuyerUnlocked = Autobuyer.infinityDimension(1).isUnlocked;
-      this.nextDimCapIncrease = Tesseracts.nextTesseractIncrease;
+      this.nextDimCapIncrease.copyFrom(Tesseracts.nextTesseractIncrease);
       this.tesseractCost.copyFrom(Tesseracts.nextCost);
-      this.totalDimCap = InfinityDimensions.totalDimCap;
+      this.totalDimCap.copyFrom(InfinityDimensions.totalDimCap);
       this.canBuyTesseract = Tesseracts.canBuyTesseract;
-      this.enslavedCompleted = Enslaved.isCompleted;
+      this.enslavedCompleted = Enslaved.isCompleted && !player.disablePostReality;
       this.boughtTesseracts = Tesseracts.bought;
       this.extraTesseracts = Tesseracts.extra;
       this.creditsClosed = GameEnd.creditsEverClosed;
+      this.isFlipped = player.universes.current === 2;
     },
     maxAll() {
       InfinityDimensions.buyMax();
@@ -112,7 +114,7 @@ export default {
         to a
         <span class="c-infinity-dim-description__accent">{{ formatX(dimMultiplier, 2, 1) }}</span>
         multiplier on all
-        <span v-if="!isEC9Running">Antimatter Dimensions.</span>
+        <span v-if="!isEC9Running">{{ isFlipped ? "Matter" : "Antimatter" }} Dimensions.</span>
         <span v-else>Time Dimensions due to Eternity Challenge 9.</span>
       </p>
     </div>

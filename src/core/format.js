@@ -8,7 +8,10 @@ function isEND() {
 
 window.format = function format(value, places = 0, placesUnder1000 = 0) {
   if (isEND()) return "END";
-  return Notations.current.format(value, places, placesUnder1000, 3);
+  if (!(value instanceof Decimal)) value = new Decimal(value);
+  if (!Decimal.isFinite(value)) return value.toString();
+  if (value.lt("e9e15")) return Notations.current.format(value, places, placesUnder1000, 3);
+  return LNotations.current.formatLDecimal(value, 3);
 };
 
 window.formatInt = function formatInt(value) {
@@ -32,6 +35,7 @@ window.formatFloat = function formatFloat(value, digits) {
 window.formatPostBreak = function formatPostBreak(value, places, placesUnder1000) {
   if (isEND()) return "END";
   const notation = Notations.current;
+  const lNotation = LNotations.current;
   // This is basically just a copy of the format method from notations library,
   // with the pre-break case removed.
   if (typeof value === "number" && !Number.isFinite(value)) {
@@ -40,20 +44,26 @@ window.formatPostBreak = function formatPostBreak(value, places, placesUnder1000
 
   const decimal = Decimal.fromValue_noAlloc(value);
 
-  if (decimal.exponent < -300) {
-    return decimal.sign() < 0
+  if (decimal.eq(0)) return notation.formatUnder1000(0, placesUnder1000);
+
+  if (decimal.abs().log10().lt(-300)) {
+    return decimal.sign < 0
       ? notation.formatVerySmallNegativeDecimal(decimal.abs(), placesUnder1000)
       : notation.formatVerySmallDecimal(decimal, placesUnder1000);
   }
 
-  if (decimal.exponent < 3) {
+  if (decimal.abs().log10().lt(3)) {
     const number = decimal.toNumber();
     return number < 0
       ? notation.formatNegativeUnder1000(Math.abs(number), placesUnder1000)
       : notation.formatUnder1000(number, placesUnder1000);
   }
 
-  return decimal.sign() < 0
+  if (decimal.layer >= 2) {
+    return lNotation.formatLDecimal(decimal, 3);
+  }
+
+  return decimal.sign < 0
     ? notation.formatNegativeDecimal(decimal.abs(), places)
     : notation.formatDecimal(decimal, places);
 };
@@ -70,6 +80,10 @@ window.formatPercents = function formatPercents(value, places) {
   return `${format(value * 100, 2, places)}%`;
 };
 
+window.formatDecimalPercents = function formatDecimalPercents(value, places) {
+  return `${format(value.times(100), 2, places)}%`;
+};
+
 window.formatRarity = function formatRarity(value) {
   // We can, annoyingly, have rounding error here, so even though only rarities
   // are passed in, we can't trust our input to always be some integer divided by 10.
@@ -78,15 +92,35 @@ window.formatRarity = function formatRarity(value) {
 };
 
 // We assume 2/0, 2/2 decimal places to keep parameter count sensible; this is used very rarely
-window.formatMachines = function formatMachines(realPart, imagPart) {
+window.formatMachines = function formatMachines(realPart, imagPart, dualPart) {
   if (isEND()) return "END";
   const parts = [];
   if (Decimal.neq(realPart, 0)) parts.push(format(realPart, 2));
   if (Decimal.neq(imagPart, 0)) parts.push(`${format(imagPart, 2, 2)}i`);
+  if (Decimal.neq(dualPart, 0)) parts.push(`${format(dualPart, 2, 2)}j`);
   // This function is used for just RM and just iM in a few spots, so we have to push both parts conditionally
   // Nonetheless, we also need to special-case both zero so that it doesn't end up displaying as an empty string
-  if (Decimal.eq(realPart, 0) && Decimal.eq(imagPart, 0)) return format(0);
+  if (Decimal.eq(realPart, 0) && Decimal.eq(imagPart, 0) && Decimal.eq(dualPart, 0)) return format(0);
   return parts.join(" + ");
+};
+
+window.formatHybridSmall = function formatHybridSmall(value, places, placesUnder1000) {
+  if (new Decimal(value).gt(1e6)) return `${format(value, places, placesUnder1000)}`;
+  return `${formatInt(value)}`;
+};
+
+window.formatHybridLarge = function formatHybridLarge(value, places, placesUnder1000) {
+  if (new Decimal(value).gt(1e12)) return `${format(value, places, placesUnder1000)}`;
+  return `${formatInt(value)}`;
+};
+
+window.formatHybridFloat = function formatHybridFloat(value, digits) {
+  if (new Decimal(value).gt(1e12)) return `${format(value, 3, 0)}`;
+  return `${formatFloat(value, digits)}`;
+};
+
+window.formatDimboostParts = function formatDimboostParts(value, places, placesUnder1000) {
+  return formatHybridLarge(value, 3, 0);
 };
 
 window.timeDisplay = function timeDisplay(ms) {
@@ -135,6 +169,14 @@ const PLURAL_HELPER = new Map([
 const pluralDatabase = new Map([
   ["Antimatter", "Antimatter"],
   ["Dilated Time", "Dilated Time"],
+  ["Celestial Matter", "Celestial Matter"],
+  ["Divine Matter", "Divine Matter"],
+  ["Divine Energy", "Divine Energy"],
+  ["Supernova", "Supernovae"],
+  ["Nebula", "Nebulae"],
+  ["Null Matter", "Null Matter"],
+  ["Hawking Radiation", "Hawking Radiation"],
+  ["Thermal Radiation", "Thermal Radiation"]
 ]);
 
 /**
@@ -198,6 +240,34 @@ window.quantifyInt = function quantifyInt(name, value) {
   if (name === undefined || value === undefined) throw "Arguments must be defined";
 
   const number = formatInt(value);
+  const plural = pluralize(name, value);
+  return `${number} ${plural}`;
+};
+
+/**
+ * Returns the value formatted to formatHybridSmall followed by a name, pluralized based on the value input.
+ * @param  {string} name                  - name to pluralize and display after {value}
+ * @param  {number|Decimal} value         - number to format
+ * @return {string} - the formatted {value} followed by the {name} after having been pluralized based on the {value}
+ */
+window.quantifyHybridSmall = function quantifyHybridSmall(name, value) {
+  if (name === undefined || value === undefined) throw "Arguments must be defined";
+
+  const number = formatHybridSmall(value, 3);
+  const plural = pluralize(name, value);
+  return `${number} ${plural}`;
+};
+
+/**
+ * Returns the value formatted to formatHybridLarge followed by a name, pluralized based on the value input.
+ * @param  {string} name                  - name to pluralize and display after {value}
+ * @param  {number|Decimal} value         - number to format
+ * @return {string} - the formatted {value} followed by the {name} after having been pluralized based on the {value}
+ */
+window.quantifyHybridLarge = function quantifyHybridLarge(name, value) {
+  if (name === undefined || value === undefined) throw "Arguments must be defined";
+
+  const number = formatHybridLarge(value, 3);
   const plural = pluralize(name, value);
   return `${number} ${plural}`;
 };

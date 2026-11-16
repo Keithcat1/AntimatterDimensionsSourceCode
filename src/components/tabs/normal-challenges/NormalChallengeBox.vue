@@ -1,12 +1,14 @@
 <script>
 import ChallengeBox from "@/components/ChallengeBox";
 import DescriptionDisplay from "@/components/DescriptionDisplay";
+import EffectDisplay from "@/components/EffectDisplay";
 
 export default {
   name: "NormalChallengeBox",
   components: {
     ChallengeBox,
-    DescriptionDisplay
+    DescriptionDisplay,
+    EffectDisplay
   },
   props: {
     challenge: {
@@ -22,16 +24,24 @@ export default {
       isCompleted: false,
       isBroken: false,
       isUnlocked: false,
-      lockedAt: new Decimal()
+      normalLockedAt: new Decimal(),
+      alphaLockedAt: new Decimal(),
+      reward: ""
     };
   },
   computed: {
+    shiftDown() {
+      return ui.view.shiftDown;
+    },
+    showingCharged() {
+      return (this.shiftDown || this.challenge.isCharged) && Ascensions.oc3A.isUnlocked && player.endgame.overcharge.allowComplex;
+    },
     descriptionDisplayConfig() {
       if (this.isUnlocked) {
         return this.challenge.config;
       }
       return {
-        description: `Infinity ${formatInt(this.challenge.config.lockedAt)} times to unlock.`
+        description: `Infinity ${formatInt(this.lockedAt)} times to unlock.`
       };
     },
     name() {
@@ -47,9 +57,12 @@ export default {
       this.isUnlocked = this.challenge.isUnlocked;
       // This stops normal challenges from appearing like they're running during IC1
       this.isRunning = this.challenge.isOnlyActiveChallenge;
-      this.lockedAt = this.challenge.config.lockedAt;
+      this.normalLockedAt = this.challenge.config.lockedAt;
+      this.alphaLockedAt = this.challenge.config.alphaLockedAt;
+      this.lockedAt = Alpha.isRunning ? this.alphaLockedAt : this.normalLockedAt;
       this.isBroken = Enslaved.isRunning && Enslaved.BROKEN_CHALLENGES.includes(this.challenge.id);
       this.isCompleted = this.challenge.isCompleted && !this.isBroken;
+      this.reward = this.showingCharged ? this.challenge.config.charged.reward() : this.challenge.config.reward();
     }
   }
 };
@@ -70,7 +83,13 @@ export default {
       <DescriptionDisplay :config="descriptionDisplayConfig" />
     </template>
     <template #bottom>
-      <span :class="{ 'o-pelle-disabled': isDisabled }">Reward: {{ challenge.config.reward }}</span>
+      <span :class="{ 'o-pelle-disabled': isDisabled }">Reward: {{ reward }}</span>
+      <div v-if="showingCharged">
+        <EffectDisplay
+          br
+          :config="challenge.config.charged"
+        />
+      </div>
     </template>
   </ChallengeBox>
 </template>

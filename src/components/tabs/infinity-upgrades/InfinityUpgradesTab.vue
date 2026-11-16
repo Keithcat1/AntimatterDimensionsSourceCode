@@ -12,7 +12,9 @@ export default {
   },
   data() {
     return {
+      isDoomed: false,
       isUseless: false,
+      alwaysRecpec: false,
       chargeUnlocked: false,
       totalCharges: 0,
       chargesUsed: 0,
@@ -21,7 +23,9 @@ export default {
       ipMultHardCap: 0,
       eternityUnlocked: false,
       bottomRowUnlocked: false,
-      styleOfColumnBg: undefined
+      styleOfColumnBg: undefined,
+      isUncapped: false,
+      isSoftcapApplicable: false
     };
   },
   computed: {
@@ -59,7 +63,9 @@ export default {
     disChargeClassObject() {
       return {
         "o-primary-btn--subtab-option": true,
-        "o-primary-btn--charged-respec-active": this.disCharge
+        "o-primary-btn--charged-respec-active": this.disCharge ||
+          this.alwaysRecpec, // See src/core/celestials/pelle/pelle.js armageddon(...)
+        "o-pelle-disabled-pointer": this.alwaysRecpec
       };
     },
     offlineIpUpgrade: () => InfinityUpgrade.ipOffline
@@ -78,15 +84,20 @@ export default {
   },
   methods: {
     update() {
-      this.isUseless = Pelle.isDoomed;
-      this.chargeUnlocked = Ra.unlocks.chargedInfinityUpgrades.canBeApplied && !Pelle.isDoomed;
+      this.isDoomed = Pelle.isDoomed;
+      this.isUseless = Pelle.isDoomed && !PelleCelestialUpgrade.raTeresa2.canBeApplied;
+      this.alwaysRecpec = this.isDoomed && Pelle.isAlwaysDischargeCIU;
+      this.chargeUnlocked = Ra.unlocks.chargedInfinityUpgrades.canBeApplied && !this.isUseless && !player.disablePostReality;
       this.totalCharges = Ra.totalCharges;
       this.chargesUsed = Ra.totalCharges - Ra.chargesLeft;
       this.disCharge = player.celestials.ra.disCharge;
-      this.ipMultSoftCap = GameDatabase.infinity.upgrades.ipMult.costIncreaseThreshold;
-      this.ipMultHardCap = GameDatabase.infinity.upgrades.ipMult.costCap;
+      this.ipMultSoftCap = InfinityUpgrade.ipMult.costIncreaseThreshold;
+      this.ipMultHardCap = InfinityUpgrade.ipMult.costCap;
       this.eternityUnlocked = PlayerProgress.current.isEternityUnlocked;
       this.bottomRowUnlocked = Achievement(41).isUnlocked;
+      this.isUncapped = BreakEternityUpgrade.doubleIPUncap.isBought && !player.disablePostReality;
+      this.isSoftcapApplicable = !EndgameUpgrade(21).isBought || player.disablePostReality ||
+        (player.infinityPoints.gte("e1e125") && !Ascensions.ipA.isUnlocked);
     },
     btnClassObject(column) {
       const classObject = {
@@ -128,17 +139,21 @@ export default {
         :aria-pressed="disCharge.toString()"
         @click="disCharge = !disCharge"
       >
-        Respec Charged Infinity Upgrades on next Reality
+        Respec Charged Infinity Upgrades on next {{ isDoomed ? "Armageddon" : "Reality" }}
       </PrimaryButton>
     </div>
     <div v-if="chargeUnlocked">
       You have charged {{ formatInt(chargesUsed) }}/{{ formatInt(totalCharges) }} Infinity Upgrades.
       Charged Infinity Upgrades have their effect altered.
       <br>
-      Hold shift to show Charged Infinity Upgrades. You can freely respec your choices on Reality.
+      Hold shift to show Charged Infinity Upgrades.
+      <span v-if="!isDoomed || !alwaysRecpec"> You can freely respec your choices on Reality.</span>
     </div>
     <div v-if="isUseless">
       You cannot Charge Infinity Upgrades while Doomed.
+    </div>
+    <div v-if="isDoomed && !isUseless && alwaysRecpec">
+      Charged Infinity Upgrades always reset on Armageddon, until you can keep your Break Infinity Upgrades on Armageddon.
     </div>
     <br>
     Within each column, the upgrades must be purchased from top to bottom.
@@ -171,11 +186,11 @@ export default {
         :class="btnClassObject(1)"
       />
     </div>
-    <div v-if="eternityUnlocked && bottomRowUnlocked">
+    <div v-if="eternityUnlocked && bottomRowUnlocked && isSoftcapApplicable">
       The Infinity Point multiplier becomes more expensive
       <br>
-      above {{ formatPostBreak(ipMultSoftCap) }} Infinity Points, and cannot be purchased past
-      {{ formatPostBreak(ipMultHardCap) }} Infinity Points.
+      above {{ formatPostBreak(ipMultSoftCap, 2, 1) }} Infinity
+      Points<span v-if="!isUncapped">, and cannot be purchased past {{ formatPostBreak(ipMultHardCap, 2, 1) }} Infinity Points</span>.
     </div>
   </div>
 </template>

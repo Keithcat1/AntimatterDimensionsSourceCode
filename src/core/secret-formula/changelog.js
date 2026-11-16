@@ -9,6 +9,517 @@ export const changelog = [
    * }
    */
   {
+    date: [2026, 10, 21],
+    name: "v2.0.1: The Break Is A Lie",
+    info: `
+I retired from my retirement.
+<br>
+<br>
+<b><i>The game should now be balanced again.</i></b>
+<br>
+<br>
+<b>Things added:</b><br>
+<ul>
+<li>Antimatter Overflow Prevention</li>
+<li>A few internal functions</li>
+<li>Dynamic page name functions</li>
+<li>Some new sidebar resources</li>
+<li>Visual Ra unlock effects in the tooltips</li>
+</ul>
+<br>
+<b>Things changed:</b><br>
+<ul>
+<li>Decreased the starting times for Remnants of Alpha Decay and Hadron effects to cap</li>
+<li>Refactored the formula for the third Celestial Infinity Upgrade</li>
+<li>Increased the requirement for the final Galactic Power</li>
+</ul>
+<br>
+<b>Bugs fixed:</b><br>
+<ul>
+<li>Fixed Antimatter Overflow</li>
+<li>Fixed EC11 abuse</li>
+<li>Fixed C12 abuse</li>
+<li>Fixed some Duality Upgrades not locking properly</li>
+<li>Fixed Celestial Dimboost/Galaxy autobuyers not ticking</li>
+<li>Fixed DMD costs</li>
+<li>Oen or to leeftower tpyos</li>
+</ul>
+<br>
+`
+  },
+  {
+    date: [2026, 9, 30],
+    name: "v2.0.0: The Serpent Ariseth",
+    info: `
+Thus concludeth the Endgame Update.
+<br>
+<br>
+<b><i>Thank you all so much for this incredible journey!</i></b>
+<br>
+<br>
+<b>Things added:</b><br>
+<ul>
+<li>Slabdrill</li>
+<li>The Cursed Core</li>
+<li>Hell (I'm dead serious)</li>
+<li>Time Compression</li>
+<li>C Milestones</li>
+<li>D Milestones (what the heck is D)</li>
+<li>Galactic Instability (no one asked for this ik)</li>
+<li>A bunch of tab notifications</li>
+<li>The first two Universes</li>
+<li>Multiversal Conquest and Light and Dark Battles</li>
+<li>Entanglement Masteries</li>
+<li>Three new Achievement rows</li>
+<li>The Endgame Credits Screen</li>
+<li>An Endgame Update reset screen</li>
+</ul>
+<br>
+<b>Things changed:</b><br>
+<ul>
+<li>The requirements for Duality Upgrades 18 and 24</li>
+<li>Perk Points now use a Decimal prop</li>
+<li>Made Cursed Glyphs work in Glyph Knight</li>
+<li>Ra told me that was it so that's it ig</li>
+</ul>
+<br>
+<b>Bugs fixed:</b><br>
+<ul>
+<li>Fixed Endgame Milestone 2 displaying the wrong effect</li>
+<li>Fixed Celestial prestige autobuyers</li>
+<li>Fixed cookie production, it should tick properly again</li>
+<li>Fixed the last Alpha layer from getting stuck in a Reality loop</li>
+<li>Fixed Reality Upgrade 23 NaNing</li>
+<li>Fixed having -7 True Shard when you Obliterate your Thermal Energy</li>
+<li>Endgame Upgrade 10 lock not working properly</li>
+<li>Fixed a few small bugs in Cel Navigation</li>
+<li>Fixed Sisyphus randomly taking breaks</li>
+<li>Fixed Replicanti being weird in Alpha</li>
+<li>Star Wars: The Tpyos Strike Back but I fixed the tpyos before the film released</li>
+</ul>
+<br>
+`
+  },
+  {
+    date: [2026, 9, 3],
+    name: "v1.2.0: The Update that no one asked for",
+    info: `
+Nobody asked for this update.
+<br>
+<br>
+<b><i>The big update is the next one.</i></b>
+<br>
+<br>
+<b>Things changed:</b><br>
+<ul>
+<li>Switched some milestones and masteries around</li>
+<li>Added Endgame Upgrade autos to Divinity Milestone 10</li>
+<li>Went ahead and added Achievement row 24</li>
+<li>Put Bright Alpha into the options tab</li>
+<li>Overhauled all the visuals so they don't look like dogshit anymore</li>
+<li>Added Pelle Destruction container collapsing</li>
+<li>Removed the coffee softcap</li>
+<li>Added an option to hide Celestial Matter softcaps</li>
+<li>Decimalized extra Continuum purchases from Lai'tela</li>
+<li>Added the Astley Paradox</li>
+<li>A bunch of other QoL of which I find it hard to put into words</li>
+<li>Oh right, Dual Machines say jM now</li>
+<li>And I also added a new Galactic power bc why tf not</li>
+<li>Oh yeah and there's a seperate Doom confirmation now, anything else I forgot?</li>
+</ul>
+<br>
+<b>Bugs fixed:</b><br>
+<ul>
+<li>Fixed that one Break Infinity Upgrade always saying Challenge 1</li>
+<li>Fixed max Replicanti Galaxy cost overflow</li>
+<li>Fixed record prestige time becoming zero and breaking the game</li>
+<li>You lost the game</li>
+<li>Fixed Glyph filter not working properly</li>
+<li>Fixed Dilated Time going negative</li>
+<li>You still lost the game</li>
+<li>Fixed being able to enter certain Endgame challenges while inside other Endgame challenges</li>
+<li>Fixed Time Dimension bulk</li>
+<li>Fixed the bee movie</li>
+<li>Fixed the reenable passive IP gen Pelle Destruction Upgrade</li>
+<li>Fixed the Tetris link leading to youareanidiot.org</li>
+<li>Fixed the Divinity Upgrade "Security" displaying the wrong effect</li>
+<li>TPYOS MY BELVELOD</li>
+</ul>
+<br>
+`
+  },
+  {
+    date: [2026, 7, 28],
+    name: "v1.1.0: The Great Ascent",
+    info: `
+I was not expecting a content release on my birthday but ¯|_(ツ)_|¯
+<br>
+<br>
+<b><i>Another big update coming soon...</i></b>
+<br>
+<br>
+<b>Things added:</b><br>
+<ul>
+<li>A reward to Achievement 222</li>
+<li>A softcap to my sleep paralysis</li>
+<li>A ton of new Endgame Masteries</li>
+<li>New Singularity Milestones</li>
+<li>New Galactic Powers</li>
+<li>ASCENSION</li>
+<li>TRANSCENSION</li>
+<li>The Overcharge</li>
+<li>A visual display for Hadron effectiveness</li>
+<li>Support for vanilla savefile importing</li>
+<li>The Game Prologue</li>
+<li>The Game Over screen</li>
+<li>A thousand news messages</li>
+<li>Three new large number notations</li>
+<li>Coffee... I need coffee...</li>
+</ul>
+<br>
+<b>Things removed:</b><br>
+<ul>
+<li>Savefile serialization limits</li>
+<li>Transcension was too OP so it gone now</li>
+<li>The bee layer</li>
+</ul>
+<br>
+<b>Things changed:</b><br>
+<ul>
+<li>Nerfed VUL5U3 again</li>
+<li>Nerfed VUL1U6</li>
+<li>Softcapped VUL3U5 and VUL4U3</li>
+<li>Softcapped the weight of your mom (it wasn't enough)</li>
+<li>Decimalized Glyph Levels</li>
+<li>Switched to a better version of break_eternity.js</li>
+<li>Switched to a better version of Pacman so I could play Level 256 properly</li>
+</ul>
+<br>
+<b>Bugs fixed:</b><br>
+<ul>
+<li>Glyph Instability 6 delay applying too early</li>
+<li>Spacetime Warp IV NaNing under certain circumstances</li>
+<li>Fixed Time Study 123 NaNing</li>
+<li>Fixed the game randomly going hdsfjgajfgyursgawvh</li>
+<li>Ocne unpbo a tiem tehthe werwe tioo mayn tpyos, nrwo tehyre gnoe</li>
+</ul>
+<br>
+`
+  },
+  {
+    date: [2026, 7, 17],
+    name: "Celebrate iOS Version Release",
+    info: `
+Celebrating the official iOS launch! It's finally time to perform a Big Crunch right in your pocket.
+A massive thank you to all the contributors who helped expand our dimensions to iOS! 
+<br>
+<br>
+<b>Added things:</b><br>
+<ul>
+<li>Added iOS Testers in the Credits</li>
+<li>Added a link to the iOS Version</li>
+<li>Added all AD Autobuyers' buy max/singles toggle button</li>
+</ul>
+<br>
+<b>Text change:</b><br>
+<ul>
+<li>Changed Android Developer to Mobile Developer in the Credits</li>
+</ul>
+<br>
+`
+  },
+  {
+    date: [2026, 7, 9],
+    name: "v1.0.1: Animations and Simulations",
+    info: `
+Graphical design is my specialty.
+<br>
+<br>
+<b><i>Thank you again for playing!</i></b>
+<br>
+<br>
+<b>Things added:</b><br>
+<ul>
+<li>Hadrons Animation</li>
+<li>Stars Antimation</li>
+<li>One new Endgame Mastery (more coming later)</li>
+</ul>
+<br>
+<b>Things removed:</b><br>
+<ul>
+<li>Alpha's e300 IP Hell</li>
+</ul>
+<br>
+<b>Things changed:</b><br>
+<ul>
+<li>Buffed CIU13</li>
+<li>Nerfed VUL5U3</li>
+<li>Delayed TD Overflow^2 starting with one Divinitied stat</li>
+<li>Made the 7 effect Effarig Glyph reward in Effarig's Expansion Pack always apply</li>
+<li>Made the Enter Celestials modal for Alpha's Reality have smaller font for smaller screens</li>
+</ul>
+<br>
+<b>Bugs fixed:</b><br>
+<ul>
+<li>Fixed TD/DMD cost functions</li>
+<li>Fixed Achievement 133 not triggering</li>
+<li>Supernova not resetting Divinity Upgrades properly</li>
+<li>Fixed rebuyable x5 EP failing to buy max</li>
+<li>Oh noes! Tpyos agian!</li>
+</ul>
+<br>
+`
+  },
+  {
+    date: [2026, 6, 29],
+    name: "v1.0.0: The True Darkness Arises",
+    info: `
+The update took 5 hours, but due to Time Dilation one hour is equivalent to a month of real time.
+<br>
+<br>
+<b><i>I really hope you enjoy the update!</i></b>
+<br>
+<br>
+<b>Things added:</b><br>
+<ul>
+<li>Alpha</li>
+<li>Celestial Dimension Expansion (all layers)</li>
+<li>Duality</li>
+<li>FOUR new Achievement rows</li>
+<li>Divinity</li>
+<li>Hypercubes</li>
+<li>Effarig's Second Shop</li>
+<li>Effarig's Endgame</li>
+<li>Three types of Hadrons</li>
+<li>Divine Dimensions</li>
+<li>Divinity Upgrades</li>
+<li>Resurgence Upgrades</li>
+<li>The Large Hadron Collider</li>
+<li>The Void</li>
+<li>Ethereal Extension</li>
+<li>Stars</li>
+<li>Star Power</li>
+<li>Condense</li>
+<li>Supernova</li>
+<li>Pelle's Domain</li>
+<li>Honse</li>
+<li>Horse theme (try importing it)</li>
+<li>A bunch of visuals, mainly in the Celestial Navigation menu</li>
+<li>More sidebar resources</li>
+<li>More statistics</li>
+<li>Added quotes. Too many quotes. Way too many-</li>
+<li>Further game balance, as sloppy as it is</li>
+<li>Alpha Crystals</li>
+<li>Several new Glyph Rarities</li>
+<li>Two new layers of Glyph Instability</li>
+<li>A few HTP entires, more coming soon</li>
+<li>A Celestial that finds who asked</li>
+<li>Four more Galaxy Generator Upgrades. Four.</li>
+<li>HOTKEYS MY BELOVED-</li>
+<li>Insert some random shitpost here</li>
+</ul>
+<br>
+<b>Things changed:</b><br>
+<ul>
+<li>A progression stat for every Achievement</li>
+<li>Widened the Reality button to fit new texts</li>
+<li>Honses ran away</li>
+<li>Made the Antimatter header bigger after defeating Alpha</li>
+<li>Made DMD display text smaller with too many characters</li>
+<li>Decimalized more stuff (I couldn't tell you what)</li>
+<li>Alpha Crystals are WIP</li>
+<li>Made a universal quote check function</li>
+<li>Refactored several Glyph effects</li>
+<li>Softcapped TS225</li>
+<li>Added GGU2 and DU2 superscalings</li>
+<li>Alerted Peter of the status of the horse's location</li>
+<li>DMD cost calculations</li>
+</ul>
+<br>
+<b>Bugs fixed:</b><br>
+<ul>
+<li>Overfill</li>
+<li>Implicit conversions</li>
+<li>Time conversions</li>
+<li>Auto EC borking</li>
+<li>Fixed next update not being in 5 hours</li>
+<li>Made costs above e9e15 not consume resource</li>
+<li>Fixed IP/EP/RM logarithm by zero</li>
+<li>Fixed Endgame Upgrade 8 not triggering properly</li>
+<li>Fixed player having free will</li>
+<li>Incorrect Time Dimension and Dark Matter Dimension costs</li>
+<li>Numerous others that I have completely forgotten about</li>
+<li>A bnuch of tpyos reprotuted in teh Dicsord</li>
+</ul>
+<br>
+`
+  },
+  {
+    date: [2026, 1, 27],
+    name: "v0.3.1: The Ethereal Rebalance",
+    info: `
+Well this didn't take long.
+<br>
+<br>
+<b><i>Next update is the big one...</i></b>
+<br>
+<br>
+<b>Things added:</b><br>
+<ul>
+<li>The Ethereal</li>
+<li>The break_eternity.js framework</li>
+<li>New Notations</li>
+<li>A reward to Achievement 198</li>
+<li>Bulk Ascension Autobuyers</li>
+<li>Metaclicks</li>
+</ul>
+<br>
+<b>Things changed:</b><br>
+<ul>
+<li>Endgame Milestone requirements</li>
+<li>Added a softcap to Endgame Emolument</li>
+<li>Added a softcap to Endgame Milestone 10000</li>
+<li>Bulk Dilation Upgrades always tick</li>
+<li>Small time formatting</li>
+</ul>
+<br>
+<b>Bugs fixed:</b><br>
+<ul>
+<li>General overflow</li>
+<li>Negative Antimatter</li>
+<li>Decimalized a bunch of stuff</li>
+<li>Fixed costs</li>
+<li>Made expensive stuff not consume all your resource</li>
+<li>Fixed Teresa's Canister eating all the Reality Machines</li>
+<li>Values above e9e15 no longer reset to e9e15 on game refresh</li>
+<li>Fixed Autobuyers</li>
+<li>Perk Upgrades not resetting properly</li>
+<li>Fixed Charged IUs</li>
+<li>Made ping no longer inflate to extreme values such as LLL10 and P3</li>
+<li>Fixed Bulk Singularity Theshold Autobuyer not ticking at the beginning of Endgames</li>
+<li>Fixed Doomed Particle rounding errors</li>
+<li>Fixed Endgame Autobuyer</li>
+<li>Fixed Glyph effects in Pelle not stacking</li>
+<li>A lot moer tpyos</li>
+</ul>
+<br>
+`
+  },
+  {
+    date: [2026, 1, 9],
+    name: "v0.3.0: The Greater Reimagining II",
+    info: `
+Happy New Year!
+<br>
+<br>
+<b><i>Think we got all the bugs this time.</i></b>
+<br>
+<br>
+<b>Things added:</b><br>
+<ul>
+<li>Endgame Upgrades</li>
+<li>Galactic Powers</li>
+<li>Expansion Packs (for real this time)</li>
+<li>New Dark Matter Dimensions: 5th, 6th, 7th, 8th (9th? 10th?? 11th???)</li>
+<li>Decimalization of Relic Shards</li>
+<li>Decimalization of Galaxies</li>
+<li>Decimalization of Glyph Sacrifice</li>
+<li>Decimalization of Imaginary Machines</li>
+<li>Decimalization of Singularities, Dark Energy and other Lai features</li>
+<li>Hadronization</li>
+<li>Bosonic Lab</li>
+<li>Infinite Tesseract Formula</li>
+<li>A ton of Autobuyers</li>
+<li>Every single Pelle Destruction Upgrade</li>
+<li>A few hardcaps</li>
+<li>Cool visual effects</li>
+<li>A fourth Glyph Instability threshold</li>
+<li>A new Glyph Rarity if you get far enough</li>
+<li>Achievements 195-198</li>
+<li>Game overhaul</li>
+<li>New Celestial quotes</li>
+<li>Break Eternity Upgrade names</li>
+<li>Automator commands</li>
+<li>Made Exporting your save give rewards</li>
+</ul>
+<br>
+<b>Things removed:</b><br>
+<ul>
+<li>Reactivity</li>
+<li>Bosonic Lab</li>
+<li>My sleep schedule</li>
+</ul>
+<br>
+<b>Bugs fixed:</b><br>
+<ul>
+<li>Far too many overflow values</li>
+<li>Added a resetting of Alchemy to prevent locking out of Imaginary Upgrade 28</li>
+<li>Decimalized a few trivials to prevent crash</li>
+<li>Dooming your Reality being useless in the late-game</li>
+<li>Zero Endgame Time</li>
+<li>Formatting overflows</li>
+<li>Aliens trying to invade the game</li>
+<li>Antimatter exponent formulas not interacting with each other properly</li>
+<li>Pelle Destruction Upgrades not working</li>
+<li>Being able to disable Strikes before all the other upgrades are bought</li>
+<li>Random game crashing</li>
+<li>Severla moer radnom tpyos</li>
+</ul>
+<br>
+`
+  },
+  {
+    date: [2025, 11, 8],
+    name: "v0.2.3: The Greater Reimagining I",
+    info: `
+The long-delayed update is finally out.
+<br>
+<br>
+<b><i>If nothing else got you hooked on the game, this should.</i></b>
+<br>
+<br>
+<b>Things added:</b><br>
+<ul>
+<li>An Endgame Mastery Tree</li>
+<li>12 Endgame Milestones</li>
+<li>10 new Singularity Milestones</li>
+<li>Expansion Packs (still NYI mostly)</li>
+<li>Decimalization of Game Speed</li>
+<li>Decimalization of Dimension Boosts</li>
+<li>Decimalization of a few other things</li>
+<li>Infinite Tesseract Formula</li>
+<li>A new Galaxy Generator Upgrade</li>
+<li>Many helper functions</li>
+<li>A Celestial Matter Softcap</li>
+<li>Rebirths</li>
+</ul>
+<br>
+<b>Things removed:</b><br>
+<ul>
+<li>The Game Speed Hardcap</li>
+<li>Dimboost Overflow</li>
+<li>All semblance of balancing</li>
+<li>Rebirths</li>
+</ul>
+<br>
+<b>Bugs fixed:</b><br>
+<ul>
+<li>Fixed Dimension Boost costs above e16 or so</li>
+<li>Remnant overflow</li>
+<li>Game Time overflow</li>
+<li>Dooming your Reality not being cool enough</li>
+<li>Reality Autobuyer settings</li>
+<li>Starting Remnants being too high</li>
+<li>Cel Point gain being too high</li>
+<li>The dev being too high</li>
+<li>Made the 9th Dimension work properly</li>
+<li>Compression Magnitudes not behaving properly</li>
+<li>Severla radnom tpyos</li>
+</ul>
+<br>
+`
+  },
+  {
     date: [2025, 9, 16],
     name: "v0.2.2: The Great Insect Purge",
     info: `

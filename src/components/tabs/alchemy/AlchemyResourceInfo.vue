@@ -58,10 +58,10 @@ export default {
       };
     },
     resourceAmount() {
-      return formatFloat(this.amount, 1);
+      return formatHybridFloat(this.amount, 1);
     },
     resourceCap() {
-      return formatFloat(this.cap, 1);
+      return formatHybridFloat(this.cap, 1);
     },
     formattedFlow() {
       const sign = this.flow >= 0 ? "+" : "-";
@@ -73,7 +73,9 @@ export default {
     srEquals() {
       return this.$viewModel.srMode ? "=" : "➜";
     },
-    isDoomed: () => Pelle.isDoomed,
+    isDoomed() {
+      return Pelle.isDoomed && this.resource.destroyed;
+    }
   },
   methods: {
     update() {

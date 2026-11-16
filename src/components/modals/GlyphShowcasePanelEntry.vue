@@ -51,10 +51,10 @@ export default {
       return getAdjustedGlyphLevel(this.glyph, this.realityGlyphBoost, true);
     },
     isLevelCapped() {
-      return this.effectiveLevel && this.effectiveLevel < this.level;
+      return this.effectiveLevel ? this.effectiveLevel.lt(this.level) : false;
     },
     isLevelBoosted() {
-      return this.effectiveLevel && this.effectiveLevel > this.level;
+      return this.effectiveLevel ? this.effectiveLevel.gt(this.level) : false;
     },
     levelText() {
       if (this.type === "companion") return "";
@@ -67,7 +67,7 @@ export default {
         ? "#ff4444"
         : (this.isLevelBoosted ? "#44FF44" : "var(--color-text);");
       return `<span style="color: ${color}">
-                  ${arrow}${formatInt(this.effectiveLevel)}${arrow}
+                  ${arrow}${formatHybridLarge(this.effectiveLevel, 3)}${arrow}
                   </span>`;
     },
     typeStyle() {

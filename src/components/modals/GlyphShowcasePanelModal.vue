@@ -35,7 +35,7 @@ export default {
   data() {
     return {
       glyphs: [],
-      gainedLevel: 0,
+      gainedLevel: new Decimal(),
       canSacrifice: false,
       realityGlyphBoost: 0,
     };
@@ -61,12 +61,12 @@ export default {
         ? GlyphSelection.glyphList(GlyphSelection.choiceCount, gainedGlyphLevel(), { isChoosingGlyph: false })
         : this.glyphSet.filter(x => x);
       this.sortGlyphs();
-      this.gainedLevel = gainedGlyphLevel().actualLevel;
-      // There should only be one reality glyph; this picks one pseudo-randomly if multiple are cheated/glitched in
-      const realityGlyph = this.glyphs.filter(g => g.type === "reality")[0];
-      this.realityGlyphBoost = realityGlyph
-        ? GlyphEffects.realityglyphlevel.effect(realityGlyph.level)
-        : 0;
+      this.gainedLevel.copyFrom(gainedGlyphLevel().actualLevel);
+      let totalRealityGlyphBoost = 0;
+      for (let r = 0; r < getActiveGlyphEffects().length; r++) {
+        if (getActiveGlyphEffects()[r].id === "realityglyphlevel") totalRealityGlyphBoost += getActiveGlyphEffects()[r].value.value;
+      }
+      this.realityGlyphBoost = totalRealityGlyphBoost;
     },
     sortGlyphs() {
       const standardOrder = ["reality", "effarig", "power", "infinity", "replication", "time", "dilation",
@@ -83,7 +83,7 @@ export default {
       {{ name }}
     </template>
     <div v-if="isGlyphSelection">
-      Projected Glyph Level: {{ formatInt(gainedLevel) }}
+      Projected Glyph Level: {{ formatHybridLarge(gainedLevel, 3) }}
     </div>
     <GlyphSetName
       v-if="showSetName"

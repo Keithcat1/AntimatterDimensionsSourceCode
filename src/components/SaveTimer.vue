@@ -13,8 +13,8 @@ export default {
   },
   computed: {
     timeString() {
-      const localStr = timeDisplayShort(this.currentTime - this.lastLocalSave);
-      const cloudStr = timeDisplayShort(this.currentTime - this.lastCloudSave);
+      const localStr = timeDisplayShort(new Decimal(this.currentTime - this.lastLocalSave));
+      const cloudStr = timeDisplayShort(new Decimal(this.currentTime - this.lastCloudSave));
       return this.cloudSaveEnabled
         ? `${localStr} (local) | ${cloudStr} (cloud)`
         : localStr;
@@ -27,7 +27,7 @@ export default {
       this.lastLocalSave = GameStorage.lastSaveTime;
       this.lastCloudSave = GameStorage.lastCloudSave;
       this.showTimeSinceSave = player.options.showTimeSinceSave;
-      this.saveDisabled = GameEnd.endState >= END_STATE_MARKERS.INTERACTIVITY_DISABLED;
+      this.saveDisabled = GameEnd.endState >= END_STATE_MARKERS.INTERACTIVITY_DISABLED || player.endgame.credits;
     },
     save() {
       GameStorage.save(false, true);

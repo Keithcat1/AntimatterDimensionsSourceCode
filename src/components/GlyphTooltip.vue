@@ -16,7 +16,7 @@ export default {
       required: true
     },
     level: {
-      type: Number,
+      type: Decimal,
       required: true
     },
     effects: {
@@ -29,9 +29,9 @@ export default {
       default: 0,
     },
     sacrificeReward: {
-      type: Number,
+      type: Decimal,
       required: false,
-      default: 0,
+      default: new Decimal(0),
     },
     refineReward: {
       type: Number,
@@ -57,9 +57,9 @@ export default {
       default: true,
     },
     displayLevel: {
-      type: Number,
+      type: Decimal,
       required: false,
-      default: 0,
+      default: new Decimal(0),
     },
     changeWatcher: {
       type: Number,
@@ -77,7 +77,7 @@ export default {
       return GameUI.touchDevice;
     },
     effectiveLevel() {
-      return this.displayLevel ? this.displayLevel : this.level;
+      return this.displayLevel.neq(0) ? this.displayLevel : this.level;
     },
     sortedEffects() {
       return getGlyphEffectValuesFromBitmask(this.effects, this.effectiveLevel, this.strength, this.type)
@@ -119,14 +119,15 @@ export default {
       }
     },
     isLevelCapped() {
-      return this.displayLevel && this.displayLevel < this.level;
+      return this.displayLevel.neq(0) && this.displayLevel.lt(this.level);
     },
     isLevelBoosted() {
-      return this.displayLevel && this.displayLevel > this.level;
+      return this.displayLevel.neq(0) && this.displayLevel.gt(this.level);
     },
     rarityText() {
       if (!GlyphTypes[this.type].hasRarity) return "";
-      const strength = Pelle.isDoomed ? Pelle.glyphStrength : this.strength;
+      const strength = Slabdrill.isCursed ? rarityToStrength(Math.clamp((Slabdrill.currentStage - 4) * 20, 0, 100)) :
+        (Pelle.isDoomed && !PelleDestructionUpgrade.glyphRarity.canBeApplied ? Pelle.glyphStrength : this.strength);
       return `| Rarity:
         <span style="color: ${this.descriptionStyle.color}">${formatRarity(strengthToRarity(strength))}</span>`;
     },
@@ -141,7 +142,7 @@ export default {
         ? "#ff4444"
         : (this.isLevelBoosted ? "#44FF44" : undefined);
       return `Level: <span style="color: ${color}">
-              ${arrow}${formatInt(this.effectiveLevel)}${arrow}
+              ${arrow}${formatHybridLarge(this.effectiveLevel, 3)}${arrow}
               </span>`;
     },
     eventHandlers() {
@@ -201,7 +202,7 @@ export default {
   },
   methods: {
     update() {
-      this.showChaosText = Pelle.specialGlyphEffect.isUnlocked;
+      this.showChaosText = Pelle.specialGlyphEffect.isUnlocked || Pelle.isGlyphTypeDisabled(this.type);
       if (this.showChaosText) {
         this.chaosDescription = Pelle.getSpecialGlyphEffectDescription(this.type);
       }

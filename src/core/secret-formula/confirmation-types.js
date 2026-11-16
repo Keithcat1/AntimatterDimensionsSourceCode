@@ -2,11 +2,11 @@ export const confirmationTypes = [
   {
     name: "Dimension Boost",
     option: "dimensionBoost",
-    isUnlocked: () => PlayerProgress.infinityUnlocked() || player.galaxies > 0 || player.dimensionBoosts > 0,
+    isUnlocked: () => PlayerProgress.infinityUnlocked() || player.galaxies.gt(0) || player.dimensionBoosts.gt(0),
   }, {
     name: "Antimatter Galaxy",
     option: "antimatterGalaxy",
-    isUnlocked: () => PlayerProgress.infinityUnlocked() || player.galaxies > 0,
+    isUnlocked: () => PlayerProgress.infinityUnlocked() || player.galaxies.gt(0),
   }, {
     name: "Sacrifice",
     option: "sacrifice",
@@ -15,6 +15,10 @@ export const confirmationTypes = [
     name: "Big Crunch",
     option: "bigCrunch",
     isUnlocked: () => player.break || PlayerProgress.eternityUnlocked(),
+  }, {
+    name: "Celestial Crunch",
+    option: "celestialCrunch",
+    isUnlocked: () => player.endgame.celDimExpansion.isBroken || PlayerProgress.celestialEternityUnlocked(),
   }, {
     name: "Challenges",
     option: "challenges",
@@ -35,6 +39,14 @@ export const confirmationTypes = [
     name: "Dilation",
     option: "dilation",
     isUnlocked: () => PlayerProgress.realityUnlocked() || !Currency.tachyonParticles.eq(0),
+  }, {
+    name: "Compression",
+    option: "compression",
+    isUnlocked: () => !Currency.hawkingRadiation.eq(0),
+  }, {
+    name: "Overcharge",
+    option: "overcharge",
+    isUnlocked: () => Ascensions.ocA.isUnlocked,
   }, {
     name: "Reset Reality",
     option: "resetReality",
@@ -76,9 +88,25 @@ export const confirmationTypes = [
     option: "glyphRefine",
     isUnlocked: () => Ra.unlocks.unlockGlyphAlchemy.canBeApplied,
   }, {
+    name: "Doom",
+    option: "doom",
+    isUnlocked: () => PlayerProgress.endgameUnlocked(),
+  }, {
     name: "Armageddon",
     option: "armageddon",
     isUnlocked: () => Pelle.isDoomed,
+  }, {
+    name: "Reset Endgame",
+    option: "resetEndgame",
+    isUnlocked: () => PlayerProgress.endgameUnlocked(),
+  }, {
+    name: "Cursed Core",
+    option: "cursedCore",
+    isUnlocked: () => Slabdrill.isUnlocked || Slabdrill.isDestroyed,
+  }, {
+    name: "Universes",
+    option: "universes",
+    isUnlocked: () => Universes.areUnlocked,
   }, {
     name: "Respec Shop Purchases",
     option: "respecIAP",

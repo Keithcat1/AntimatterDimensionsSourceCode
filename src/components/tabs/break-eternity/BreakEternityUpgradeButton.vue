@@ -2,13 +2,15 @@
 import CostDisplay from "@/components/CostDisplay";
 import DescriptionDisplay from "@/components/DescriptionDisplay";
 import EffectDisplay from "@/components/EffectDisplay";
+import HintText from "@/components/HintText";
 
 export default {
   name: "BreakEternityUpgradeButton",
   components: {
     DescriptionDisplay,
     EffectDisplay,
-    CostDisplay
+    CostDisplay,
+    HintText
   },
   props: {
     upgrade: {
@@ -24,6 +26,9 @@ export default {
     };
   },
   computed: {
+    config() {
+      return this.upgrade.config;
+    },
     classObject() {
       return {
         "o-break-eternity-upgrade": true,
@@ -36,7 +41,7 @@ export default {
   methods: {
     update() {
       const upgrade = this.upgrade;
-      this.isBought = upgrade.isBought;
+      this.isBought = upgrade.isBought || upgrade.isCapped;
       this.isAffordable = upgrade.isAffordable && upgrade.isAvailable;
       this.isAvailable = upgrade.isAvailable;
     }
@@ -45,37 +50,47 @@ export default {
 </script>
 
 <template>
-  <button
-    v-if="isAvailable"
-    :class="classObject"
-    @click="upgrade.purchase()"
-  >
-    <DescriptionDisplay :config="upgrade.config" />
-    <EffectDisplay
-      br
-      :config="upgrade.config"
-    />
-    <CostDisplay
-      br
-      :config="upgrade.config"
-      name="Antimatter"
-    />
-  </button>
-  <button
-    v-else
-    :class="classObject"
-  >
-    <DescriptionDisplay :config="upgrade.config" />
-    <EffectDisplay
-      br
-      :config="upgrade.config"
-    />
-    <CostDisplay
-      br
-      :config="upgrade.config"
-      name="Antimatter"
-    />
-  </button>
+  <div class="l-spoon-btn-group">
+    <button
+      v-if="isAvailable"
+      :class="classObject"
+      class="l-break-eternity-upgrade-btn"
+      @click="upgrade.purchase()"
+    >
+      <HintText
+        type="breakEternityUpgrades"
+        class="l-hint-text--reality-upgrade c-hint-text--reality-upgrade"
+      >
+        {{ upgrade.name }}
+      </HintText>
+      <DescriptionDisplay :config="upgrade.config" />
+      <EffectDisplay :config="upgrade.config" />
+      <CostDisplay
+        v-if="!isBought"
+        :config="upgrade.config"
+        name="Antimatter"
+      />
+    </button>
+    <button
+      v-else
+      :class="classObject"
+      class="l-break-eternity-upgrade-btn"
+    >
+      <HintText
+        type="breakEternityUpgrades"
+        class="l-hint-text--reality-upgrade c-hint-text--reality-upgrade"
+      >
+        {{ upgrade.name }}
+      </HintText>
+      <DescriptionDisplay :config="upgrade.config" />
+      <EffectDisplay :config="upgrade.config" />
+      <CostDisplay
+        v-if="!isBought"
+        :config="upgrade.config"
+        name="Antimatter"
+      />
+    </button>
+  </div>
 </template>
 
 <style scoped>

@@ -1,3 +1,4 @@
+import { endgameMigration } from "./endgame-migrations";
 import { deepmergeAll } from "@/utility/deepmerge";
 
 // WARNING: Don't use state accessors and functions from global scope here, that's not safe in long-term
@@ -419,6 +420,40 @@ export const migrations = {
 
       // This update has a rebalance that assumes the 3rd dilation repeatable is unpurchasable in cel7
       if (player.celestials.pelle.doomed) player.dilation.rebuyables[3] = 0;
+    },
+    //Start with 100 since Endgame is a "new era"
+    100: player => {
+      endgameMigration(player);
+    },
+    101: player => {
+      endgameMigration(player);
+    },
+    102: player => {
+      endgameMigration(player);
+    },
+    103: player => {
+      endgameMigration(player);
+    },
+    104: player => {
+      endgameMigration(player);
+    },
+    105: player => {
+      endgameMigration(player);
+    },
+    106: player => {
+      endgameMigration(player);
+    },
+    107: player => {
+      endgameMigration(player);
+    },
+    108: player => {
+      endgameMigration(player);
+    },
+    109: player => {
+      endgameMigration(player);
+    },
+    110: player => {
+      endgameMigration(player);
     }
   },
 
@@ -868,7 +903,7 @@ export const migrations = {
           autobuyer.amount = condition;
           break;
         case "time":
-          autobuyer.time = condition.lt(Decimal.NUMBER_MAX_VALUE) ? condition.toNumber() : autobuyer.time;
+          autobuyer.time = condition.lt(DC.NUMMAX) ? condition.toNumber() : autobuyer.time;
           break;
         case "relative":
           autobuyer.xHighest = condition;
@@ -1009,7 +1044,7 @@ export const migrations = {
   setTutorialState(player) {
     if (player.infinities.gt(0) || player.eternities.gt(0) || player.realities > 0 || player.galaxies > 0) {
       player.tutorialState = 4;
-    } else if (player.dimensionBoosts > 0) player.tutorialState = TUTORIAL_STATE.GALAXY;
+    } else if (player.dimensionBoosts.gt(0)) player.tutorialState = TUTORIAL_STATE.GALAXY;
   },
 
   migrateLastTenRuns(player) {

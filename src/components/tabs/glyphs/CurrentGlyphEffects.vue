@@ -28,11 +28,12 @@ export default {
       hasReality: false,
       logTotalSacrifice: 0,
       pelleChaosEffect: {},
+      maxSpecialGlyphs: 1,
     };
   },
   computed: {
     isSoftcapActive() {
-      return this.effects.length && !this.effects.every(e => e.value.capped === false);
+      return this.effects.length && !this.effects.every(e => e.value.capped === false) || this.pelleChaosEffect.hasCappedEffect;
     },
     uniqueGlyphText() {
       if (!this.hasEffarig && !this.hasReality) return "";
@@ -41,8 +42,8 @@ export default {
         `<span style="color: ${GlyphAppearanceHandler.getBorderColor("effarig")};">Effarig</span>`);
       if (this.hasReality) uniqueGlyphs.push(
         `<span style="animation: a-reality-glyph-description-cycle 10s infinite;">Reality</span>`);
-      return `You cannot have more than one ${uniqueGlyphs.join(" or ")}
-        Glyph equipped${uniqueGlyphs.length > 1 ? " each." : "."}`;
+      return `You cannot have more than ${formatInt(this.maxSpecialGlyphs)} ${uniqueGlyphs.join(" or ")}
+        ${this.maxSpecialGlyphs !== 1 ? "Glyphs" : "Glyph"} equipped${uniqueGlyphs.length > 1 ? " each." : "."}`;
     },
     noEffects() {
       return !this.effects.length;
@@ -52,8 +53,16 @@ export default {
     },
     pelleGlyphText() {
       return Pelle.isDoomed
-        ? `Glyph Rarity is set to ${formatPercents(strengthToRarity(Pelle.glyphStrength))}
-          and Level is capped at ${formatInt(Pelle.glyphMaxLevel)}`
+        ? (!PelleDestructionUpgrade.glyphRarity.canBeApplied
+           ? `Glyph Rarity is set to ${formatPercents(strengthToRarity(Pelle.glyphStrength))} and `
+           : "")
+          + `Level is capped at ${formatInt(Pelle.glyphMaxLevel)}`
+        : "";
+    },
+    slabbyGlyphText() {
+      return Slabdrill.isCursed
+        ? `Glyph Rarity is set to ${formatPercents(Math.clamp((Slabdrill.currentStage - 4) * 20, 0, 100) / 100)} and
+          Level is capped at ${formatInt(Decimal.floor(Decimal.pow(Slabdrill.power, 0.2)))}`
         : "";
     },
     showChaosText() {
@@ -62,6 +71,9 @@ export default {
     chaosEffect() {
       return this.pelleChaosEffect.description;
     },
+    valueClass(bool) {
+      return bool ? "c-current-glyph-effects__effect--capped" : "";
+    }
   },
   watch: {
     logTotalSacrifice() {
@@ -81,6 +93,7 @@ export default {
       this.logTotalSacrifice = GameCache.logTotalGlyphSacrifice.value;
 
       this.pelleChaosEffect = Pelle.specialGlyphEffect;
+      this.maxSpecialGlyphs = Slabdrill.isCursed ? 0 : ((Achievement(196).isUnlocked && !player.disablePostReality) ? 2 : 1);
     },
     glyphsChanged() {
       this.effects = getActiveGlyphEffects();
@@ -94,6 +107,9 @@ export default {
   <div class="c-current-glyph-effects l-current-glyph-effects">
     <div class="pelle-current-glyph-effects">
       {{ pelleGlyphText }}
+    </div>
+    <div class="slabdrill-current-glyph-effects">
+      {{ slabbyGlyphText }}
     </div>
     <div class="c-current-glyph-effects__header">
       Currently active Glyph effects:
@@ -122,7 +138,14 @@ export default {
       v-if="showChaosText"
       class="pelle-current-glyph-effects"
     >
-      {{ chaosEffect }}
+      <div
+        v-for="effect in chaosEffect"
+        :key="effect[0]"
+      >
+        <span :class="{'c-current-glyph-effects__effect--capped' : effect[1]}">
+          {{ effect[0] }}
+        </span>
+      </div>
     </div>
   </div>
 </template>

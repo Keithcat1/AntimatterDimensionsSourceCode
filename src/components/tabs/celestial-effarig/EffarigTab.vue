@@ -12,33 +12,44 @@ export default {
   },
   data() {
     return {
-      relicShards: 0,
+      relicShards: new Decimal(0),
       shardRarityBoost: 0,
       shardPower: 0,
-      shardsGained: 0,
-      currentShardsRate: 0,
+      shardMaxRarityIncrease: 0,
+      shardsGained: new Decimal(0),
+      currentShardsRate: new Decimal(0),
       amplification: 0,
-      amplifiedShards: 0,
-      amplifiedShardsRate: 0,
+      amplifiedShards: new Decimal(0),
+      amplifiedShardsRate: new Decimal(0),
       runUnlocked: false,
       quote: "",
       isRunning: false,
       vIsFlipped: false,
-      relicShardRarityAlwaysMax: false
+      relicShardRarityAlwaysMax: false,
+      hasSecondShop: false
     };
   },
   computed: {
-    shopUnlocks: () => [
-      EffarigUnlock.adjuster,
-      EffarigUnlock.glyphFilter,
-      EffarigUnlock.setSaves
-    ],
+    shopUnlocks: () => {
+      let u = [
+        EffarigUnlock.adjuster,
+        EffarigUnlock.glyphFilter,
+        EffarigUnlock.setSaves
+      ];
+      if (Achievement(227).isUnlocked) u.push(EffarigUnlock.maintainRS, EffarigUnlock.glyphGenerationBoost,
+        EffarigUnlock.maxMomentum, EffarigUnlock.maxRarityBoost, EffarigUnlock.extendRun);
+      return u;
+    },
     runUnlock: () => EffarigUnlock.run,
-    runUnlocks: () => [
-      EffarigUnlock.infinity,
-      EffarigUnlock.eternity,
-      EffarigUnlock.reality
-    ],
+    runUnlocks: () => {
+      let r = [
+        EffarigUnlock.infinity,
+        EffarigUnlock.eternity,
+        EffarigUnlock.reality,
+      ];
+      if (EffarigUnlock.extendRun.isUnlocked) r.push(EffarigUnlock.endgame);
+      return r;
+    },
     symbol: () => GLYPH_SYMBOLS.effarig,
     runButtonOuterClass() {
       return {
@@ -60,7 +71,7 @@ export default {
     showShardsRate() {
       return this.currentShardsRate;
     },
-    isDoomed: () => Pelle.isDoomed,
+    isDoomed: () => Pelle.isDoomed || Slabdrill.isCursed,
   },
   watch: {
     isRunning() {
@@ -69,19 +80,22 @@ export default {
   },
   methods: {
     update() {
-      this.relicShards = Currency.relicShards.value;
+      this.relicShards.copyFrom(Currency.relicShards.value);
       this.shardRarityBoost = Effarig.maxRarityBoost / 100;
-      this.shardPower = Ra.unlocks.maxGlyphRarityAndShardSacrificeBoost.effectOrDefault(1);
-      this.shardsGained = Effarig.shardsGained;
-      this.currentShardsRate = (this.shardsGained / Time.thisRealityRealTime.totalMinutes);
+      this.shardPower = player.disablePostReality && !SlabdrillUnlocks.timeStudy181.isUnlocked
+        ? 1 : Ra.unlocks.maxGlyphRarityAndShardSacrificeBoost.effectOrDefault(1);
+      this.shardMaxRarityIncrease = Effarig.rarityCapIncrease / 100;
+      this.shardsGained.copyFrom(Effarig.shardsGained);
+      this.currentShardsRate.copyFrom(this.shardsGained.div(Time.thisRealityRealTime.totalMinutes));
       this.amplification = simulatedRealityCount(false);
-      this.amplifiedShards = this.shardsGained * (1 + this.amplification);
-      this.amplifiedShardsRate = (this.amplifiedShards / Time.thisRealityRealTime.totalMinutes);
+      this.amplifiedShards.copyFrom(this.shardsGained.times(1 + this.amplification));
+      this.amplifiedShardsRate.copyFrom(this.amplifiedShards.div(Time.thisRealityRealTime.totalMinutes));
       this.quote = Effarig.quote;
       this.runUnlocked = EffarigUnlock.run.isUnlocked;
       this.isRunning = Effarig.isRunning;
       this.vIsFlipped = V.isFlipped;
-      this.relicShardRarityAlwaysMax = Ra.unlocks.extraGlyphChoicesAndRelicShardRarityAlwaysMax.canBeApplied;
+      this.relicShardRarityAlwaysMax = (Ra.unlocks.extraGlyphChoicesAndRelicShardRarityAlwaysMax.canBeApplied || EndgameMilestone.startRa.isReached) && !player.disablePostReality;
+      this.hasSecondShop = Achievement(227).isUnlocked;
     },
     startRun() {
       if (this.isDoomed) return;
@@ -113,6 +127,10 @@ export default {
           <span v-if="shardPower > 1">
             <br>
             Glyph Sacrifice gain is also being raised to {{ formatPow(shardPower, 0, 2) }}.
+          </span>
+          <span v-if="shardMaxRarityIncrease > 0">
+            <br>
+            The Glyph Rarity cap is also being increased by +{{ formatPercents(shardMaxRarityIncrease, 2) }}.
           </span>
         </div>
         <div class="c-effarig-relic-description">
@@ -175,9 +193,9 @@ export default {
           {{ runDescription }}
         </div>
         <EffarigRunUnlockReward
-          v-for="(unlock, i) in runUnlocks"
-          :key="i"
-          :unlock="unlock"
+          v-for="(runRewardUnlock, j) in runUnlocks"
+          :key="j"
+          :unlock="runRewardUnlock"
         />
       </div>
     </div>

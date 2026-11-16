@@ -34,6 +34,7 @@ export default {
       hasTTGen: false,
       showTTGen: false,
       invertTTgenDisplay: false,
+      isFlipped: false
     };
   },
   computed: {
@@ -45,7 +46,7 @@ export default {
         return format;
       }
       if (!(Teresa.isRunning || Enslaved.isRunning) &&
-        getAdjustedGlyphEffect("dilationTTgen") > 0 && !DilationUpgrade.ttGenerator.isBought) {
+        getAdjustedGlyphEffect("dilationTTgen").gt(0) && !DilationUpgrade.ttGenerator.isBought) {
         return formatFloat;
       }
       return formatInt;
@@ -53,7 +54,7 @@ export default {
     TTgenRateText() {
       if (this.theoremGeneration.lt(1 / 3600)) {
         return `one TT every ${TimeSpan.fromSeconds(
-          this.theoremGeneration.reciprocal().toNumber()).toStringShort(false)}`;
+          this.theoremGeneration.reciprocal()).toStringShort(false)}`;
       }
       if (this.theoremGeneration.lt(0.1)) {
         return `${format(this.theoremGeneration.times(3600), 2, 2)} TT/hour`;
@@ -91,7 +92,7 @@ export default {
       player.timestudy.shopMinimized = !player.timestudy.shopMinimized;
     },
     formatAM(am) {
-      return `${format(am)} AM`;
+      return `${format(am)} ${this.isFlipped ? "M" : "AM"}`;
     },
     buyWithAM() {
       TimeTheorems.buyOne(false, "am");
@@ -113,7 +114,7 @@ export default {
     },
     update() {
       this.theoremAmount.copyFrom(Currency.timeTheorems);
-      this.theoremGeneration.copyFrom(getTTPerSecond().times(getGameSpeedupForDisplay()));
+      this.theoremGeneration.copyFrom(getTTPerSecond().times(Alpha.isRunning ? 1 : getGameSpeedupForDisplay()));
       this.totalTimeTheorems.copyFrom(Currency.timeTheorems.max);
       this.shopMinimized = player.timestudy.shopMinimized;
       this.hasTTAutobuyer = Autobuyer.timeTheorem.isUnlocked;
@@ -127,11 +128,12 @@ export default {
       costs.am.copyFrom(TimeTheoremPurchaseType.am.cost);
       costs.ip.copyFrom(TimeTheoremPurchaseType.ip.cost);
       costs.ep.copyFrom(TimeTheoremPurchaseType.ep.cost);
-      this.showST = V.spaceTheorems > 0 && !Pelle.isDoomed;
+      this.showST = V.spaceTheorems > 0 && (!Pelle.isDoomed || PelleDestructionUpgrade.spaceTheorems.canBeApplied);
       this.STamount = V.availableST;
       this.hasTTGen = this.theoremGeneration.gt(0);
       this.showTTGen = this.hasTTGen && (ui.view.shiftDown === this.invertTTgenDisplay);
       this.invertTTgenDisplay = player.options.invertTTgenDisplay;
+      this.isFlipped = player.universes.current === 2;
     },
     toggleTTgen() {
       this.invertTTgenDisplay = !this.invertTTgenDisplay;

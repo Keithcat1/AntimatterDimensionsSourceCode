@@ -1,10 +1,19 @@
-import { DC } from "./constants";
 import { SpeedrunMilestones } from "./speedrun";
 
 class BlackHoleUpgradeState {
   constructor(config) {
     const { getAmount, setAmount, calculateValue, initialCost, costMult } = config;
     this.incrementAmount = () => setAmount(getAmount() + 1);
+    this.bulkIncrementAmount = () => setAmount(getAmount() + getInverseHybridCostScaling(
+      Pelle.isDoomed ? Currency.realityShards.value : Currency.realityMachines.value,
+      1e30,
+      initialCost,
+      costMult,
+      0.2,
+      DC.E310,
+      1e5,
+      10
+    ).sub(getAmount()).toNumber());
     this._lazyValue = new Lazy(() => calculateValue(getAmount()));
     this._lazyCost = new Lazy(() => getHybridCostScaling(getAmount(),
       1e30,
@@ -28,7 +37,7 @@ class BlackHoleUpgradeState {
   }
 
   get isAffordable() {
-    return Currency.realityMachines.gte(this.cost);
+    return Pelle.isDoomed ? Currency.realityShards.gte(this.cost) : Currency.realityMachines.gte(this.cost);
   }
 
   purchase() {
@@ -39,8 +48,37 @@ class BlackHoleUpgradeState {
     const bh = BlackHole(this.id);
     const beforeProg = bh.isCharged ? 1 - bh.stateProgress : bh.stateProgress;
 
-    Currency.realityMachines.purchase(this.cost);
+    Pelle.isDoomed ? Currency.realityShards.purchase(this.cost) : Currency.realityMachines.purchase(this.cost);
     this.incrementAmount();
+    this._lazyValue.invalidate();
+    this._lazyCost.invalidate();
+    if (this.onPurchase) {
+      this.onPurchase();
+    }
+
+    // Adjust the phase to what it was before purchase by changing it directly. This will often result in passing
+    // in a negative argument to updatePhase(), but this shouldn't cause any problems because it'll never make
+    // the phase itself negative. In very rare cases this may result in a single auto-pause getting skipped
+    const stateTime = bh.isCharged ? bh.duration : bh.interval;
+    bh.updatePhase(stateTime * beforeProg - bh.phase);
+
+    // Prevents a rare edge case where the player makes an inactive black hole permanent, locking themselves into
+    // a permanently inactive black hole
+    if (bh.isPermanent) player.blackHole[this.id - 1].active = true;
+
+    EventHub.dispatch(GAME_EVENT.BLACK_HOLE_UPGRADE_BOUGHT);
+  }
+
+  bulkPurchase() {
+    if (!this.isAffordable || this.value === 0) return;
+
+    // Keep the cycle phase consistent before and after purchase so that upgrading doesn't cause weird behavior
+    // such as immediately activating it when inactive (or worse, skipping past the active segment entirely).
+    const bh = BlackHole(this.id);
+    const beforeProg = bh.isCharged ? 1 - bh.stateProgress : bh.stateProgress;
+
+    this.bulkIncrementAmount();
+    Pelle.isDoomed ? Currency.realityShards.purchase(this.cost) : Currency.realityMachines.purchase(this.cost);
     this._lazyValue.invalidate();
     this._lazyCost.invalidate();
     if (this.onPurchase) {
@@ -85,7 +123,7 @@ class BlackHoleState {
       id: this.id,
       getAmount: () => this._data.powerUpgrades,
       setAmount: amount => this._data.powerUpgrades = amount,
-      calculateValue: amount => (180 / Math.pow(2, id)) * Math.pow(1.35, amount),
+      calculateValue: amount => new Decimal(180).div(Decimal.pow(2, id)).times(Decimal.pow(1.35, amount)),
       initialCost: 20 * blackHoleCostMultipliers[id],
       costMult: 2,
       hasAutobuyer: true
@@ -127,7 +165,7 @@ class BlackHoleState {
    * Multiplier to time the black hole gives when active.
    */
   get power() {
-    return this.powerUpgrade.value * Achievement(158).effectOrDefault(1);
+    return this.powerUpgrade.value.times(Achievement(158).effectOrDefault(1));
   }
 
   /**
@@ -138,7 +176,7 @@ class BlackHoleState {
   }
 
   get isUnlocked() {
-    return this._data.unlocked && !Enslaved.isRunning && !Pelle.isDisabled("blackhole");
+    return this._data.unlocked && !Enslaved.isRunning && (!Pelle.isDisabled("blackhole") || PelleDestructionUpgrade.blackHole.canBeApplied) && !player.disablePostReality;
   }
 
   get isCharged() {
@@ -196,7 +234,8 @@ class BlackHoleState {
 
   // The logic to determine what state the black hole is in for displaying is nontrivial and used in multiple places
   get displayState() {
-    if (Pelle.isDisabled("blackhole")) return `<i class="fas fa-ban"></i> Disabled`;
+    if (Pelle.isDisabled("blackhole") && !PelleDestructionUpgrade.blackHole.canBeApplied) return `<i class="fas fa-ban"></i> Disabled`;
+    if (Pelle.isDoomed && PelleDestructionUpgrade.blackHole.canBeApplied) return `♅ Doomed`;
     if (Enslaved.isAutoReleasing) {
       if (Enslaved.autoReleaseTick < 3) return `<i class="fas fa-compress-arrows-alt u-fa-padding"></i> Pulsing`;
       return `<i class="fas fa-expand-arrows-alt u-fa-padding"></i> Pulsing`;
@@ -206,13 +245,13 @@ class BlackHoleState {
     if (BlackHoles.arePaused) return `<i class="fas fa-pause"></i> Paused`;
     if (this.isPermanent) return `<i class="fas fa-infinity"></i> Permanent`;
 
-    const timeString = TimeSpan.fromSeconds(this.timeToNextStateChange).toStringShort(true);
+    const timeString = TimeSpan.fromSeconds(new Decimal(this.timeToNextStateChange)).toStringShort(true);
     if (this.isActive) return `<i class="fas fa-play"></i> Active (${timeString})`;
     return `<i class="fas fa-redo"></i> Inactive (${timeString})`;
   }
 
   get isActive() {
-    return this.isCharged && (this.id === 1 || BlackHole(this.id - 1).isActive) && !Pelle.isDisabled("blackhole");
+    return this.isCharged && (this.id === 1 || BlackHole(this.id - 1).isActive) && (!Pelle.isDisabled("blackhole") || PelleDestructionUpgrade.blackHole.canBeApplied);
   }
 
   // Proportion of active time, scaled 0 to 1
@@ -244,7 +283,7 @@ class BlackHoleState {
     // should work even if activePeriods[i] is very large. To check:
     // This used to always use the period of blackHole[0], now it doesn't,
     // will this cause other bugs?
-    this._data.phase += activePeriod;
+    this._data.phase += new Decimal(activePeriod).toNumber();
 
     if (this.phase >= this.cycleLength) {
       // One activation for each full cycle.
@@ -277,6 +316,7 @@ class BlackHoleState {
    * BlackHole(2) is active during that time.
    */
   realTimeWhileActive(time) {
+    time = new Decimal(time).toNumber();
     const nextDeactivation = this.timeUntilNextDeactivation;
     const cooldown = this.interval;
     const duration = this.duration;
@@ -438,7 +478,7 @@ export const BlackHoles = {
     // binarySearch from working in the numberOfTicks = 1 case.
     // I doubt that's possible but it seems worth handling just in case.
     if (numberOfTicks === 1) {
-      return [totalRealTime, totalGameTime / totalRealTime];
+      return [totalRealTime, totalGameTime.div(totalRealTime)];
     }
     // We want calculateGameTimeFromRealTime(realTickTime, speedups) * numberOfTicks / totalGameTime to be roughly 1
     // (that is, the tick taking realTickTime real time has roughly average length in terms of game time).
@@ -450,11 +490,11 @@ export const BlackHoles = {
     const realTickTime = this.binarySearch(
       0,
       totalRealTime,
-      x => this.calculateGameTimeFromRealTime(x, speedups) * numberOfTicks / totalGameTime,
+      x => this.calculateGameTimeFromRealTime(x, speedups).times(numberOfTicks).div(totalGameTime),
       1,
       tolerance
     );
-    const blackHoleSpeedup = this.calculateGameTimeFromRealTime(realTickTime, speedups) / realTickTime;
+    const blackHoleSpeedup = this.calculateGameTimeFromRealTime(realTickTime, speedups).div(realTickTime);
     return [realTickTime, blackHoleSpeedup];
   },
 
@@ -468,9 +508,9 @@ export const BlackHoles = {
     let middle;
     for (let iter = 0; iter < 100; ++iter) {
       middle = (start + end) / 2;
-      const error = evaluationFunction(middle) - target;
-      if (Math.abs(error) < tolerance) break;
-      if (error < 0) {
+      const error = evaluationFunction(middle).sub(target);
+      if (error.abs().lt(tolerance)) break;
+      if (error.lt(0)) {
         // eslint-disable-next-line no-param-reassign
         start = middle;
       } else {
@@ -489,29 +529,31 @@ export const BlackHoles = {
    */
   calculateSpeedups() {
     const effectsToConsider = [GAME_SPEED_EFFECT.FIXED_SPEED, GAME_SPEED_EFFECT.TIME_GLYPH,
-      GAME_SPEED_EFFECT.SINGULARITY_MILESTONE, GAME_SPEED_EFFECT.NERFS];
+      GAME_SPEED_EFFECT.SINGULARITY_MILESTONE, GAME_SPEED_EFFECT.NERFS, GAME_SPEED_EFFECT.CELESTIAL_MATTER,
+      GAME_SPEED_EFFECT.RA_BUFFS];
     const speedupWithoutBlackHole = getGameSpeedupFactor(effectsToConsider);
     const speedups = [speedupWithoutBlackHole];
     effectsToConsider.push(GAME_SPEED_EFFECT.BLACK_HOLE);
     // Crucial thing: this works even if the black holes are paused, it's just that the speedups will be 1.
     for (const blackHole of this.list) {
       if (!blackHole.isUnlocked) break;
-      speedups.push(getGameSpeedupFactor(effectsToConsider, blackHole.id) / speedupWithoutBlackHole);
+      speedups.push(getGameSpeedupFactor(effectsToConsider, true, blackHole.id).div(speedupWithoutBlackHole));
     }
     return speedups;
   },
 
   calculateGameTimeFromRealTime(realTime, speedups) {
+    realTime = new Decimal(realTime);
     // We could do this.autoPauseData(realTime)[1] here but that seems less clear.
     // Using _ as an unused variable should be reasonable.
     // eslint-disable-next-line no-unused-vars
     const [_, realerTime] = this.autoPauseData(realTime);
-    const effectivePeriods = this.realTimePeriodsWithBlackHoleEffective(realerTime, speedups);
+    const effectivePeriods = this.realTimePeriodsWithBlackHoleEffective(new Decimal(realerTime), speedups);
     // This adds in time with black holes paused at the end of the list.
-    effectivePeriods[0] += realTime - realerTime;
+    effectivePeriods[0] = effectivePeriods[0].add(realTime.sub(new Decimal(realerTime)));
     return effectivePeriods
-      .map((period, i) => period * speedups[i])
-      .sum();
+      .map((period, i) => speedups[i].times(period))
+      .decimalSum();
   },
 
   /**
@@ -534,7 +576,7 @@ export const BlackHoles = {
     const activePeriods = this.realTimePeriodsWithBlackHoleActive(realTime);
     const effectivePeriods = [];
     for (let i = 0; i < activePeriods.length - 1; i++) {
-      effectivePeriods.push(activePeriods[i] - activePeriods[i + 1]);
+      effectivePeriods.push(new Decimal(activePeriods[i]).sub(activePeriods[i + 1]).clampMin(0));
     }
     effectivePeriods.push(activePeriods.last());
     return effectivePeriods;
@@ -548,7 +590,7 @@ export const BlackHoles = {
     const activePeriods = [realTime];
     for (const blackHole of this.list) {
       if (!blackHole.isUnlocked) break;
-      const activeTime = blackHole.realTimeWhileActive(activePeriods.last());
+      const activeTime = new Decimal(blackHole.realTimeWhileActive(activePeriods.last()));
       activePeriods.push(activeTime);
     }
     return activePeriods;
@@ -650,20 +692,21 @@ export const BlackHoles = {
    * [will BH be paused in the given amount of real time, real time until pause if so].
    */
   autoPauseData(realTime) {
+    const time = new Decimal(realTime).toNumber();
     // This can be called when determining offline time if the black holes are already paused.
     // In that case we don't need to pause them (need to pause = false), but they're already paused (0 time).
     // This saves us some computation.
     if (this.arePaused) return [false, 0];
     if (player.blackHoleAutoPauseMode === BLACK_HOLE_PAUSE_MODE.NO_PAUSE) {
-      return [false, realTime];
+      return [false, time];
     }
     const timeLeft = this.timeToNextPause(player.blackHoleAutoPauseMode);
     // Cases in which we don't pause in the given amount of real time:
     // null = no pause, (timeLeft < 1e-9) = we auto-paused and there was maybe rounding error,
     // now the player's unpaused at this exact point (so we shouldn't pause again),
     // (timeLeft > realTime) = we will pause but it'll take longer than the given time.
-    if (timeLeft === null || timeLeft < 1e-9 || timeLeft > realTime) {
-      return [false, realTime];
+    if (timeLeft === null || timeLeft < 1e-9 || timeLeft > time) {
+      return [false, time];
     }
     return [true, timeLeft];
   }

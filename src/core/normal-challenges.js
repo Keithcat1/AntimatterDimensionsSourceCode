@@ -1,35 +1,38 @@
-import { DC } from "./constants";
 import { GameMechanicState } from "./game-mechanics";
 
 export function updateNormalAndInfinityChallenges(diff) {
   if (NormalChallenge(11).isRunning || InfinityChallenge(6).isRunning) {
-    if (AntimatterDimension(2).amount.neq(0)) {
+    if (Slabdrill.isCursed || AntimatterDimension(2).amount.neq(0)) {
       Currency.matter.bumpTo(1);
       // These caps are values which occur at approximately e308 IP
-      const cappedBase = 1.03 + Math.clampMax(DimBoost.totalBoosts, 400) / 200 +
-        Math.clampMax(player.galaxies, 100) / 100;
-      Currency.matter.multiply(Decimal.pow(cappedBase, diff / 20));
+      const cappedBase = 1.03 + Decimal.clampMax(DimBoost.totalBoosts, 400).toNumber() / 200 +
+        Decimal.clampMax(player.galaxies, 100).toNumber() / 100;
+      Currency.matter.multiply(Decimal.pow(cappedBase, new Decimal(diff).div(20)));
     }
     if (Currency.matter.gt(Currency.antimatter.value) && NormalChallenge(11).isRunning && !Player.canCrunch) {
       const values = [Currency.antimatter.value, Currency.matter.value];
       softReset(0, true, true);
-      Modal.message.show(`Your ${format(values[0], 2, 2)} antimatter was annihilated
-        by ${format(values[1], 2, 2)} matter.`, { closeEvent: GAME_EVENT.BIG_CRUNCH_AFTER }, 1);
+      Modal.message.show(`Your ${format(values[0], 2, 2)} ${player.universes.current === 2 ? "matter" : "antimatter"}
+        was annihilated by ${format(values[1], 2, 2)}
+        ${player.universes.current === 2 ? "antimatter" : "matter"}.`, { closeEvent: GAME_EVENT.BIG_CRUNCH_AFTER }, 1);
     }
   }
 
   if (NormalChallenge(3).isRunning) {
-    player.chall3Pow = player.chall3Pow.times(DC.D1_00038.pow(diff / 100)).clampMax(Decimal.NUMBER_MAX_VALUE);
+    player.chall3Pow = player.chall3Pow.times(DC.D1_00038.pow(new Decimal(diff).div(100))).clampMax(DC.NUMMAX);
   }
 
-  if (NormalChallenge(2).isRunning) {
-    player.chall2Pow = Math.min(player.chall2Pow + diff / 100 / 1800, 1);
+  if (NormalChallenge(2).isRunning || (NormalChallenge(12).isRunning && Slabdrill.isCursed)) {
+    player.chall2Pow = Decimal.min(new Decimal(player.chall2Pow).plus(new Decimal(diff).div(100).div(1800)), 1).toNumber();
   }
 
   if (InfinityChallenge(2).isRunning) {
     if (player.ic2Count >= 400) {
-      if (AntimatterDimension(8).amount.gt(0)) {
+      if (AntimatterDimension(8).amount.gt(0) || Slabdrill.isCursed) {
         sacrificeReset();
+        if (Slabdrill.isCursed) {
+          softReset(0, true, true);
+        }
       }
       player.ic2Count %= 400;
     } else {
@@ -54,10 +57,27 @@ class NormalChallengeState extends GameMechanicState {
   }
 
   get isUnlocked() {
-    if (PlayerProgress.eternityUnlocked()) return true;
+    if (PlayerProgress.eternityUnlocked() && (!Alpha.isRunning || Currency.eternities.gt(0)) &&
+      (!Slabdrill.isCursed || Currency.eternities.gt(0))) return true;
     if (this.id === 0) return true;
-    const ip = GameDatabase.challenges.normal[this.id - 1].lockedAt;
+    const ip = (Alpha.isRunning || Slabdrill.isCursed)
+      ? GameDatabase.challenges.normal[this.id - 1].alphaLockedAt : GameDatabase.challenges.normal[this.id - 1].lockedAt;
     return Currency.infinitiesTotal.gte(ip);
+  }
+
+  get isCharged() {
+    return player.endgame.overcharge.charged.complex.has(this.id) && player.endgame.overcharge.allowComplex;
+  }
+
+  get chargedEffect() {
+    if (this.isCharged) return this.config.charged.effect();
+    return DC.D1;
+  }
+
+  tryCharge() {
+    if (Math.min(player.endgame.overcharge.completions.chall, 12) >= this.id) {
+      player.endgame.overcharge.charged.complex.add(this.id);
+    }
   }
 
   get isDisabled() {
@@ -65,7 +85,8 @@ class NormalChallengeState extends GameMechanicState {
   }
 
   get lockedAt() {
-    return GameDatabase.challenges.normal[this.id].lockedAt;
+    return (Alpha.isRunning || Slabdrill.isCursed)
+      ? GameDatabase.challenges.normal[this.id].alphaLockedAt : GameDatabase.challenges.normal[this.id].lockedAt;
   }
 
   requestStart() {
@@ -90,6 +111,7 @@ class NormalChallengeState extends GameMechanicState {
       Enslaved.quotes.ec6C10.show();
     }
     if (!Enslaved.isRunning) Tab.dimensions.antimatter.show();
+    if (Slabdrill.isCursed && this.id === 12) player.chall2Pow = 0;
   }
 
   get isCompleted() {
@@ -109,18 +131,25 @@ class NormalChallengeState extends GameMechanicState {
     // unlocking autobuyers (such as Existentially Prolong) should also go through this code path
     TabNotification.newAutobuyer.clearTrigger();
     GameCache.cheapestAntimatterAutobuyer.invalidate();
+    if (this.id === 9) {
+      Autobuyer.tickspeed.mode = 100;
+    }
+    if (this.id === 12 && Alpha.isRunning && Alpha.currentStage === 4) {
+      Alpha.advanceLayer();
+      Alpha.quotes.autoCrunch.show();
+    }
   }
 
   get goal() {
     if (Enslaved.isRunning && Enslaved.BROKEN_CHALLENGES.includes(this.id)) {
       return DC.E1E15;
     }
-    return Decimal.NUMBER_MAX_VALUE;
+    return DC.NUMMAX;
   }
 
   updateChallengeTime() {
     const bestTimes = player.challenge.normal.bestTimes;
-    if (bestTimes[this.id - 2] <= player.records.thisInfinity.time) {
+    if (bestTimes[this.id - 2].lte(player.records.thisInfinity.time)) {
       return;
     }
     player.challenge.normal.bestTimes[this.id - 2] = player.records.thisInfinity.time;
@@ -164,5 +193,8 @@ export const NormalChallenges = {
   },
   clearCompletions() {
     player.challenge.normal.completedBits = 0;
+  },
+  tryChargeAll() {
+    for (const challenge of NormalChallenges.all) challenge.tryCharge();
   }
 };

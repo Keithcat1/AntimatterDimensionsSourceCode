@@ -422,7 +422,7 @@ export const devMigrations = {
           eternityAutobuyer.amount = condition;
           break;
         case "time":
-          eternityAutobuyer.time = condition.lt(Decimal.NUMBER_MAX_VALUE)
+          eternityAutobuyer.time = condition.lt(DC.NUMMAX)
             ? condition.toNumber()
             : eternityAutobuyer.time;
           break;
@@ -1533,7 +1533,7 @@ export const devMigrations = {
     player => {
       player.options.lightGlyphs = !player.options.forceDarkGlyphs;
       delete player.options.forceDarkGlyphs;
-    }
+    },
   ],
 
   patch(player) {

@@ -1,11 +1,15 @@
 <script>
+import wordShift from "@/core/word-shift";
+
 import InfinityDimensionRow from "./ModernInfinityDimensionRow";
 import PrimaryButton from "@/components/PrimaryButton";
+import PrimaryToggleButton from "@/components/PrimaryToggleButton";
 
 export default {
   name: "ModernInfinityDimensionsTab",
   components: {
     PrimaryButton,
+    PrimaryToggleButton,
     InfinityDimensionRow
   },
   data() {
@@ -20,25 +24,48 @@ export default {
       isEnslavedRunning: false,
       isAnyAutobuyerUnlocked: false,
       conversionRate: 0,
-      nextDimCapIncrease: 0,
+      nextDimCapIncrease: new Decimal(0),
       tesseractCost: new Decimal(0),
-      totalDimCap: 0,
+      totalDimCap: new Decimal(0),
       canBuyTesseract: false,
       enslavedCompleted: false,
       boughtTesseracts: 0,
       extraTesseracts: 0,
+      tesseractMult: 0,
       creditsClosed: false,
       showLockedDimCostNote: true,
       isEndgameUnlocked: false,
       infinityDimCompressionMagnitude: 0,
       infinityDimOverflow: 0,
-      infinityDimStart: new Decimal(0)
+      infinityDimStart: new Decimal(0),
+      infinityDimCompressionMagnitude2: 0,
+      infinityDimOverflow2: 0,
+      infinityDimStart2: new Decimal(0),
+      hasSecond: false,
+      freeTesseractSoftcap: 0,
+      freeTesseractHardcap: 0,
+      isAutoUnlocked: false,
+      isAutoActive: false,
+      isAlphaDestroyed: false,
+      tesseractMultText: "",
+      additiveTesseractString: "",
+      multiplicativeTesseractString: "",
+      tesseractStringArray: [],
+      isFlipped: false
     };
   },
   computed: {
     tesseractCountString() {
-      const extra = this.extraTesseracts > 0 ? ` + ${format(this.extraTesseracts, 2, 2)}` : "";
-      return `${formatInt(this.boughtTesseracts)}${extra}`;
+      if (LHC.hadronC >= 1) return this.multiplicativeTesseractString;
+      if (LHC.hadronC >= 0.5) return `${wordShift.wordCycle(this.tesseractStringArray, true)}`;
+      return this.additiveTesseractString;
+    },
+    autobuyer() {
+      return Autobuyer.tesseract;
+    },
+    autobuyerTextDisplay() {
+      const auto = this.isAutoActive;
+      return `Auto Tesseract ${auto ? "ON" : "OFF"}`;
     },
   },
   methods: {
@@ -48,7 +75,7 @@ export default {
       this.infinityPower.copyFrom(Currency.infinityPower);
       this.conversionRate = InfinityDimensions.powerConversionRate;
       if (this.isEC9Running) {
-        this.dimMultiplier.copyFrom(Decimal.pow(Math.max(this.infinityPower.log2(), 1), 4).max(1));
+        this.dimMultiplier.copyFrom(Decimal.pow(Decimal.max(this.infinityPower.add(1).log2(), 1), 4).max(1));
       } else {
         this.dimMultiplier.copyFrom(this.infinityPower.pow(this.conversionRate).max(1));
       }
@@ -60,18 +87,36 @@ export default {
       }
       this.isEnslavedRunning = Enslaved.isRunning;
       this.isAnyAutobuyerUnlocked = Autobuyer.infinityDimension(1).isUnlocked;
-      this.nextDimCapIncrease = Tesseracts.nextTesseractIncrease;
+      this.nextDimCapIncrease.copyFrom(Tesseracts.nextTesseractIncrease);
       this.tesseractCost.copyFrom(Tesseracts.nextCost);
-      this.totalDimCap = InfinityDimensions.totalDimCap;
+      this.totalDimCap.copyFrom(InfinityDimensions.totalDimCap);
       this.canBuyTesseract = Tesseracts.canBuyTesseract;
-      this.enslavedCompleted = Enslaved.isCompleted;
+      this.enslavedCompleted = Enslaved.isCompleted && !player.disablePostReality;
       this.boughtTesseracts = Tesseracts.bought;
       this.extraTesseracts = Tesseracts.extra;
+      this.tesseractMult = Tesseracts.totalMult;
       this.creditsClosed = GameEnd.creditsEverClosed;
       this.isEndgameUnlocked = PlayerProgress.endgameUnlocked();
-      this.infinityDimCompressionMagnitude = player.endgame.compressionMagnitude.infinity;
+      this.infinityDimCompressionMagnitude = InfinityDimensions.compressionMagnitude;
       this.infinityDimOverflow = 1 / this.infinityDimCompressionMagnitude;
       this.infinityDimStart = InfinityDimensions.OVERFLOW;
+      this.infinityDimCompressionMagnitude2 = InfinityDimensions.compressionMag2;
+      this.infinityDimOverflow2 = 1 / this.infinityDimCompressionMagnitude2;
+      this.infinityDimStart2 = InfinityDimensions.OVERFLOW_SQUARED;
+      this.hasSecond = Currency.infinityPower.gte(DC.ENUMMAX);
+      this.freeTesseractSoftcap = Tesseracts.freeSoftcapStart;
+      this.freeTesseractHardcap = this.freeTesseractSoftcap * 2;
+      const auto = Autobuyer.tesseract;
+      this.isAutoUnlocked = auto.isUnlocked;
+      this.isAutoActive = auto.isActive;
+      this.isAlphaDestroyed = Alpha.isDestroyed;
+      this.tesseractMultText = this.tesseractMult !== 1 ? ` × ${format(this.tesseractMult, 2, 2)}` : "";
+      this.additiveTesseractString = `${formatHybridSmall(this.boughtTesseracts, 3)}${this.tesseractMultText}${this.extraTesseracts > 0
+        ? ` + ${format(this.extraTesseracts, 2, 2)}${this.tesseractMultText}` : ""}`;
+      this.multiplicativeTesseractString = `${formatHybridSmall(this.boughtTesseracts, 3)}${this.extraTesseracts > 0
+        ? ` × ${format(this.extraTesseracts, 2, 2)}${this.tesseractMultText}` : ""}`;
+      this.tesseractStringArray = [this.multiplicativeTesseractString, this.additiveTesseractString];
+      this.isFlipped = player.universes.current === 2;
     },
     maxAll() {
       InfinityDimensions.buyMax();
@@ -81,6 +126,10 @@ export default {
     },
     buyTesseract() {
       Tesseracts.buyTesseract();
+    },
+    handleAutoToggle(value) {
+      Autobuyer.tesseract.isActive = value;
+      this.update();
     }
   }
 };
@@ -120,7 +169,7 @@ export default {
         to a
         <span class="c-infinity-dim-description__accent">{{ formatX(dimMultiplier, 2, 1) }}</span>
         multiplier on all
-        <span v-if="!isEC9Running">Antimatter Dimensions.</span>
+        <span v-if="!isEC9Running">{{ isFlipped ? "Matter" : "Antimatter" }} Dimensions.</span>
         <span v-else>Time Dimensions due to Eternity Challenge 9.</span>
       </p>
     </div>
@@ -129,10 +178,22 @@ export default {
         <span v-if="isEndgameUnlocked">
           Your Infinity Dimension Compression Magnitude is
           <span class="c-infinity-dim-compression-description__accent">{{ format(infinityDimCompressionMagnitude, 2, 3) }}</span>,
-          which raises all Infinity Dimension Multipliers to the power of
+          which raises all Infinity Dimension Multipliers' Exponents to the power of
           <span class="c-infinity-dim-compression-description__accent">{{ format(infinityDimOverflow, 2, 3) }}</span>
           while above
-          <span>{{ format(infinityDimStart, 2, 1) }}</span>.
+          <span>{{ formatPostBreak(infinityDimStart, 2, 1) }}</span>.
+        </span>
+      </p>
+    </div>
+    <div>
+      <p>
+        <span v-if="hasSecond">
+          Your Infinity Dimension Compression^2 Magnitude is
+          <span class="c-infinity-dim-compression-description__accent">{{ format(infinityDimCompressionMagnitude2, 2, 3) }}</span>,
+          which raises all Infinity Dimension Multipliers' Exponents to the power of
+          <span class="c-infinity-dim-compression-description__accent">{{ format(infinityDimOverflow2, 2, 3) }}</span>
+          while above
+          <span>{{ formatPostBreak(infinityDimStart2, 2, 1) }}</span>.
         </span>
       </p>
     </div>
@@ -154,6 +215,23 @@ export default {
         <p>Increase dimension caps by {{ format(nextDimCapIncrease, 2) }}</p>
         <p><b>Costs: {{ format(tesseractCost) }} IP</b></p>
       </button>
+      <br>
+      <PrimaryToggleButton
+        v-if="isAutoUnlocked"
+        :value="isAutoActive"
+        :on="autobuyerTextDisplay"
+        :off="autobuyerTextDisplay"
+        class="l--spoon-btn-group__little-spoon o-primary-btn--tesseract-toggle"
+        @input="handleAutoToggle"
+      />
+    </div>
+    <div>
+      Free Tesseracts are softcapped past {{ format(freeTesseractSoftcap, 2, 2) }}.
+      <div v-if="!isAlphaDestroyed">
+        <br>
+        This softcap causes Tesseracts past {{ format(freeTesseractSoftcap, 2, 2) }} to eternally approach
+        a hardcap of {{ format(freeTesseractHardcap, 2, 2) }} without ever actually reaching it.
+      </div>
     </div>
     <div v-if="isEnslavedRunning">
       All Infinity Dimensions are limited to a single purchase.

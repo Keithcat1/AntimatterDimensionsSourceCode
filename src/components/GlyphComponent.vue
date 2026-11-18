@@ -376,8 +376,8 @@ export default {
       const glyphName = `${this.glyph.type.capitalize()}`;
       // I think calling this makes sure the level is accurate?
       this.updateDisplayLevel();
-      const effectiveLevel = this.displayLevel === 0 ? this.glyph.level : this.displayLevel;
-      const level = formatInt(effectiveLevel);
+      const effectiveLevel = new Decimal(this.displayLevel.eq( 0) ? this.glyph.level : this.displayLevel);
+      const level = formatHybridLarge(effectiveLevel);
       const strength = Pelle.isDoomed ? Pelle.glyphStrength : this.glyph.strength;
       const rarity = strengthToRarity(strength);
 

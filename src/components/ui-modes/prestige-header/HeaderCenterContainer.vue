@@ -96,6 +96,7 @@ export default {
         v-if="!isDoomed"
         :is-header="true"
       />
+      <HeaderTickspeedInfo />
     </div>
     <div v-else-if="!inCursedCore">
       You are getting {{ format(antimatterPerSec, 2) }} {{ isFlipped ? "matter" : "antimatter" }} per second.

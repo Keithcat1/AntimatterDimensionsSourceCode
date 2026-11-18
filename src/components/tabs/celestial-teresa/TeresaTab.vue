@@ -140,7 +140,7 @@ export default {
           const diff = (now - this.time) / 1000;
           Teresa.pourRM(diff);
         // Turn off the checkbox when out of RM
-        if (this.$viewModel.srMode && this.rm.isZero) this.pour = false;
+        if (this.$viewModel.srMode && this.rm.eq(0)) this.pour = false;
 
         }
       } else {
@@ -289,7 +289,8 @@ export default {
           @mouseup="pour = false"
           @touchend="pour = false"
           @mouseleave="pour = false"
-          :aria-pressed="pour"
+          :aria-pressed="pour.toString()"
+          @click="pour = !pour"
         >
           {{ pourText }}
         </button>
